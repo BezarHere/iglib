@@ -1,0 +1,15 @@
+project ".."
+source "__proj__\iglib\src"
+output "F:\Assets\CppLibs\IGLib"
+ignore pch.h
+ignore internal.h
+
+define:out64 "__proj__\x64"
+define:out32 "__proj__\Win32"
+define:libn "iglib.lib"
+
+move "__out64__\Debug\__libn__" "__out__\lib\iglib_x64-d.lib" /overwrite /silent
+move "__out64__\Release\__libn__" "__out__\lib\iglib_x64.lib" /overwrite /silent
+
+move "__out32__\Debug\__libn__" "__out__\lib\iglib_x32-d.lib" /overwrite /silent
+move "__out32__\Release\__libn__" "__out__\lib\iglib_x32.lib" /overwrite /silent
