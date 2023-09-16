@@ -9,25 +9,30 @@ namespace ig
 	struct BaseVector2Template
 	{
 		using this_type = BaseVector2Template<_T>;
+		using value_type = _T;
 
-
-		constexpr inline BaseVector2Template(_T x_, _T y_)
+		constexpr inline BaseVector2Template(_T x_, _T y_) noexcept
 			: x{ x_ }, y{ y_ }
 		{
 		}
 
 
-		constexpr inline BaseVector2Template()
+		constexpr inline BaseVector2Template() noexcept
 			: x{}, y{}
 		{
 		}
 
 		template <typename _E>
-		constexpr inline BaseVector2Template(const BaseVector2Template<_E> &copy)
+		constexpr inline BaseVector2Template(const BaseVector2Template<_E> &copy) noexcept
 			: x{ _T(copy.x) }, y{ _T(copy.y) }
 		{
 		}
 
+		inline void set(value_type x_, value_type y_) noexcept
+		{
+			x = x_;
+			y = y_;
+		}
 
 		inline this_type tangent() const
 		{

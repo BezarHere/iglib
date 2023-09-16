@@ -13,18 +13,23 @@ namespace ig
 		using this_type = BaseRectTemplate<_T>;
 		using vector_type = BaseVector2Template<_T>;
 
-		inline constexpr BaseRectTemplate(value_type x_, value_type y_, value_type w_, value_type h_)
+		inline constexpr BaseRectTemplate(value_type x_, value_type y_, value_type w_, value_type h_) noexcept
 			: x{ x_ }, y{ y_ }, w{ w_ }, h{ h_ }
 		{
 		}
 
-		inline constexpr BaseRectTemplate(vector_type pos, vector_type sz)
+		inline constexpr BaseRectTemplate() noexcept
+			: x{ value_type() }, y{ value_type() }, w{ value_type() }, h{ value_type() }
+		{
+		}
+
+		inline constexpr BaseRectTemplate(vector_type pos, vector_type sz) noexcept
 			: x{ pos.x }, y{ pos.y }, w{ sz.x }, h{ sz.y }
 		{
 		}
 
 		template <typename _E>
-		inline constexpr BaseRectTemplate(const BaseRectTemplate<_E> &other)
+		inline constexpr BaseRectTemplate(const BaseRectTemplate<_E> &other) noexcept
 			: x{ value_type(other.x) }, y{ value_type(other.y) }, w{ value_type(other.w) }, h{ value_type(other.h) }
 		{
 		}

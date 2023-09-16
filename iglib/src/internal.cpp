@@ -5,7 +5,7 @@ bool glew_init = false;
 bool glfw_init = false;
 //GLuint glew_program_pid;
 
-std::vector<MonitorPtr_t> glfw_monitors{};
+std::vector<MonitorHandle_t> glfw_monitors{};
 void static_init();
 
 struct __static_init_run
@@ -29,7 +29,7 @@ GLFWwindow *create_window(int width, int height, const std::string &title, GLFWm
 	return hdl;
 }
 
-const std::vector<MonitorPtr_t> &get_monitors()
+const std::vector<MonitorHandle_t> &get_monitors()
 {
 	return glfw_monitors;
 }
@@ -44,7 +44,7 @@ bool is_glfw_running()
 	return glfw_init;
 }
 
-void monitor_callback(MonitorPtr_t monitor, int event)
+void monitor_callback(MonitorHandle_t monitor, int event)
 {
 	if (event == GLFW_CONNECTED)
 	{
@@ -76,7 +76,7 @@ void monitor_callback(MonitorPtr_t monitor, int event)
 void init_monitors()
 {
 	int mon_count{};
-	MonitorPtr_t *mons = glfwGetMonitors(&mon_count);
+	MonitorHandle_t *mons = glfwGetMonitors(&mon_count);
 	glfw_monitors.clear();
 
 	for (int i{}; i < mon_count; i++)

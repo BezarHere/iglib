@@ -4,6 +4,14 @@
 #include <thread>
 using namespace ig;
 
+void callback(ig::Window &window, ig::WindowCallbackReason reason)
+{
+	if (reason == ig::WindowCallbackReason::Unfocused)
+		window.ping();
+
+	std::cout << window.get_title() << ": " << (int)reason << '\n';
+}
+
 int main()
 {
 	try
@@ -13,7 +21,9 @@ int main()
 		ig::Application app{ appcfg };
 		ig::Window &i = app.get_primary_window();
 
-		app.create_window(128, 128, "Other one", false);
+		//app.create_window(128, 128, "Other one", false).set_callback(callback);
+
+		i.set_callback(callback);
 
 		while (!i)
 		{

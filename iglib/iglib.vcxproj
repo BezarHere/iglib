@@ -206,6 +206,7 @@
     <ClInclude Include="src\_iglib_rect.h" />
     <ClInclude Include="src\_iglib_vector.h" />
     <ClInclude Include="src\_iglib_window.h" />
+    <ClInclude Include="src\_iglib_matrix.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp" />

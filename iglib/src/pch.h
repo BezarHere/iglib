@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <exception>
 #include <intrin.h>
+#include <cassert>
 
 #include <Windows.h>
 #include <Bite.h>
@@ -22,8 +23,24 @@
 
 #define PEEK(p) std::cout << #p << ": " << (p) << '\n'
 
-typedef GLFWwindow *WindowPtr_t;
-typedef GLFWmonitor *MonitorPtr_t;
+#define NOTNULL(exp) assert(exp != nullptr)
+
+typedef GLFWwindow *WindowHandle_t;
+typedef GLFWmonitor *MonitorHandle_t;
+
+typedef int GLFWbool_t;
+
+template <typename _T>
+struct _run_funcptr
+{
+	inline _run_funcptr(_T ptr)
+		: _dummy(nullptr)
+	{
+		ptr();
+	}
+
+	void *_dummy;
+};
 
 namespace ig {}
 

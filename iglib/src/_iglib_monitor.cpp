@@ -29,16 +29,16 @@ namespace ig
 	std::vector<MonitorData_t> Monitor::all_monitors_ids()
 	{
 		std::vector<MonitorData_t> vc;
-		const std::vector<MonitorPtr_t> &pc{ get_monitors() };
+		const std::vector<MonitorHandle_t> &pc{ get_monitors() };
 		vc.resize(pc.size());
-		for (MonitorPtr_t i : pc)
+		for (MonitorHandle_t i : pc)
 			vc.push_back(i);
 		return vc;
 	}
 
 	void Monitor::refresh()
 	{
-		const GLFWvidmode *vd = glfwGetVideoMode((MonitorPtr_t)m_data);
+		const GLFWvidmode *vd = glfwGetVideoMode((MonitorHandle_t)m_data);
 		if (vd == nullptr)
 		{
 			glfwerror();
@@ -51,7 +51,7 @@ namespace ig
 		m_bit_depth[ 1 ] = vd->greenBits;
 		m_bit_depth[ 2 ] = vd->blueBits;
 
-		const char *cstr = glfwGetMonitorName((MonitorPtr_t)m_data);
+		const char *cstr = glfwGetMonitorName((MonitorHandle_t)m_data);
 		if (cstr != nullptr)
 			m_name = cstr;
 		else

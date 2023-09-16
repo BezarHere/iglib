@@ -28,7 +28,7 @@ public:
 		m_current_app = app;
 
 
-		return glcreateporgram ? glcreateporgram() : 0;
+		return glcreateporgram ? (GLuint)glcreateporgram() : 0;
 	}
 
 	inline void clear_application()
@@ -79,7 +79,7 @@ namespace ig
 			width, height,
 			title,
 			fullscreen ? glfwGetPrimaryMonitor() : nullptr,
-			m_windows.empty() ? nullptr : (GLFWwindow *)m_windows[ 0 ].m_handle
+			m_windows.empty() ? nullptr : (GLFWwindow *)m_windows[ 0 ].m_hdl
 		);
 
 		if (!hdl)
@@ -87,7 +87,7 @@ namespace ig
 
 		const bool primary = m_windows.empty();
 
-		m_windows.push_back(Window((void *const)hdl));
+		m_windows.push_back(Window((void *const)hdl, title, false));
 
 		if (primary)
 		{

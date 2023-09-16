@@ -1,6 +1,6 @@
 #pragma once
 #include "_iglib_base.h"
-#include "_iglib_vector.h"
+#include "_iglib_rect.h"
 #include <memory>
 
 namespace ig
@@ -11,9 +11,26 @@ namespace ig
 		Moved,
 		Focused,
 		Unfocused,
-		Minmized,
+		Minimized,
 		Maxmized,
-		Closed
+		Restored,
+
+		DirtyScreen,
+
+		ResizedFramebuffer,
+		RescaledContents,
+
+		// when the user presses close/alt+f4 on the window. if the event is triggered, should_close() will always be true
+		RequestedClose,
+		Closing
+	};
+
+	enum class WindowVisibiltyState
+	{
+		Hidden,
+		Minimized,
+		Restored,
+		Maximized
 	};
 
 	class Window;
@@ -24,35 +41,71 @@ namespace ig
 	{
 		friend class Application;
 	public:
-		Window();
+		Window() noexcept;
 		//Window(Vector2i size, std::string title);
 		~Window();
 
-		Window(const Window &copy);
+		Window(const Window &copy) = delete;
+		Window(Window &&move) noexcept;
 
-		Window &operator=(const Window &other);
+		Window &operator=(const Window &other) = delete;
+		Window &operator=(Window &&other) noexcept;
 
 		bool is_valid() const;
 
 		bool should_close() const;
-		Vector2i size() const;
-		Vector2i position() const;
+
+		Vector2i get_size() const;
+		Vector2i get_position() const;
+		const Recti &get_rect() const;
+
+		const std::string &get_title() const;
+		void set_title(const std::string &title);
+
+		WindowCallback_t get_callback() const;
+		void set_callback(WindowCallback_t callback);
+
+
+		bool is_deffered_to_close() const noexcept;
+		bool is_focused() const noexcept;
+
+		void hide();
+		void show();
+
+		// won't always return the value at m_visible_state
+		WindowVisibiltyState get_visiblity_state() const;
 
 		void render();
 		void poll();
 		void clear();
 
+		void ping() const noexcept;
+	
+
+		// will remove the window and render this object as invalid
+		void close() noexcept;
+
 		operator bool() const;
 
 	private:
-		Window(void *const handle);
+		Window(void *const handle, const std::string &title, bool hidden) noexcept;
 
 		class WindowCallbackEngine;
 
 	private:
-		void *m_handle;
-		std::shared_ptr<size_t> m_handle_rc;
+		void *m_hdl;
+		bool m_hidden;
+		WindowVisibiltyState m_visible_state;
+		bool m_focused = true;
+		Recti m_rect;
+		std::string m_title{};
+		Vector2i m_frambeuffer_size{ 1, 1 };
+		Vector2 m_content_scale{ 1.0f, 1.0f };
+		bool m_deffered_close{ false }; // did the user click close or pressed alt+f4?
+		//std::shared_ptr<size_t> m_handle_rc;
 
+		const TimeMs_t m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) };
+		
 		WindowCallback_t m_callback = nullptr;
 	};
 }
