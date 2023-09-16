@@ -33,9 +33,28 @@ namespace ig
 		Maximized
 	};
 
+	enum Key
+	{
+
+	};
+
+	enum KeyAction
+	{
+		Released,
+		Pressed,
+		Repeated
+	};
+
+	enum KeyModFlags
+	{
+		None = 0,
+		RShift = 1,
+	};
+
 	class Window;
 
 	typedef void(*WindowCallback_t)(Window &window, WindowCallbackReason reason);
+	typedef void(*KeyCallback_t)(Window &window, Key key, KeyAction action, KeyModFlags mods);
 
 	class Window final
 	{
@@ -55,6 +74,8 @@ namespace ig
 
 		bool should_close() const;
 
+		Vector2i get_mouse_position() const;
+
 		Vector2i get_size() const;
 		Vector2i get_position() const;
 		const Recti &get_rect() const;
@@ -65,6 +86,8 @@ namespace ig
 		WindowCallback_t get_callback() const;
 		void set_callback(WindowCallback_t callback);
 
+		KeyCallback_t get_key_callback() const;
+		void set_key_callback(KeyCallback_t callback);
 
 		bool is_deffered_to_close() const noexcept;
 		bool is_focused() const noexcept;
@@ -107,5 +130,6 @@ namespace ig
 		const TimeMs_t m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) };
 		
 		WindowCallback_t m_callback = nullptr;
+		KeyCallback_t m_key_callback = nullptr;
 	};
 }

@@ -7,5 +7,18 @@
 
 namespace ig
 {
-	extern Error init();
+	struct Version
+	{
+		uint8_t major, minor, patch;
+	};
+
+	class IGlib
+	{
+	public:
+		IGlib() = delete;
+
+		static Version version() noexcept;
+		static int bee();
+
+	};
 }

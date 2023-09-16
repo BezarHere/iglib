@@ -21,6 +21,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+
 #define PEEK(p) std::cout << #p << ": " << (p) << '\n'
 
 #define NOTNULL(exp) assert(exp != nullptr)
@@ -46,5 +47,9 @@ namespace ig {}
 
 using namespace ig;
 using namespace bite;
+
+constexpr dye::TerminalColor ErrorColor{ dye::ColorCode::LightRed, dye::ColorCode::Black };
+constexpr dye::TerminalColor WarningColor{ dye::ColorCode::LightYellow, dye::ColorCode::Black };
+constexpr dye::TerminalColor PingColor{ dye::ColorCode::LightBlue, dye::ColorCode::Black };
 
 #endif

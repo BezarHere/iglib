@@ -35,6 +35,9 @@ namespace ig
 
 			static void framebuffer_resized(WindowHandle_t hdl, int w, int h);
 			static void contents_rescaled(WindowHandle_t hdl, float xfactor, float yfactor);
+
+			static void key_pressed(WindowHandle_t hdl, int key, int scancode, int action, int mods);
+
 		};
 
 
@@ -137,6 +140,9 @@ namespace ig
 
 			(void)glfwSetFramebufferSizeCallback(hdl, WindowCallbacksRouter::framebuffer_resized);
 			(void)glfwSetWindowContentScaleCallback(hdl, WindowCallbacksRouter::contents_rescaled);
+
+
+			(void)glfwSetKeyCallback(hdl, WindowCallbacksRouter::key_pressed);
 		}
 
 		static inline void disconnect_callbacks(WindowHandle_t hdl)
@@ -154,6 +160,9 @@ namespace ig
 
 			(void)glfwSetFramebufferSizeCallback(hdl, nullptr);
 			(void)glfwSetWindowContentScaleCallback(hdl, nullptr);
+
+
+			(void)glfwSetKeyCallback(hdl, nullptr);
 		}
 
 		static void pop_weak(Window *window, WindowHandle_t hdl)
@@ -172,13 +181,7 @@ namespace ig
 		static inline Window *get_window(const WindowHandle_t hdl)
 		{
 			NOTNULL(hdl);
-
-			for (const auto &kv : wce_handles_map)
-			{
-				if (kv.first == hdl)
-					return kv.second;
-			}
-			return nullptr;
+			return wce_handles_map.at(hdl);
 		}
 
 		static inline void recall_command(WindowHandle_t hdl, WindowCallbackReason reason)
@@ -265,7 +268,6 @@ namespace ig
 
 	}
 
-
 	void Window::WindowCallbackEngine::WindowCallbacksRouter::requested_close(WindowHandle_t hdl)
 	{
 		WindowCallbackEngine::recall_command(hdl, WindowCallbackReason::RequestedClose);
@@ -308,6 +310,15 @@ namespace ig
 	void Window::WindowCallbackEngine::WindowCallbacksRouter::contents_rescaled(WindowHandle_t hdl, float xfactor, float yfactor)
 	{
 		WindowCallbackEngine::recall_command(hdl, WindowCallbackReason::RescaledContents, xfactor, yfactor);
+	}
+
+	void Window::WindowCallbackEngine::WindowCallbacksRouter::key_pressed(WindowHandle_t hdl, int key, int scancode, int action, int mods)
+	{
+		Window *window = WindowCallbackEngine::get_window(hdl);
+		if (window->m_key_callback)
+			window->m_key_callback(*window, (Key)key, (KeyAction)action, (KeyModFlags)mods);
+		if (key == GLFW_KEY_F4 && mods & GLFW_MOD_ALT)
+			WindowCallbacksRouter::requested_close(hdl);
 	}
 
 
@@ -412,6 +423,13 @@ namespace ig
 		return m_hdl == nullptr || m_deffered_close || glfwWindowShouldClose((GLFWwindow *)m_hdl);
 	}
 
+	Vector2i Window::get_mouse_position() const
+	{
+		double x, y;
+		glfwGetCursorPos((WindowHandle_t)m_hdl, &x, &y);
+		return Vector2i((int)x, (int)y);
+	}
+
 	Vector2i Window::get_size() const
 	{
 		//glfwGetWindowSize((GLFWwindow *)m_hdl, &m_rect.w, &m_rect.h);
@@ -448,6 +466,16 @@ namespace ig
 	void Window::set_callback(WindowCallback_t callback)
 	{
 		m_callback = callback;
+	}
+
+	KeyCallback_t Window::get_key_callback() const
+	{
+		return m_key_callback;
+	}
+
+	void Window::set_key_callback(KeyCallback_t callback)
+	{
+		m_key_callback = callback;
 	}
 
 	void Window::render()
