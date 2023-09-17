@@ -198,15 +198,18 @@
     <ClInclude Include="src\iglib.h" />
     <ClInclude Include="src\internal.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\_iglib_context2d.h" />
     <ClInclude Include="src\_iglib_application.h" />
     <ClInclude Include="src\_iglib_application_config.h" />
     <ClInclude Include="src\_iglib_base.h" />
+    <ClInclude Include="src\_iglib_context3d.h" />
     <ClInclude Include="src\_iglib_errors.h" />
     <ClInclude Include="src\_iglib_monitor.h" />
     <ClInclude Include="src\_iglib_rect.h" />
     <ClInclude Include="src\_iglib_vector.h" />
     <ClInclude Include="src\_iglib_window.h" />
     <ClInclude Include="src\_iglib_matrix.h" />
+    <ClInclude Include="src\_iglib_color.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp" />
@@ -218,6 +221,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\_iglib_application.cpp" />
+    <ClCompile Include="src\_iglib_context2d.cpp" />
+    <ClCompile Include="src\_iglib_context3d.cpp" />
     <ClCompile Include="src\_iglib_monitor.cpp" />
     <ClCompile Include="src\_iglib_window.cpp" />
   </ItemGroup>

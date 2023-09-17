@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "internal.h"
 #include "_iglib_window.h"
+#include <dxgi.h>
 
 namespace ig
 {
@@ -264,8 +265,10 @@ namespace ig
 
 	void Window::WindowCallbackEngine::WindowCallbacksRouter::resized(WindowHandle_t hdl, int w, int h)
 	{
+		push_to_draw_pipline(hdl);
+		glViewport(0, 0, w, h);
+		pop_draw_pipline();
 		WindowCallbackEngine::recall_command(hdl, WindowCallbackReason::Resized, w, h);
-
 	}
 
 	void Window::WindowCallbackEngine::WindowCallbacksRouter::requested_close(WindowHandle_t hdl)
@@ -326,7 +329,9 @@ namespace ig
 		: m_hdl(nullptr),
 		m_visible_state{ WindowVisibiltyState::Restored },
 		m_focused{ false },
-		m_hidden{ false }
+		m_hidden{ false },
+		m_context_2d{ *this },
+		m_context_3d{ *this }
 
 			//m_handle_rc{ new size_t{1} }
 	{
@@ -347,7 +352,9 @@ namespace ig
 			m_visible_state{ move.m_visible_state },
 			m_focused{ move.m_focused },
 			m_title( move.m_title ),
-			m_hidden{ move.m_hidden }
+			m_hidden{ move.m_hidden },
+			m_context_2d{ *this },
+			m_context_3d{ *this }
 	{
 		WindowCallbackEngine::unlink(&move);
 		move.m_hdl = nullptr;
@@ -359,7 +366,9 @@ namespace ig
 			m_visible_state{ WindowVisibiltyState::Minimized },
 			m_focused{ false },
 			m_title{ title },
-			m_hidden{ hidden }
+			m_hidden{ hidden },
+			m_context_2d{ *this },
+			m_context_3d{ *this }
 		//m_handle_rc{ new size_t{1} }
 	{
 		if (handle == nullptr)
@@ -430,6 +439,16 @@ namespace ig
 		return Vector2i((int)x, (int)y);
 	}
 
+	int Window::get_width() const
+	{
+		return m_rect.w;
+	}
+
+	int Window::get_height() const
+	{
+		return m_rect.h;
+	}
+
 	Vector2i Window::get_size() const
 	{
 		//glfwGetWindowSize((GLFWwindow *)m_hdl, &m_rect.w, &m_rect.h);
@@ -480,6 +499,16 @@ namespace ig
 
 	void Window::render()
 	{
+		push_to_draw_pipline((WindowHandle_t)m_hdl);
+		glFlush();
+
+		if (m_draw_2d_callback)
+			m_draw_2d_callback(m_context_2d);
+
+		if (m_draw_3d_callback)
+			m_draw_3d_callback(m_context_3d);
+
+		pop_draw_pipline();
 		glfwSwapBuffers((GLFWwindow *)m_hdl);
 	}
 
@@ -490,7 +519,7 @@ namespace ig
 
 	void Window::clear()
 	{
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
@@ -502,6 +531,26 @@ namespace ig
 	bool Window::is_focused() const noexcept
 	{
 		return m_focused;
+	}
+
+	void Window::set_draw2d_callback(Draw2DCallback callback) noexcept
+	{
+		m_draw_2d_callback = callback;
+	}
+
+	Draw2DCallback Window::get_draw2d_callback() const noexcept
+	{
+		return m_draw_2d_callback;
+	}
+
+	void Window::set_draw3d_callback(Draw3DCallback callback) noexcept
+	{
+		m_draw_3d_callback = callback;
+	}
+
+	Draw3DCallback Window::get_draw3d_callback() const noexcept
+	{
+		return m_draw_3d_callback;
 	}
 
 	void Window::hide()
@@ -535,6 +584,26 @@ namespace ig
 	void Window::ping() const noexcept
 	{
 		glfwRequestWindowAttention((WindowHandle_t)m_hdl);
+	}
+
+	Context2D &Window::get_2d_context() noexcept
+	{
+		return m_context_2d;
+	}
+
+	const Context2D &Window::get_2d_context() const noexcept
+	{
+		return m_context_2d;
+	}
+
+	Context3D &Window::get_3d_context() noexcept
+	{
+		return m_context_3d;
+	}
+
+	const Context3D &Window::get_3d_context() const noexcept
+	{
+		return m_context_3d;
 	}
 
 	void Window::close() noexcept

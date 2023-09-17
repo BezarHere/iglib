@@ -73,3 +73,7 @@ extern bool is_glfw_running();
 extern void init_glfw();
 extern void init_glew();
 extern void kill_glfw();
+
+extern void push_to_draw_pipline(WindowHandle_t hdl);
+extern WindowHandle_t top_draw_pipline();
+extern void pop_draw_pipline();

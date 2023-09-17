@@ -13,6 +13,7 @@
 #include <exception>
 #include <intrin.h>
 #include <cassert>
+#include <stack>
 
 #include <Windows.h>
 #include <Bite.h>
@@ -25,6 +26,7 @@
 #define PEEK(p) std::cout << #p << ": " << (p) << '\n'
 
 #define NOTNULL(exp) assert(exp != nullptr)
+#define ISNULL(exp) assert(exp == nullptr)
 
 typedef GLFWwindow *WindowHandle_t;
 typedef GLFWmonitor *MonitorHandle_t;

@@ -5,6 +5,8 @@ bool glew_init = false;
 bool glfw_init = false;
 //GLuint glew_program_pid;
 
+std::stack<WindowHandle_t> glfw_current_window_pipline_stack;
+
 std::vector<MonitorHandle_t> glfw_monitors{};
 void static_init();
 
@@ -161,3 +163,25 @@ void kill_glfw()
 	glfwTerminate();
 	glfw_init = false;
 }
+
+void push_to_draw_pipline(WindowHandle_t hdl)
+{
+	NOTNULL(hdl);
+	glfw_current_window_pipline_stack.push(hdl);
+	glfwMakeContextCurrent(hdl);
+}
+
+WindowHandle_t top_draw_pipline()
+{
+	if (glfw_current_window_pipline_stack.empty())
+		return nullptr;
+	return glfw_current_window_pipline_stack.top();
+}
+
+void pop_draw_pipline()
+{
+	glfw_current_window_pipline_stack.pop();
+	glfwMakeContextCurrent(top_draw_pipline());
+}
+
+

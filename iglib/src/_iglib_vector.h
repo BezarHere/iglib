@@ -252,7 +252,7 @@ namespace ig
 
 	};
 
-	using Vector2 = RealVector2Template<float_t>;
+	using Vector2f = RealVector2Template<float_t>;
 	using Vector2d = RealVector2Template<double_t>;
 	using Vector2i = IntegralVector2Template<int32_t, float_t>;
 	using Vector2l = IntegralVector2Template<int64_t, double_t>;

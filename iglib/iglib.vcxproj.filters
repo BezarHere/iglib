@@ -51,6 +51,15 @@
     <ClInclude Include="src\_iglib_matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\_iglib_context2d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\_iglib_context3d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\_iglib_color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp">
@@ -69,6 +78,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\_iglib_monitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\_iglib_context2d.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\_iglib_context3d.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

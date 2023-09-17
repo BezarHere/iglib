@@ -9,7 +9,7 @@ namespace ig
 	std::vector<Monitor> get_screens()
 	{
 		
-		const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		//const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		std::vector<Monitor> screens{};
 		return screens;
 	}

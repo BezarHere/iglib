@@ -85,20 +85,13 @@ namespace ig
 		if (!hdl)
 			glfwerror(true);
 
-		const bool primary = m_windows.empty();
+		//const bool primary = m_windows.empty();
 
 		m_windows.push_back(Window((void *const)hdl, title, false));
 
-		if (primary)
+		if (!is_glew_running())
 		{
-			
-			if (!is_glew_running())
-			{
-				glfwMakeContextCurrent(hdl);
-
-				init_glew();
-			}
-			
+			init_glew();
 		}
 
 		return m_windows[m_windows.size() - 1];

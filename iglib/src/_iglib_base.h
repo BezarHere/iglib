@@ -5,4 +5,12 @@
 #include <string>
 #include <chrono>
 
-typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::microseconds> TimeMs_t;
+namespace ig
+{
+	typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::microseconds> TimeMs_t;
+	typedef uint8_t byte;
+	typedef void(*Action_t)();
+
+}
+
+

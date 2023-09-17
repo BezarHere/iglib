@@ -548,12 +548,12 @@ namespace ig
 			{
 				dye::put_colors(cl ? dye::TerminalColor{ dye::ColorCode::Yellow, dye::ColorCode::Black } : dye::TerminalColor{ dye::ColorCode::Black, dye::ColorCode::Yellow });
 				std::cout << BeeMovie.substr(last, i - last) << '\n';
-				//dye::clear_colors();
 				cl = !cl;
 				//bb.push_back(BeeMovie.substr(last, i - last));
 				last = i;
 			}
 		}
+		dye::clear_colors();
 		
 		//throw std::runtime_error(BeeMovie);
 		return 69+420;
