@@ -1,5 +1,6 @@
 #pragma once
 #include "_iglib_base.h"
+#include <complex>
 
 namespace ig
 {
@@ -22,6 +23,10 @@ namespace ig
 
 	
 	using Colorb = BaseColorTemplate<byte, 255>;
-	using Colorf = BaseColorTemplate<float, 1>;
+	using Colors = BaseColorTemplate<uint16_t, 65535>;
+	using Colorf = BaseColorTemplate<float_t, 1>;
+	//using Colorcomplex = BaseColorTemplate<std::complex<std::complex<std::complex<std::complex<std::complex<std::complex<double>>>>>>, -1>;
+
+	//constexpr size_t c = sizeof(Colorcomplex);
 
 }

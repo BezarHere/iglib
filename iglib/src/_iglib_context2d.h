@@ -12,8 +12,13 @@ namespace ig
 	public:
 		Context2D(const Window &wnd);
 
-		void draw_quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorb clr);
-		void draw_rect(Vector2f position, Vector2f size, const Colorb clr);
+		void quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorb clr);
+		void rect(Vector2f start, Vector2f end, const Colorb clr);
+		void right_traingle(Vector2f base_start, Vector2f base_end, const Colorb clr);
+		void traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorb clr);
+		void line(Vector2f start, Vector2f end, const Colorb clr);
+		void line(Vector2f start, Vector2f end, float_t width, const Colorb clr);
+
 		void demo();
 
 		const Window &get_window() const;

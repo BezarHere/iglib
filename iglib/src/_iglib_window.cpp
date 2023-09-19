@@ -335,6 +335,7 @@ namespace ig
 
 			//m_handle_rc{ new size_t{1} }
 	{
+		refresh_rect();
 	}
 
 	//Window::Window(const Window &copy)
@@ -356,9 +357,12 @@ namespace ig
 			m_context_2d{ *this },
 			m_context_3d{ *this }
 	{
+		if (move.m_hdl == nullptr)
+			return;
 		WindowCallbackEngine::unlink(&move);
 		move.m_hdl = nullptr;
 		WindowCallbackEngine::link(this);
+		refresh_rect();
 	}
 		
 	Window::Window(void *const handle, const std::string &title, bool hidden) noexcept
@@ -374,6 +378,7 @@ namespace ig
 		if (handle == nullptr)
 			raise("NULL window handle passed to a window ctor.");
 		WindowCallbackEngine::link(this);
+		refresh_rect();
 	}
 
 	Window::~Window()
@@ -406,6 +411,11 @@ namespace ig
 	{
 		//m_handle_rc = other.m_handle_rc;
 		//(*m_handle_rc)++;
+		if (other.m_hdl == nullptr)
+		{
+			m_hdl = nullptr;
+			return *this;
+		}
 
 		m_focused = other.m_focused;
 		m_callback = other.m_callback;
@@ -419,6 +429,7 @@ namespace ig
 		WindowCallbackEngine::unlink(&other);
 		other.m_hdl = nullptr;
 		WindowCallbackEngine::remap(this, old_hdl);
+		refresh_rect();
 		return *this;
 	}
 
@@ -451,19 +462,23 @@ namespace ig
 
 	Vector2i Window::get_size() const
 	{
-		//glfwGetWindowSize((GLFWwindow *)m_hdl, &m_rect.w, &m_rect.h);
 		return m_rect.size();
 	}
 
 	Vector2i Window::get_position() const
 	{
-		//glfwGetWindowSize((GLFWwindow *)m_hdl, &m_rect.x, &m_rect.y);
 		return m_rect.position();
 	}
 
 	const Recti &Window::get_rect() const
 	{
 		return m_rect;
+	}
+
+	void Window::refresh_rect()
+	{
+		glfwGetWindowSize((GLFWwindow *)m_hdl, &m_rect.w, &m_rect.h);
+		glfwGetWindowPos((GLFWwindow *)m_hdl, &m_rect.x, &m_rect.y);
 	}
 
 	const std::string &Window::get_title() const
@@ -514,13 +529,17 @@ namespace ig
 
 	void Window::poll()
 	{
+		push_to_draw_pipline((WindowHandle_t)m_hdl);
 		glfwPollEvents();
+		pop_draw_pipline();
 	}
 
 	void Window::clear()
 	{
+		push_to_draw_pipline((WindowHandle_t)m_hdl);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+		pop_draw_pipline();
 	}
 
 	bool Window::is_deffered_to_close() const noexcept
@@ -616,11 +635,6 @@ namespace ig
 			glfwDestroyWindow((WindowHandle_t)m_hdl);
 			m_hdl = nullptr;
 		}
-	}
-
-	Window::operator bool() const
-	{
-		return should_close();
 	}
 
 }

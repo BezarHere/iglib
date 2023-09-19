@@ -213,6 +213,10 @@ namespace ig
 		Vector2i get_position() const;
 		const Recti &get_rect() const;
 
+		// refreshes the windows position/size values, not the window's content
+		// only call if unexpected values are returned from get_width/get_height/get_size/get_position/get_rect
+		void refresh_rect();
+
 		const std::string &get_title() const;
 		void set_title(const std::string &title);
 
@@ -253,8 +257,6 @@ namespace ig
 
 		// will remove the window and render this object as invalid
 		void close() noexcept;
-
-		operator bool() const;
 
 	private:
 		Window(void *const handle, const std::string &title, bool hidden) noexcept;

@@ -54,11 +54,34 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 
 void draw2d_callback(Context2D &c)
 {
-	c.demo();
+	const ig::Vector2f m = c.get_window().get_mouse_position();
+	constexpr size_t iters = 100000;
+	for (size_t i{}; i < iters; i++)
+	{
+		const float fi(i + 1);
+		c.quad(
+			Vector2f(),
+			Vector2f(0.0f, iters - i),
+			Vector2f(iters - i, iters - i),
+			Vector2f(iters - i, 0.0f),
+			{ 45, ig::byte(i  & 0xff), 188, 255 }
+		);
+	}
+
+	/*c.demo();
+	c.rect(Vector2f(32.0f, 32.0f), c.get_window().get_mouse_position(), {255, 44, 99, 255});
+	c.line(Vector2f(), c.get_window().get_mouse_position(), { 255, 0, 0, 255 });*/
 }
 
 int main()
 {
+	float b[]{ 1.0f, 4.0f, 9.0f, 12.0f };
+	float c[]{ -4.1f, 2.2f, 53.2f, 0.77f };
+
+	__m128 mm128{ _mm_div_ps(_mm_load1_ps((float *)&b), _mm_load1_ps((float *)&c)) };
+	
+	
+
 	//a(LARGE{}, LARGE{}, LARGE{}, LARGE{});
 	try
 	{
@@ -78,8 +101,9 @@ int main()
 		i.set_callback(callback);
 		i.set_key_callback(key_callback);
 		i.set_draw2d_callback(draw2d_callback);
+		p.set_draw2d_callback(draw2d_callback);
 
-		while (!i)
+		while (!i.should_close())
 		{
 			//std::cout << i.size() << ' ' << i.position() << '\n';
 
@@ -88,19 +112,12 @@ int main()
 			//std::cout << "mouse pos: " << i.get_mouse_position() << '\n';
 
 			i.clear();
-			
-			i.get_2d_context().demo();
-			i.get_2d_context().draw_rect(Vector2f(), Vector2f(i.get_mouse_position()), { 255, 255, 155, 255 });
-
 			i.render();
 			i.poll();
 
-			p.clear();
-			
-			p.get_2d_context().demo();
-			
-			p.render();
-			p.poll();
+			//p.clear();
+			//p.render();
+			//p.poll();
 		}
 
 	}

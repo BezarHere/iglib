@@ -191,7 +191,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;;bite64.lib</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64-d.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -210,6 +210,7 @@
     <ClInclude Include="src\_iglib_window.h" />
     <ClInclude Include="src\_iglib_matrix.h" />
     <ClInclude Include="src\_iglib_color.h" />
+    <ClInclude Include="src\_iglib_transform2d.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp" />

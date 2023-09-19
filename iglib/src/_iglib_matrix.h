@@ -22,11 +22,11 @@ namespace ig
 		using row_matrix = BaseMatrixTemplate<_T, _W, 1>;
 
 		inline BaseMatrixTemplate(array_type arr)
-			: values{ std::move(arr) }
+			: m_elements{ std::move(arr) }
 		{}
 
 		inline BaseMatrixTemplate()
-			: values{}
+			: m_elements{}
 		{}
 
 		inline constexpr size_type width() const noexcept
@@ -49,7 +49,7 @@ namespace ig
 		{
 			for (size_t i{}; i < size(); i++)
 			{
-				if (values[ i ] != other.values[ i ])
+				if (m_elements[ i ] != other.m_elements[ i ])
 					return false;
 			}
 			return true;
@@ -64,15 +64,15 @@ namespace ig
 
 		inline value_type &operator[](const size_type index)
 		{
-			return values[ index ];
+			return m_elements[ index ];
 		}
 
 		inline const value_type &operator[](const size_type index) const
 		{
-			return values[ index ];
+			return m_elements[ index ];
 		}
 
-		array_type values;
+		array_type m_elements;
 	};
 
 }
