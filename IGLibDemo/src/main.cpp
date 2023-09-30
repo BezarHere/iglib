@@ -55,7 +55,7 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 void draw2d_callback(Context2D &c)
 {
 	const ig::Vector2f m = c.get_window().get_mouse_position();
-	constexpr size_t iters = 100000;
+	/*constexpr size_t iters = 100000;
 	for (size_t i{}; i < iters; i++)
 	{
 		const float fi(i + 1);
@@ -66,21 +66,19 @@ void draw2d_callback(Context2D &c)
 			Vector2f(iters - i, 0.0f),
 			{ 45, ig::byte(i  & 0xff), 188, 255 }
 		);
-	}
+	}*/
 
-	/*c.demo();
-	c.rect(Vector2f(32.0f, 32.0f), c.get_window().get_mouse_position(), {255, 44, 99, 255});
-	c.line(Vector2f(), c.get_window().get_mouse_position(), { 255, 0, 0, 255 });*/
+
+	c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
+	//c.line(Vector2f(), m, { 255, 0, 0, 255 });
 }
 
 int main()
 {
-	float b[]{ 1.0f, 4.0f, 9.0f, 12.0f };
-	float c[]{ -4.1f, 2.2f, 53.2f, 0.77f };
-
-	__m128 mm128{ _mm_div_ps(_mm_load1_ps((float *)&b), _mm_load1_ps((float *)&c)) };
-	
-	
+	auto k = ig::Image("F:\\Images\\splash_clear.png");
+	std::cout << k.get_buffer_size() << '\n';
+	std::cout << (int)k.get_channels() << '\n';
+	std::cout << k.get_size() << '\n';
 
 	//a(LARGE{}, LARGE{}, LARGE{}, LARGE{});
 	try
@@ -107,7 +105,7 @@ int main()
 		{
 			//std::cout << i.size() << ' ' << i.position() << '\n';
 
-			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 30.0)));
+			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 60.0)));
 
 			//std::cout << "mouse pos: " << i.get_mouse_position() << '\n';
 

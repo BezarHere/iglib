@@ -1,16 +1,16 @@
 #include "pch.h"
 #include "_iglib_window.h"
 #include "_iglib_context2d.h"
+#include "internal.h"
+#include "intrinsics.h"
 
-__forceinline [[nodiscard]] Vector2f to_clamped_space(const Vector2f &val, const Window &wnd)
+__forceinline [[nodiscard]] Vector2f to_clamped_space(const Vector2f &val, const Vector2f wf)
 {
-  const Vector2f wf{ wnd.get_size() };
   return Vector2f((val.x * 2.0f / wf.x) - 1.0f, -((val.y * 2.0f / wf.y) - 1.0f));
 }
 
-__forceinline [[nodiscard]] Vector2f to_clamped_size(const Vector2f &val, const Window &wnd)
+__forceinline [[nodiscard]] Vector2f to_clamped_size(const Vector2f &val, const Vector2f wf)
 {
-  const Vector2f wf{ wnd.get_size() };
   return Vector2f((val.x * 2.0f / wf.x), -((val.y * 2.0f / wf.y)));
 }
 
@@ -52,8 +52,9 @@ static_assert(sizeof(vector2_qbuffer) == sizeof(__m256), "");
 
 // Packed __m256 are structured as:
 //    x0|x1|x2|x3|y0|y1|y2|y3
-__forceinline __m256 pack_vector2_q(const vector2_qbuffer &qbuffer)
+__forceinline __m256 pack_vector2_q(const float_t *const fv)
 {
+#if 0
   const float_t *src = &qbuffer.f;
   float dst[ vector2_qbuffer::fsize ];
   for (size_t i{}; i < vector2_qbuffer::fsize; i++)
@@ -64,42 +65,40 @@ __forceinline __m256 pack_vector2_q(const vector2_qbuffer &qbuffer)
       dst[ i >> 1 ] = src[ i ];
   }
   return _mm256_load_ps(dst);
+#endif
+  return _mm256_set_ps(fv[ 0 ], fv[ 2 ], fv[ 4 ], fv[ 6 ],
+                       fv[ 1 ], fv[ 3 ], fv[ 5 ], fv[ 7 ]);
 }
 
 // Packed __m256 are structured as:
 //    x0|x1|x2|x3|y0|y1|y2|y3
-__forceinline vector2_qbuffer unpack_vector2_q(__m256 mm256)
+__forceinline void unpack_vector2_q(const __m256 mm256, float_t *const fv)
 {
-  vector2_qbuffer qb{};
-  const float_t *src = (const float_t *)&mm256;
-  for (size_t i{}; i < vector2_qbuffer::fsize; i++)
-  {
-    if (i & 0x1) // y-axis (odd)
-      qb.fv[ i ] = src[ (i >> 1) + 4 ];
-    else // x-axis (even)
-      qb.fv[ i ] = src[ i >> 1 ];
-  }
-  return qb;
+  fv[ 0 ] = mm256.m256_f32[ 0 ];
+  fv[ 2 ] = mm256.m256_f32[ 2 ];
+  fv[ 4 ] = mm256.m256_f32[ 4 ];
+  fv[ 6 ] = mm256.m256_f32[ 6 ];
+  fv[ 1 ] = mm256.m256_f32[ 1 ];
+  fv[ 3 ] = mm256.m256_f32[ 3 ];
+  fv[ 5 ] = mm256.m256_f32[ 5 ];
+  fv[ 7 ] = mm256.m256_f32[ 7 ];
 }
 
 __forceinline [[nodiscard]] __m256 to_clamped_space(__m256 val, __m256 wnd_size)
 {
-  static const __m256 one = _mm256_set1_ps(1.0f);
-  static const __m256 two = _mm256_set1_ps(2.0f);
-  const auto original = val;
+  const __m256 original = val;
 
   // val *= 2.0f
-  val = _mm256_mul_ps(val, two);
+  val = _mm256_mul_ps(val, two256);
 
   // val /= wnd_size
   val = _mm256_div_ps(val, wnd_size);
 
   // val -= 1.0f
-  val = _mm256_sub_ps(val, one);
+  val = _mm256_sub_ps(val, one256);
 
   // val.y = -val.y
   {
-    static const __m128 zero128 = _mm_set1_ps(0.0f);
     __m128 *ptr128_y = ((__m128 *) & val) + 1;
     // val_y = val.y
     __m128 val_y = *ptr128_y;
@@ -113,19 +112,11 @@ __forceinline [[nodiscard]] __m256 to_clamped_space(__m256 val, __m256 wnd_size)
   return val;
 }
 
-
-__forceinline [[nodiscard]] vector2_qbuffer to_clamped_space(const vector2_qbuffer &val, const Window &wnd)
+__forceinline [[nodiscard]] void to_clamped_space(vector2_qbuffer &val, const Vector2f wf)
 {
-  const Vector2f wf{ wnd.get_size() };
-
   // idk why flipping the x and y fixes some stretch proplems
   const __m256 wf256 = _mm256_set_ps(wf.y, wf.y, wf.y, wf.y, wf.x, wf.x, wf.x, wf.x);
-  const auto mmres = unpack_vector2_q(
-    to_clamped_space(
-      pack_vector2_q(val), wf256
-    )
-  );
-  return mmres;
+  unpack_vector2_q(to_clamped_space(pack_vector2_q(val.fv), wf256), val.fv);
 }
 
 namespace ig
@@ -150,7 +141,8 @@ namespace ig
     //glVertex2f(p3.x, p3.y);
     //glEnd();
 
-    vector2_qbuffer vq = to_clamped_space(vector2_qbuffer( p0, p1, p2, p3 ), m_wnd);
+    vector2_qbuffer vq{};
+    to_clamped_space(vq, m_wnd.get_size());
 
     glBegin(GL_QUADS);
     glColor4ub(clr.r, clr.g, clr.b, clr.a);
@@ -163,26 +155,25 @@ namespace ig
 
   void Context2D::rect(Vector2f start, Vector2f end, const Colorb clr)
   {
-    start = to_clamped_space(start, m_wnd);
-    end = to_clamped_space(end, m_wnd);
+    start = to_clamped_space(start, m_wnd.get_size());
+    end = to_clamped_space(end, m_wnd.get_size());
 
     glColor4ub(clr.r, clr.g, clr.b, clr.a);
     glRectf(start.x, start.y, end.x, end.y);
   }
 
-  void Context2D::right_traingle(Vector2f base_start, Vector2f base_end, const Colorb clr)
-  {
-    glBegin(GL_TRIANGLES);
-    base_start = to_clamped_space(base_start, m_wnd);
-    base_start = to_clamped_space(base_start, m_wnd);
-
-
-
-    glEnd();
-  }
-
   void Context2D::traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorb clr)
   {
+    p0 = to_clamped_space(p0, m_wnd.get_size());
+    p1 = to_clamped_space(p1, m_wnd.get_size());
+    p2 = to_clamped_space(p2, m_wnd.get_size());
+
+    glBegin(GL_TRIANGLES);
+    glColor4b(clr.r, clr.g, clr.b, clr.a);
+    glVertex2f(p0.x, p0.y);
+    glVertex2f(p1.x, p1.y);
+    glVertex2f(p2.x, p2.y);
+    glEnd();
   }
 
   void Context2D::line(Vector2f start, Vector2f end, const Colorb clr)
@@ -192,8 +183,8 @@ namespace ig
 
   void Context2D::line(Vector2f start, Vector2f end, float_t width, const Colorb clr)
   {
-    start = to_clamped_space(start, m_wnd);
-    end = to_clamped_space(end, m_wnd);
+    start = to_clamped_space(start, m_wnd.get_size());
+    end = to_clamped_space(end, m_wnd.get_size());
 
     glBegin(GL_LINES);
     glLineWidth(width);
@@ -267,3 +258,4 @@ namespace ig
   }
 
 }
+

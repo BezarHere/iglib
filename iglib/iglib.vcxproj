@@ -72,23 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LibraryPath>F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\Win32;F:\Assets\CppLibs\Bite\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LibraryPath>F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\Win32;F:\Assets\CppLibs\Bite\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>F:\Assets\CppLibs\soil\lib;F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>F:\Assets\CppLibs\soil\lib;F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -157,13 +157,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>py -m hivecpp /f "$(SolutionDir)hive.args"</Command>
+      <Command>hivec /f "$(SolutionDir)hive.args"</Command>
     </PostBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64-d.lib</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64-d.lib;SOIL_x64-d.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -185,16 +185,17 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>py -m hivecpp /f "$(SolutionDir)hive.args"</Command>
+      <Command>hivec /f "$(SolutionDir)hive.args"</Command>
     </PostBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64-d.lib</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64-d.lib;SOIL_x64.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\intrinsics.h" />
     <ClInclude Include="src\iglib.h" />
     <ClInclude Include="src\internal.h" />
     <ClInclude Include="src\pch.h" />
@@ -211,6 +212,8 @@
     <ClInclude Include="src\_iglib_matrix.h" />
     <ClInclude Include="src\_iglib_color.h" />
     <ClInclude Include="src\_iglib_transform2d.h" />
+    <ClInclude Include="src\_iglib_polygon.h" />
+    <ClInclude Include="src\_iglib_image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp" />
@@ -224,7 +227,9 @@
     <ClCompile Include="src\_iglib_application.cpp" />
     <ClCompile Include="src\_iglib_context2d.cpp" />
     <ClCompile Include="src\_iglib_context3d.cpp" />
+    <ClCompile Include="src\_iglib_image.cpp" />
     <ClCompile Include="src\_iglib_monitor.cpp" />
+    <ClCompile Include="src\_iglib_polygon.cpp" />
     <ClCompile Include="src\_iglib_window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

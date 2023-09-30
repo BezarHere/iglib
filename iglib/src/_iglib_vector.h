@@ -34,6 +34,22 @@ namespace ig
 			y = y_;
 		}
 
+		inline value_type area() const
+		{
+			return std::abs(x * y);
+		}
+
+		// signed area
+		inline value_type sarea() const
+		{
+			return x * y;
+		}
+
+		inline this_type abs() const
+		{
+			return this_type(std::abs(x), std::abs(y));
+		}
+
 		inline this_type tangent() const
 		{
 			return this_type(this->y, -this->x);
@@ -42,6 +58,18 @@ namespace ig
 		inline _T length_squared() const
 		{
 			return (this->x * this->x) + (this->y * this->y);
+		}
+
+		inline _T length() const
+		{
+			return std::sqrt((this->x * this->x) + (this->y * this->y));
+		}
+
+		inline _T distance(const this_type &other) const
+		{
+			const _T dx = this->x - other.x;
+			const _T dy = this->y - other.y;
+			return std::sqrt((dx * dx) + (dy * dy));
 		}
 
 		inline _T distance_squared(const this_type &other) const
@@ -54,6 +82,19 @@ namespace ig
 		inline _T dot(const this_type &other) const
 		{
 			return (this->x * other.x) - (this->y * other.y);
+		}
+
+		inline void normalize()
+		{
+			const value_type l = this->length();
+			x /= l;
+			y /= l;
+		}
+
+		inline this_type normalized() const
+		{
+			const value_type l = this->length();
+			return this_type(x / l, y / l);
 		}
 
 		inline this_type operator+(const this_type &other) const
@@ -138,6 +179,11 @@ namespace ig
 			return x != other.x || y != other.y;
 		}
 
+		inline this_type operator-() const
+		{
+			return this_type(-x, -y);
+		}
+
 		_T x, y;
 	};
 
@@ -146,6 +192,7 @@ namespace ig
 	{
 		using base_type = BaseVector2Template<_T>;
 		using this_type = RealVector2Template<_T>;
+		using value_type = _T;
 
 
 		constexpr inline RealVector2Template(_T x_, _T y_)
@@ -163,18 +210,6 @@ namespace ig
 		constexpr inline RealVector2Template(const BaseVector2Template<_E> &copy)
 			: base_type(copy)
 		{
-		}
-
-		inline _T length() const
-		{
-			return std::sqrt((this->x * this->x) + (this->y * this->y));
-		}
-
-		inline _T distance(const this_type &other) const
-		{
-			const _T dx = this->x - other.x;
-			const _T dy = this->y - other.y;
-			return std::sqrt((dx * dx) + (dy * dy));
 		}
 
 		inline _T angle() const
@@ -254,6 +289,7 @@ namespace ig
 
 	using Vector2f = RealVector2Template<float_t>;
 	using Vector2d = RealVector2Template<double_t>;
+	using Vector2s = IntegralVector2Template<int16_t, float_t>;
 	using Vector2i = IntegralVector2Template<int32_t, float_t>;
 	using Vector2l = IntegralVector2Template<int64_t, double_t>;
 

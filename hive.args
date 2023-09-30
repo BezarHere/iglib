@@ -3,6 +3,7 @@ source "__proj__\iglib\src"
 output "F:\Assets\CppLibs\IGLib"
 ignore pch.h
 ignore internal.h
+ignore intrinsics.h
 
 define:out64 "__proj__\x64"
 define:out32 "__proj__\Win32"

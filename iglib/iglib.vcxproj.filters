@@ -63,6 +63,15 @@
     <ClInclude Include="src\_iglib_transform2d.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\intrinsics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\_iglib_polygon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\_iglib_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp">
@@ -87,6 +96,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\_iglib_context3d.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\_iglib_polygon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\_iglib_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -3,6 +3,9 @@
 #include "_iglib_base.h"
 #include "_iglib_errors.h"
 
+using bite::raise;
+using bite::warn;
+
 __forceinline void glfwerror(bool terminate = false)
 {
 	const char *desc = nullptr;
@@ -26,43 +29,6 @@ __forceinline void glfwerror(bool terminate = false)
 }
 
 
-__forceinline void raise(const std::exception &exc)
-{
-	dye::put_colors({ dye::ColorCode::Red, dye::ColorCode::Black });
-	std::cerr << "#Error:\n" << exc.what() << '\n';
-	dye::clear_colors();
-	throw exc;
-}
-
-__forceinline void raise(const std::string &msg)
-{
-	raise(std::runtime_error(msg));
-}
-
-
-__forceinline void raise(const char* const msg)
-{
-	raise(std::runtime_error(msg));
-}
-
-// nullptr safe
-__forceinline void warn(const char *const msg)
-{
-	if (!msg)
-		return;
-	dye::put_colors({ dye::ColorCode::LightYellow, dye::ColorCode::Black });
-	std::cerr << msg << '\n';
-	dye::clear_colors();
-}
-
-__forceinline void warn(const std::string &msg)
-{
-	dye::put_colors({ dye::ColorCode::LightYellow, dye::ColorCode::Black });
-	std::cerr << msg << '\n';
-	dye::clear_colors();
-}
-
-
 extern GLFWwindow *create_window(int width, int height, const std::string &title, GLFWmonitor *fullscreen = nullptr, GLFWwindow *share = nullptr);
 
 extern const std::vector<MonitorHandle_t> &get_monitors();
@@ -77,3 +43,5 @@ extern void kill_glfw();
 extern void push_to_draw_pipline(WindowHandle_t hdl);
 extern WindowHandle_t top_draw_pipline();
 extern void pop_draw_pipline();
+
+
