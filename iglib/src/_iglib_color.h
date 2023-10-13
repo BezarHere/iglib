@@ -1,6 +1,5 @@
 #pragma once
 #include "_iglib_base.h"
-#include <complex>
 
 namespace ig
 {
@@ -10,11 +9,11 @@ namespace ig
 		using value_type = _T;
 		using this_type = BaseColorTemplate<_T, _ALPHA_DEFAULT>;
 
-		BaseColorTemplate()
+		constexpr BaseColorTemplate()
 			: r{}, g{}, b{}, a{ value_type(_ALPHA_DEFAULT) }
 		{}
 
-		BaseColorTemplate(value_type rr, value_type gg, value_type bb, value_type aa = value_type(_ALPHA_DEFAULT))
+		constexpr BaseColorTemplate(value_type rr, value_type gg, value_type bb, value_type aa = value_type(_ALPHA_DEFAULT))
 			: r{ rr }, g{ gg }, b{ bb }, a{ aa }
 		{}
 

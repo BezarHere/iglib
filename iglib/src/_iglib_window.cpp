@@ -213,10 +213,10 @@ namespace ig
 			}
 			if (window->m_callback)
 				window->m_callback(*window, reason);
-			else if (window->m_deffered_close)
+			/*else if (window->m_deffered_close)
 			{
 				window->close();
-			}
+			}*/
 
 		}
 
@@ -515,7 +515,8 @@ namespace ig
 	void Window::render()
 	{
 		push_to_draw_pipline((WindowHandle_t)m_hdl);
-		glFlush();
+		glDisable(GL_DEPTH);
+		
 
 		if (m_draw_2d_callback)
 			m_draw_2d_callback(m_context_2d);
@@ -605,6 +606,18 @@ namespace ig
 		glfwRequestWindowAttention((WindowHandle_t)m_hdl);
 	}
 
+	Image Window::to_image(const Recti rect) const
+	{
+		std::unique_ptr<byte[]> data{ new byte[ get_size().area() * Channels::RGB ] };
+		glReadPixels(rect.x, rect.y, rect.w, rect.h, GL_RGB, GL_UNSIGNED_BYTE, data.get());
+		return { data.get(), get_size(), Channels::RGB };
+	}
+
+	Image Window::to_image() const
+	{
+		return to_image({ 0, 0, get_width(), get_height() });
+	}
+
 	Context2D &Window::get_2d_context() noexcept
 	{
 		return m_context_2d;
@@ -635,6 +648,18 @@ namespace ig
 			glfwDestroyWindow((WindowHandle_t)m_hdl);
 			m_hdl = nullptr;
 		}
+	}
+
+	Vector2f Window::local_to_native(Vector2f pos) const
+	{
+		const Vector2f wf = get_size();
+		return Vector2f((pos.x * 2.0f / wf.x) - 1.0f, -((pos.y * 2.0f / wf.y) - 1.0f));
+	}
+
+	Vector2f Window::local_to_native(Vector2i pos) const
+	{
+		const Vector2f wf = get_size();
+		return Vector2f(((pos.x >> 1) / wf.x) - 1.0f, -(((pos.y >> 1) / wf.y) - 1.0f));
 	}
 
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "_iglib_base.h"
 #include <stdint.h>
 #include <cmath>
 #include <ostream>
@@ -34,13 +35,14 @@ namespace ig
 			y = y_;
 		}
 
-		inline value_type area() const
+		constexpr inline value_type area() const
 		{
-			return std::abs(x * y);
+			const value_type ar = x * y;
+			return ar < 0 ? -ar : ar;
 		}
 
 		// signed area
-		inline value_type sarea() const
+		constexpr inline value_type sarea() const
 		{
 			return x * y;
 		}
@@ -50,12 +52,12 @@ namespace ig
 			return this_type(std::abs(x), std::abs(y));
 		}
 
-		inline this_type tangent() const
+		constexpr inline this_type tangent() const
 		{
 			return this_type(this->y, -this->x);
 		}
 
-		inline _T length_squared() const
+		constexpr inline _T length_squared() const
 		{
 			return (this->x * this->x) + (this->y * this->y);
 		}
@@ -72,14 +74,14 @@ namespace ig
 			return std::sqrt((dx * dx) + (dy * dy));
 		}
 
-		inline _T distance_squared(const this_type &other) const
+		constexpr inline _T distance_squared(const this_type &other) const
 		{
 			const _T dx = this->x - other.x;
 			const _T dy = this->y - other.y;
 			return (dx * dx) + (dy * dy);
 		}
 
-		inline _T dot(const this_type &other) const
+		constexpr inline _T dot(const this_type &other) const
 		{
 			return (this->x * other.x) - (this->y * other.y);
 		}
@@ -125,6 +127,12 @@ namespace ig
 		inline this_type operator/(const _T other) const
 		{
 			return this_type(x / other, y / other);
+		}
+
+		template <typename _E>
+		inline this_type operator&(const _E bits) const
+		{
+			return this_type(x >> bits, y >> bits);
 		}
 
 		inline this_type &operator+=(const this_type &other)
@@ -285,6 +293,53 @@ namespace ig
 			return real_this_type((this->y * cos) + (this->x * sin), (this->x * cos) - (this->y * sin));
 		}
 
+		template <typename _E>
+		inline this_type operator<<(const _E bits) const
+		{
+			return this_type(this->x << bits, this->y << bits);
+		}
+
+		template <typename _E>
+		inline this_type operator>>(const _E bits) const
+		{
+			return this_type(this->x >> bits, this->y >> bits);
+		}
+
+		template <typename _E>
+		inline this_type operator<<(const BaseVector2Template<_E> bits_v) const
+		{
+			return this_type(this->x << bits_v.x, this->y << bits_v.y);
+		}
+
+		template <typename _E>
+		inline this_type operator>>(const BaseVector2Template<_E> bits_v) const
+		{
+			return this_type(this->x >> bits_v.x, this->y >> bits_v.y);
+		}
+
+		template <typename _E>
+		inline this_type operator&(const _E bits) const
+		{
+			return this_type(this->x & bits, this->y & bits);
+		}
+
+		template <typename _E>
+		inline this_type operator|(const _E bits) const
+		{
+			return this_type(this->x | bits, this->y | bits);
+		}
+
+		template <typename _E>
+		inline this_type operator^(const _E bits) const
+		{
+			return this_type(this->x ^ bits, this->y ^ bits);
+		}
+
+		inline this_type operator~() const
+		{
+			return this_type(~this->x, ~this->y);
+		}
+
 	};
 
 	using Vector2f = RealVector2Template<float_t>;
@@ -292,6 +347,9 @@ namespace ig
 	using Vector2s = IntegralVector2Template<int16_t, float_t>;
 	using Vector2i = IntegralVector2Template<int32_t, float_t>;
 	using Vector2l = IntegralVector2Template<int64_t, double_t>;
+
+	typedef basic_heap_view<Vector2i> vector2i_buffer_view_t;
+	typedef basic_heap_view<Vector2f> vector2f_buffer_view_t;
 
 }
 

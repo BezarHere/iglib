@@ -47,12 +47,13 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 {
 	if (key == ig::Key_W)
 	{
+		window.to_image().save_tga("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.tga");
 	}
 
 	std::cout << (int)key << '\n';
 }
 
-void draw2d_callback(Context2D &c)
+void draw2d_callback(Context2D c)
 {
 	const ig::Vector2f m = c.get_window().get_mouse_position();
 	/*constexpr size_t iters = 100000;
@@ -69,16 +70,22 @@ void draw2d_callback(Context2D &c)
 	}*/
 
 
-	c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
+	c.demo();
+	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 	//c.line(Vector2f(), m, { 255, 0, 0, 255 });
 }
 
 int main()
 {
-	auto k = ig::Image("F:\\Images\\splash_clear.png");
+	std::cout << "hello there\n";
+	auto k = ig::Image("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.png");
+	std::cout << "hello there\n";
 	std::cout << k.get_buffer_size() << '\n';
+	std::cout << "hello there\n";
 	std::cout << (int)k.get_channels() << '\n';
+	std::cout << "hello there\n";
 	std::cout << k.get_size() << '\n';
+	std::cout << "wadawdasdawdas" << '\n';
 
 	//a(LARGE{}, LARGE{}, LARGE{}, LARGE{});
 	try

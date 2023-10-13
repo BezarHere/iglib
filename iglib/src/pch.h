@@ -30,6 +30,7 @@
 
 #define NOTNULL(exp) assert(exp != nullptr)
 #define ISNULL(exp) assert(exp == nullptr)
+#define FORCEINLINE __forceinline
 
 typedef GLFWwindow *WindowHandle_t;
 typedef GLFWmonitor *MonitorHandle_t;

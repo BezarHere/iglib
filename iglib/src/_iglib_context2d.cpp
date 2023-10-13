@@ -4,6 +4,11 @@
 #include "internal.h"
 #include "intrinsics.h"
 
+inline void glColor3b(const Colorb clr)
+{
+  glColor3b(clr.r, clr.g, clr.b);
+}
+
 __forceinline [[nodiscard]] Vector2f to_clamped_space(const Vector2f &val, const Vector2f wf)
 {
   return Vector2f((val.x * 2.0f / wf.x) - 1.0f, -((val.y * 2.0f / wf.y) - 1.0f));
@@ -194,42 +199,104 @@ namespace ig
     glEnd();
   }
 
+  void Context2D::traingle_strips(const vector2f_buffer_view_t points, const Colorb clr)
+  {
+    glBegin(GL_TRIANGLE_STRIP);
+    glColor3b(clr);
+
+    for (const Vector2f &v : points)
+      glVertex2f(v.x, v.y);
+
+    glEnd();
+  }
+
   void Context2D::demo()
 	{
-    glClear(GL_COLOR_BUFFER_BIT);   // Clear the color buffer with current clearing color
+    glViewport(0, 0, 320, 320);
 
-    // Define shapes enclosed within a pair of glBegin and glEnd
-    glBegin(GL_QUADS);              // Each set of 4 vertices form a quad
-    glColor3f(1.0f, 0.0f, 0.0f); // Red
-    glVertex2f(-1.0f, 0.0f);     // Define vertices in counter-clockwise (CCW) order
-    glColor3f(0.0f, 1.0f, 0.0f); // green
-    glVertex2f(-0.0f, 0.0f);     //  so that the normal (front-face) is facing you
-    glColor3f(0.0f, 0.0f, 1.0f); // blue
-    glVertex2f(-0.0f, 1.0f);
-    glColor3f(0.5f, 0.5f, 0.5f); // gray
-    glVertex2f(-1.0f, 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT);   // Clear the color buffer with current clearing color
 
-    glColor3f(0.0f, 1.0f, 0.0f); // Green
-    glVertex2f(-0.7f, -0.6f);
-    glVertex2f(-0.1f, -0.6f);
-    glVertex2f(-0.1f, 0.0f);
-    glVertex2f(-0.7f, 0.0f);
+    //GLbyte tex[ 64 * 64 * 3 ];
+    //for (size_t x{}; x < 16; x++)
+    //{
+    //  for (size_t y{}; y < 16; y++)
+    //  {
+    //    tex[ y + (x << 6) ] = x & 0xff;
+    //    tex[ y + (x << 6) + 1 ] = y & 0xff;
+    //    tex[ y + (x << 6) + 2 ] = (x * y) & 0xff;
+    //  }
+    //}
 
-    glColor3f(0.2f, 0.2f, 0.2f); // Dark Gray
-    glVertex2f(-0.9f, -0.7f);
-    glColor3f(1.0f, 1.0f, 1.0f); // White
-    glVertex2f(-0.5f, -0.7f);
-    glColor3f(0.2f, 0.2f, 0.2f); // Dark Gray
-    glVertex2f(-0.5f, -0.3f);
-    glColor3f(1.0f, 1.0f, 1.0f); // White
-    glVertex2f(-0.9f, -0.3f);
-    glEnd();
+    //GLuint t;
+    //glGenTextures(1, &t);
+    //glBindTexture(GL_TEXTURE_2D, t);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 64, 64, 0, GL_RGB, GL_UNSIGNED_BYTE, tex); 
+    //glEnable(GL_TEXTURE_2D);
+
+    //// Define shapes enclosed within a pair of glBegin and glEnd
+    //glColor3f(1.0f, 1.0f, 1.0f);
+    //glBegin(GL_QUADS);              // Each set of 4 vertices form a quad
+    ////glColor3f(1.0f, 0.0f, 0.0f); // Red
+    //glTexCoord2f(0.0f, 0.0f);
+    //glVertex2f(-1.0f, 0.0f);     // Define vertices in counter-clockwise (CCW) order
+
+    ////glColor3f(0.0f, 1.0f, 0.0f); // green
+    //glTexCoord2f(1.0f, 0.0f);
+    //glVertex2f(-0.0f, 0.0f);     //  so that the normal (front-face) is facing you
+    ////glColor3f(0.0f, 0.0f, 1.0f); // blue
+    //glTexCoord2f(1.0f, 1.0f);
+    //glVertex2f(-0.0f, 1.0f);
+    ////glColor3f(0.5f, 0.5f, 0.5f); // gray
+    //glTexCoord2f(0.0f, 1.0f);
+    //glVertex2f(-1.0f, 1.0f);
+
+    //glDisable(GL_TEXTURE_2D);
+
+    //glColor3f(0.0f, 1.0f, 0.0f); // Green
+    //glVertex2f(-0.7f, -0.6f);
+    //glVertex2f(-0.1f, -0.6f);
+    //glVertex2f(-0.1f, 0.0f);
+    //glVertex2f(-0.7f, 0.0f);
+
+    //glColor3f(0.2f, 0.2f, 0.2f); // Dark Gray
+    //glVertex2f(-0.9f, -0.7f);
+    //glColor3f(1.0f, 1.0f, 1.0f); // White
+    //glVertex2f(-0.5f, -0.7f);
+    //glColor3f(0.2f, 0.2f, 0.2f); // Dark Gray
+    //glVertex2f(-0.5f, -0.3f);
+    //glColor3f(1.0f, 1.0f, 1.0f); // White
+    //glVertex2f(-0.9f, -0.3f);
+    //glEnd();
 
     glBegin(GL_TRIANGLES);          // Each set of 3 vertices form a triangle
     glColor3f(0.0f, 0.0f, 1.0f); // Blue
-    glVertex2f(0.1f, -0.6f);
-    glVertex2f(0.7f, -0.6f);
-    glVertex2f(0.4f, -0.1f);
+    //glVertex2f(0.1f, -0.6f);
+    //glVertex2f(0.7f, -0.6f);
+    //glVertex2f(0.4f, -0.1f);
+    //glVertex2i(64, 32);
+    //glVertex2i(90, 32);
+    //glVertex2i(70, 60);
+
+    //glVertex2i(64, 32);
+    //glVertex2i(70, 60);
+    //glVertex2i(90, 32);
+
+    //glVertex2i(64, -32);
+    //glVertex2i(90, -32);
+    //glVertex2i(70, -60);
+
+    //glVertex2i(64, -32);
+    //glVertex2i(70, -60);
+    //glVertex2i(90, -32);
+
+    glVertex2i(-1, 0);
+    glVertex2i(1, -1);
+    glVertex2i(1, 1);
+
+    //glVertex2i(0, 0);
+    //glVertex2i(1, -1);
+    //glVertex2i(-1, 1);
+
 
     glColor3f(1.0f, 0.0f, 0.0f); // Red
     glVertex2f(0.3f, -0.4f);
@@ -239,15 +306,15 @@ namespace ig
     glVertex2f(0.6f, -0.9f);
     glEnd();
 
-    glBegin(GL_POLYGON);            // These vertices form a closed polygon
-    glColor3f(1.0f, 1.0f, 0.0f); // Yellow
-    glVertex2f(0.4f, 0.2f);
-    glVertex2f(0.6f, 0.2f);
-    glVertex2f(0.7f, 0.4f);
-    glVertex2f(0.6f, 0.6f);
-    glVertex2f(0.4f, 0.6f);
-    glVertex2f(0.3f, 0.4f);
-    glEnd();
+    //glBegin(GL_POLYGON);            // These vertices form a closed polygon
+    //glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+    //glVertex2f(0.4f, 0.2f);
+    //glVertex2f(0.6f, 0.2f);
+    //glVertex2f(0.7f, 0.4f);
+    //glVertex2f(0.6f, 0.6f);
+    //glVertex2f(0.4f, 0.6f);
+    //glVertex2f(0.3f, 0.4f);
+    //glEnd();
 
     glFlush();  // Render now
 	}

@@ -255,8 +255,14 @@ namespace ig
 
 		void ping() const noexcept;
 
+		Image to_image(const Recti rect) const;
+		Image to_image() const;
+
 		// will remove the window and render this object as invalid
 		void close() noexcept;
+
+		Vector2f local_to_native(Vector2f pos) const;
+		Vector2f local_to_native(Vector2i pos) const;
 
 	private:
 		Window(void *const handle, const std::string &title, bool hidden) noexcept;

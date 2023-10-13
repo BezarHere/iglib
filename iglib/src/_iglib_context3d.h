@@ -13,6 +13,6 @@ namespace ig
 		const Window &m_wnd;
 	};
 
-	typedef void(*Draw3DCallback)(Context3D &context);
+	typedef void(*Draw3DCallback)(Context3D context);
 
 }

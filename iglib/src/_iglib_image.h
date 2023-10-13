@@ -4,7 +4,7 @@
 
 namespace ig
 {
-	enum class Channels
+	enum Channels
 	{
 		Invalid = 0,
 		L = 1,
@@ -17,6 +17,8 @@ namespace ig
 	{
 	public:
 		Image();
+		// does not take ownership of data
+		Image(const byte *data, const Vector2i size, Channels channels);
 		Image(const std::string &filename);
 		~Image() noexcept;
 
@@ -25,6 +27,8 @@ namespace ig
 		Image &operator=(Image &&move) noexcept;
 		Image &operator=(const Image &copy) noexcept;
 
+		int get_width() const noexcept;
+		int get_height() const noexcept;
 		Vector2i get_size() const;
 
 		Channels get_channels() const;
@@ -33,9 +37,15 @@ namespace ig
 		const byte *get_buffer() const;
 		size_t get_buffer_size() const;
 
+		//void save_png(const std::string &path) const;
+
+
+		// tga 2.0
+		void save_tga(const std::string &path) const;
+
 	private:
 		Vector2i m_sz;
-		int m_ch;
+		Channels m_ch;
 
 		byte *m_buf;
 	};

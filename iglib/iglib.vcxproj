@@ -208,12 +208,14 @@
     <ClInclude Include="src\_iglib_monitor.h" />
     <ClInclude Include="src\_iglib_rect.h" />
     <ClInclude Include="src\_iglib_vector.h" />
+    <ClInclude Include="src\_iglib_vertex.h" />
     <ClInclude Include="src\_iglib_window.h" />
     <ClInclude Include="src\_iglib_matrix.h" />
     <ClInclude Include="src\_iglib_color.h" />
     <ClInclude Include="src\_iglib_transform2d.h" />
     <ClInclude Include="src\_iglib_polygon.h" />
     <ClInclude Include="src\_iglib_image.h" />
+    <ClInclude Include="src\_iglib_texture.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp" />
@@ -230,6 +232,8 @@
     <ClCompile Include="src\_iglib_image.cpp" />
     <ClCompile Include="src\_iglib_monitor.cpp" />
     <ClCompile Include="src\_iglib_polygon.cpp" />
+    <ClCompile Include="src\_iglib_texture.cpp" />
+    <ClCompile Include="src\_iglib_vertex.cpp" />
     <ClCompile Include="src\_iglib_window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

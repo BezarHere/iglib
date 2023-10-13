@@ -1,5 +1,4 @@
 #pragma once
-#include "_iglib_base.h"
 #include "_iglib_color.h"
 #include "_iglib_vector.h"
 #include "_iglib_image.h"
@@ -19,6 +18,8 @@ namespace ig
 		void line(Vector2f start, Vector2f end, const Colorb clr);
 		void line(Vector2f start, Vector2f end, float_t width, const Colorb clr);
 
+		void traingle_strips(const vector2f_buffer_view_t points, const Colorb clr);
+		
 		void demo();
 
 		const Window &get_window() const;
@@ -27,6 +28,6 @@ namespace ig
 		const Window &m_wnd;
 	};
 
-	typedef void(*Draw2DCallback)(Context2D &context);
+	typedef void(*Draw2DCallback)(Context2D context);
 
 }
