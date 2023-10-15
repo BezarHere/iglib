@@ -21,19 +21,19 @@ FORCEINLINE [[nodiscard]] Vector2f to_clamped_size(const Vector2f &val, const Ve
 typedef basic_heap_span<Vector2f> Vector2fSpan_t;
 FORCEINLINE [[nodiscard]] const Vector2fSpan_t _generate_circle_frame(uint16_t res)
 {
-	const size_t vcount = (size_t)res + 1;
+	const size_t vcount = (size_t)res;
 	alignas(64) Vector2f *verts = new Vector2f[vcount];
 	constexpr Vector2f Left = { 1.f, 0.f };
 	float r = 0.f;
 	const float step = Tau / (float)res;
 
-	verts[ 0 ] = verts[ vcount - 1 ] = Left;
+	verts[ 0 ] = Left;
 
-	for (size_t i = 1; i < vcount - 1; i++)
+	for (size_t i = 1; i < vcount; i++)
 	{
 		r += step;
 		verts[ i ] = Left.rotated(r);
-		std::cout << i << " -> " << Left.rotated(r) << '\n';
+		//std::cout << i << " stepped: " << r << " -> " << Left.rotated(r) << '\n';
 	}
 	return Vector2fSpan_t{ verts, vcount };
 }
@@ -235,7 +235,7 @@ namespace ig
 	void Context2D::traingle_strips(const vector2f_buffer_view_t points, const Colorb clr)
 	{
 		glBegin(GL_TRIANGLE_STRIP);
-		glColor3b(clr);
+		glColor3(clr);
 
 		for (const Vector2f &v : points)
 			glVertex2f(v.x, v.y);
@@ -255,9 +255,10 @@ namespace ig
 
 	void Context2D::circle(float radius, Vector2f center, const Colorb clr, const uint16_t res)
 	{
-		glBegin(GL_TRIANGLE_STRIP);
-		glColor3b(clr);
+		glBegin(GL_TRIANGLE_FAN);
+		glColor3(clr);
 
+		uint8_t i = 0;
 		for (const auto &v : get_circle_frame(res))
 			glVertex2f((v.x * radius) + center.x, (v.y * radius) + center.y);
 

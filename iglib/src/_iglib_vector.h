@@ -233,7 +233,7 @@ namespace ig
 		inline this_type rotated(const _T radians) const
 		{
 			const _T sin = std::sin(radians), cos = std::cos(radians);
-			return this_type((this->y * cos) + (this->x * sin), (this->x * cos) - (this->y * sin));
+			return this_type((this->y * sin) + (this->x * cos), (this->x * sin) - (this->y * cos));
 		}
 
 	};
@@ -290,7 +290,7 @@ namespace ig
 		inline real_this_type rotated(const real_type radians) const
 		{
 			const real_type sin = std::sin(radians), cos = std::cos(radians);
-			return real_this_type((this->y * cos) + (this->x * sin), (this->x * cos) - (this->y * sin));
+			return real_this_type((this->y * sin) + (this->x * cos), (this->x * sin) - (this->y * cos));
 		}
 
 		template <typename _E>

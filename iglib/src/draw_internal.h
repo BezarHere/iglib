@@ -2,9 +2,9 @@
 #include "pch.h"
 #include "_iglib_vertex.h"
 
-FORCEINLINE void glColor3b(const Colorb clr)
+FORCEINLINE void glColor3(const Colorb clr)
 {
-  glColor3b(clr.r, clr.g, clr.b);
+  glColor3ub(clr.r, clr.g, clr.b);
 }
 
 FORCEINLINE void glTexCoord2f(const Vector2f v)
@@ -49,7 +49,7 @@ constexpr FORCEINLINE int to_gldraw_v(const VertexDrawType type)
 
 FORCEINLINE void glVertex(const Vertex &_Vert)
 {
-  glColor3b(_Vert.clr);
+  glColor3(_Vert.clr);
   glTexCoord2f(_Vert.tex_coord);
   glVertex2i(_Vert.pos);
 }
