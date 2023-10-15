@@ -117,7 +117,7 @@ namespace ig
 
 			if (i == wce_available_windows.end())
 			{
-				// does not exists
+				// window does not exists
 				// TODO: make something here
 			}
 			else
