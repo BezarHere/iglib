@@ -39,22 +39,22 @@ namespace ig
 		{
 		}
 
-		inline bool operator==(const this_type &other) const
+		inline constexpr bool operator==(const this_type &other) const
 		{
 			return x == other.x && y == other.y && w == other.w && h == other.h;
 		}
 
-		inline vector_type position() const
+		inline constexpr vector_type position() const
 		{
 			return vector_type(x, y);
 		}
 
-		inline vector_type size() const
+		inline constexpr vector_type size() const
 		{
 			return vector_type(w, h);
 		}
 
-		inline vector_type end() const
+		inline constexpr vector_type end() const
 		{
 			return vector_type(x + w, y + h);
 		}
@@ -67,20 +67,20 @@ namespace ig
 			h += margin;
 		}
 
-		inline this_type intersection(const this_type &other) const
+		inline constexpr this_type intersection(const this_type &other) const
 		{
 			const vector_type pos{ std::max(x, other.x), std::max(y, other.y) };
 			return this_type(pos.x, pos.y, std::min(x + w, other.x + other.w) - pos.x, std::min(y + h, other.y + other.h) - pos.y);
 		}
 
-		inline bool intersects(const this_type &other) const
+		inline constexpr bool intersects(const this_type &other) const
 		{
 			return
 				x < other.x + other.w && y < other.y + other.h && x + w > other.x && y + h > other.y;
 		}
 
 		// Same as intersects but accounts for borders
-		inline bool touches(const this_type &other) const
+		inline constexpr bool touches(const this_type &other) const
 		{
 			return
 				x <= other.x + other.w && y <= other.y + other.h && x + w >= other.x && y + h >= other.y;

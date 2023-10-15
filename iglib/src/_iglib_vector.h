@@ -47,17 +47,17 @@ namespace ig
 			return x * y;
 		}
 
-		inline this_type abs() const
+		inline constexpr this_type abs() const
 		{
 			return this_type(std::abs(x), std::abs(y));
 		}
 
-		constexpr inline this_type tangent() const
+		inline constexpr this_type tangent() const
 		{
 			return this_type(this->y, -this->x);
 		}
 
-		constexpr inline _T length_squared() const
+		inline constexpr _T length_squared() const
 		{
 			return (this->x * this->x) + (this->y * this->y);
 		}
@@ -74,14 +74,14 @@ namespace ig
 			return std::sqrt((dx * dx) + (dy * dy));
 		}
 
-		constexpr inline _T distance_squared(const this_type &other) const
+		inline constexpr _T distance_squared(const this_type &other) const
 		{
 			const _T dx = this->x - other.x;
 			const _T dy = this->y - other.y;
 			return (dx * dx) + (dy * dy);
 		}
 
-		constexpr inline _T dot(const this_type &other) const
+		inline constexpr _T dot(const this_type &other) const
 		{
 			return (this->x * other.x) - (this->y * other.y);
 		}
@@ -99,38 +99,38 @@ namespace ig
 			return this_type(x / l, y / l);
 		}
 
-		inline this_type operator+(const this_type &other) const
+		inline constexpr this_type operator+(const this_type &other) const
 		{
 			return this_type(x + other.x, y + other.y);
 		}
 
-		inline this_type operator-(const this_type &other) const
+		inline constexpr this_type operator-(const this_type &other) const
 		{
 			return this_type(x - other.x, y - other.y);
 		}
 
-		inline this_type operator*(const this_type &other) const
+		inline constexpr this_type operator*(const this_type &other) const
 		{
 			return this_type(x * other.x, y * other.y);
 		}
 
-		inline this_type operator*(const _T other) const
+		inline constexpr this_type operator*(const _T other) const
 		{
 			return this_type(x * other, y * other);
 		}
 
-		inline this_type operator/(const this_type &other) const
+		inline constexpr this_type operator/(const this_type &other) const
 		{
 			return this_type(x / other.x, y / other.y);
 		}
 
-		inline this_type operator/(const _T other) const
+		inline constexpr this_type operator/(const _T other) const
 		{
 			return this_type(x / other, y / other);
 		}
 
 		template <typename _E>
-		inline this_type operator&(const _E bits) const
+		inline constexpr this_type operator&(const _E bits) const
 		{
 			return this_type(x >> bits, y >> bits);
 		}
@@ -177,17 +177,17 @@ namespace ig
 			return *this;
 		}
 
-		inline bool operator==(const this_type &other)
+		inline constexpr bool operator==(const this_type &other) const
 		{
 			return x == other.x && y == other.y;
 		}
 
-		inline bool operator!=(const this_type &other)
+		inline constexpr bool operator!=(const this_type &other) const
 		{
 			return x != other.x || y != other.y;
 		}
 
-		inline this_type operator-() const
+		inline constexpr this_type operator-() const
 		{
 			return this_type(-x, -y);
 		}
@@ -294,48 +294,48 @@ namespace ig
 		}
 
 		template <typename _E>
-		inline this_type operator<<(const _E bits) const
+		inline constexpr this_type operator<<(const _E bits) const
 		{
 			return this_type(this->x << bits, this->y << bits);
 		}
 
 		template <typename _E>
-		inline this_type operator>>(const _E bits) const
+		inline constexpr this_type operator>>(const _E bits) const
 		{
 			return this_type(this->x >> bits, this->y >> bits);
 		}
 
 		template <typename _E>
-		inline this_type operator<<(const BaseVector2Template<_E> bits_v) const
+		inline constexpr this_type operator<<(const BaseVector2Template<_E> bits_v) const
 		{
 			return this_type(this->x << bits_v.x, this->y << bits_v.y);
 		}
 
 		template <typename _E>
-		inline this_type operator>>(const BaseVector2Template<_E> bits_v) const
+		inline constexpr this_type operator>>(const BaseVector2Template<_E> bits_v) const
 		{
 			return this_type(this->x >> bits_v.x, this->y >> bits_v.y);
 		}
 
 		template <typename _E>
-		inline this_type operator&(const _E bits) const
+		inline constexpr this_type operator&(const _E bits) const
 		{
 			return this_type(this->x & bits, this->y & bits);
 		}
 
 		template <typename _E>
-		inline this_type operator|(const _E bits) const
+		inline constexpr this_type operator|(const _E bits) const
 		{
 			return this_type(this->x | bits, this->y | bits);
 		}
 
 		template <typename _E>
-		inline this_type operator^(const _E bits) const
+		inline constexpr this_type operator^(const _E bits) const
 		{
 			return this_type(this->x ^ bits, this->y ^ bits);
 		}
 
-		inline this_type operator~() const
+		inline constexpr this_type operator~() const
 		{
 			return this_type(~this->x, ~this->y);
 		}

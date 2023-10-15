@@ -75,7 +75,16 @@
     <ClInclude Include="src\_iglib_texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\_iglib_batchdraw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\_iglib_vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\draw_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\_iglib_bitmap_font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -113,8 +122,14 @@
     <ClCompile Include="src\_iglib_texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\_iglib_vertex.cpp">
+    <ClCompile Include="src\_iglib_batchdraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\_iglib_bitmap_font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

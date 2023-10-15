@@ -516,7 +516,10 @@ namespace ig
 	{
 		push_to_draw_pipline((WindowHandle_t)m_hdl);
 		glDisable(GL_DEPTH);
-		
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(0.f, get_width(), get_height(), 0.f, 0.f, 1.f);
 
 		if (m_draw_2d_callback)
 			m_draw_2d_callback(m_context_2d);
@@ -650,16 +653,16 @@ namespace ig
 		}
 	}
 
-	Vector2f Window::local_to_native(Vector2f pos) const
-	{
-		const Vector2f wf = get_size();
-		return Vector2f((pos.x * 2.0f / wf.x) - 1.0f, -((pos.y * 2.0f / wf.y) - 1.0f));
-	}
+	//Vector2f Window::local_to_native(Vector2f pos) const
+	//{
+	//	const Vector2f wf = get_size();
+	//	return Vector2f((pos.x * 2.0f / wf.x) - 1.0f, -((pos.y * 2.0f / wf.y) - 1.0f));
+	//}
 
-	Vector2f Window::local_to_native(Vector2i pos) const
-	{
-		const Vector2f wf = get_size();
-		return Vector2f(((pos.x >> 1) / wf.x) - 1.0f, -(((pos.y >> 1) / wf.y) - 1.0f));
-	}
+	//Vector2f Window::local_to_native(Vector2i pos) const
+	//{
+	//	const Vector2f wf = get_size();
+	//	return Vector2f(((pos.x >> 1) / wf.x) - 1.0f, -(((pos.y >> 1) / wf.y) - 1.0f));
+	//}
 
 }

@@ -47,9 +47,55 @@ namespace ig
 		size_t sz;
 	};
 
-	typedef basic_heap_view<byte> buffer_view_t;
-	typedef basic_heap_view<char> str_view_t;
-	typedef basic_heap_view<size_t> sztable_view_t;
+	using BufferView = basic_heap_view<byte>;
+	using StrView = basic_heap_view<char>;
+
+	template <typename _T>
+	struct basic_heap_span
+	{
+
+		basic_heap_span()
+			: ptr{ nullptr }, sz{ 0 }
+		{
+		}
+
+		basic_heap_span(size_t size)
+			: ptr{ new _T[ size ]{} }, sz{ size }
+		{
+		}
+
+		basic_heap_span(_T *pp, size_t size)
+			: ptr{ pp }, sz{ size }
+		{
+		}
+
+
+		inline _T *begin()
+		{
+			return ptr;
+		}
+
+		inline _T *end()
+		{
+			return ptr + sz;
+		}
+
+		inline const _T *begin() const
+		{
+			return ptr.get();
+		}
+
+		inline const _T *end() const
+		{
+			return ptr.get() + sz;
+		}
+
+		std::shared_ptr<_T[]> ptr;
+		size_t sz;
+	};
+	
+	using BufferSpan = basic_heap_span<byte>;
+	using StrSpan = basic_heap_span<char>;
 
 }
 

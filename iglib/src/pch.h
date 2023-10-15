@@ -58,4 +58,8 @@ constexpr dye::TerminalColor ErrorColor{ dye::ColorCode::LightRed, dye::ColorCod
 constexpr dye::TerminalColor WarningColor{ dye::ColorCode::LightYellow, dye::ColorCode::Black };
 constexpr dye::TerminalColor PingColor{ dye::ColorCode::LightBlue, dye::ColorCode::Black };
 
+constexpr float E = 2.718281828459045f;
+constexpr float Pi = 3.141592653589793f;
+constexpr float Tau = Pi * 2.f;
+
 #endif

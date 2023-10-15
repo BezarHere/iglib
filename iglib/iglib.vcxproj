@@ -191,14 +191,16 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64-d.lib;SOIL_x64.lib</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64.lib;SOIL_x64.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\draw_internal.h" />
     <ClInclude Include="src\intrinsics.h" />
     <ClInclude Include="src\iglib.h" />
     <ClInclude Include="src\internal.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\_iglib_bitmap_font.h" />
     <ClInclude Include="src\_iglib_context2d.h" />
     <ClInclude Include="src\_iglib_application.h" />
     <ClInclude Include="src\_iglib_application_config.h" />
@@ -208,7 +210,7 @@
     <ClInclude Include="src\_iglib_monitor.h" />
     <ClInclude Include="src\_iglib_rect.h" />
     <ClInclude Include="src\_iglib_vector.h" />
-    <ClInclude Include="src\_iglib_vertex.h" />
+    <ClInclude Include="src\_iglib_batchdraw.h" />
     <ClInclude Include="src\_iglib_window.h" />
     <ClInclude Include="src\_iglib_matrix.h" />
     <ClInclude Include="src\_iglib_color.h" />
@@ -216,6 +218,7 @@
     <ClInclude Include="src\_iglib_polygon.h" />
     <ClInclude Include="src\_iglib_image.h" />
     <ClInclude Include="src\_iglib_texture.h" />
+    <ClInclude Include="src\_iglib_vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp" />
@@ -227,14 +230,18 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\_iglib_application.cpp" />
+    <ClCompile Include="src\_iglib_bitmap_font.cpp" />
     <ClCompile Include="src\_iglib_context2d.cpp" />
     <ClCompile Include="src\_iglib_context3d.cpp" />
     <ClCompile Include="src\_iglib_image.cpp" />
     <ClCompile Include="src\_iglib_monitor.cpp" />
     <ClCompile Include="src\_iglib_polygon.cpp" />
     <ClCompile Include="src\_iglib_texture.cpp" />
-    <ClCompile Include="src\_iglib_vertex.cpp" />
+    <ClCompile Include="src\_iglib_batchdraw.cpp" />
     <ClCompile Include="src\_iglib_window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -16,22 +16,10 @@ namespace ig
 		QuadStrip
 	};
 
-	class Context2D;
-
-	// unpredictable behivore outside render/draw callbacks
-	class BatchDraw
+	struct Vertex
 	{
-	public:
-		BatchDraw(Context2D c, VertexDrawType type);
-		~BatchDraw();
-
-		void vertex(Vector2f v);
-		void vertex(Vector2i v);
-
-		void color(Colorb v);
-		void color(Colorf v);
-
-		void texcoord(Vector2f v);
+		Vector2i pos;
+		Colorb clr;
+		Vector2f tex_coord;
 	};
-
 }
