@@ -7,14 +7,16 @@
 
 FORCEINLINE [[nodiscard]] Vector2f to_clamped_space(const Vector2f &val, const Vector2f wf)
 {
+	(void)wf;
 	return val;
-	return Vector2f((val.x * 2.0f / wf.x) - 1.0f, -((val.y * 2.0f / wf.y) - 1.0f));
+	//return Vector2f((val.x * 2.0f / wf.x) - 1.0f, -((val.y * 2.0f / wf.y) - 1.0f));
 }
 
 FORCEINLINE [[nodiscard]] Vector2f to_clamped_size(const Vector2f &val, const Vector2f wf)
 {
+	(void)wf;
 	return val;
-	return Vector2f((val.x * 2.0f / wf.x), -((val.y * 2.0f / wf.y)));
+	//return Vector2f((val.x * 2.0f / wf.x), -((val.y * 2.0f / wf.y)));
 }
 
 
@@ -258,7 +260,6 @@ namespace ig
 		glBegin(GL_TRIANGLE_FAN);
 		glColor3(clr);
 
-		uint8_t i = 0;
 		for (const auto &v : get_circle_frame(res))
 			glVertex2f((v.x * radius) + center.x, (v.y * radius) + center.y);
 

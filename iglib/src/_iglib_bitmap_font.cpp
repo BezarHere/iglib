@@ -56,7 +56,7 @@ FORCEINLINE BitmapCharHeapSpan charsv_to_bitmap(const std::vector<BitmapChar> &c
 // TODO: optimize
 FORCEINLINE BitmapCharHeapSpan chartable_to_bitmap(const std::unordered_map<uint32_t, BitmapChar> &table)
 {
-	size_t max_code = 0;
+	uint32_t max_code = 0;
 	for (const auto &v : table)
 	{
 		if (v.first > max_code)
@@ -71,7 +71,7 @@ FORCEINLINE BitmapCharHeapSpan chartable_to_bitmap(const std::unordered_map<uint
 		has_char.ptr[v.first] = true;
 	}
 
-	for (size_t i = 0; i < max_code; i++)
+	for (uint32_t i = 0; i < max_code; i++)
 	{
 		if (has_char.ptr[ i ])
 			span.ptr[ i ] = table.at(i);
