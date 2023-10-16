@@ -53,3 +53,61 @@ FORCEINLINE void glVertex(const Vertex &_Vert)
   glTexCoord2f(_Vert.tex_coord);
   glVertex2i(_Vert.pos);
 }
+
+FORCEINLINE void flip_v(unsigned char *data, const size_t ww, const size_t hh, const size_t ch_count)
+{
+	assert(ch_count <= 4 && ch_count > 0);
+	assert(ww * hh > 0);
+	NOTNULL(data);
+	const size_t halfheight = hh >> 1;
+
+	
+	for (size_t y{}; y < halfheight; y++)
+	{
+		for (size_t x{}; x < ww; x++)
+		{
+			// first pixel
+			const size_t index1 = (x + (y * ww)) * ch_count;
+			// second pixel
+			const size_t index2 = (x + ((hh - (y + 1)) * ww)) * ch_count;
+
+			// copy pixel data
+			for (size_t i{}; i < ch_count; i++)
+			{
+				const auto temp = data[ index1 + i ];
+				data[ index1 + i ] = data[ index2 + i ];
+				data[ index2 + i ] = temp;
+			}
+		}
+	}
+	
+	
+}
+
+FORCEINLINE void flip_h(unsigned char *data, const size_t ww, const size_t hh, const size_t ch_count)
+{
+	assert(ch_count <= 4 && ch_count > 0);
+	assert(ww * hh > 0);
+	NOTNULL(data);
+	const size_t halfwidth = ww >> 1;
+
+	for (size_t x{}; x < halfwidth; x++)
+	{
+		for (size_t y{}; y < hh; y++)
+		{
+			// first pixel
+			const size_t index1 = (x + (y * ww)) * ch_count;
+			// second pixel
+			const size_t index2 = ((ww - (x + 1)) + (y * ww)) * ch_count;
+
+			// copy pixel data
+			for (size_t i{}; i < ch_count; i++)
+			{
+				const auto temp = data[ index1 + i ];
+				data[ index1 + i ] = data[ index2 + i ];
+				data[ index2 + i ] = temp;
+			}
+		}
+	}
+	
+}

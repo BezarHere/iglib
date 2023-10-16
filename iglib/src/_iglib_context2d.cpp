@@ -268,44 +268,66 @@ namespace ig
 
 	void Context2D::demo()
 	{
+		glEnable(GL_TEXTURE_2D);
 
 		//glClear(GL_COLOR_BUFFER_BIT);   // Clear the color buffer with current clearing color
 
-		//GLbyte tex[ 64 * 64 * 3 ];
-		//for (size_t x{}; x < 16; x++)
-		//{
-		//  for (size_t y{}; y < 16; y++)
-		//  {
-		//    tex[ y + (x << 6) ] = x & 0xff;
-		//    tex[ y + (x << 6) + 1 ] = y & 0xff;
-		//    tex[ y + (x << 6) + 2 ] = (x * y) & 0xff;
-		//  }
-		//}
+		GLbyte tex[ 64 * 64 ];
+		for (size_t x{}; x < 64; x++)
+		{
+		  for (size_t y{}; y < 64; y++)
+		  {
+				tex[ x + (y * 64) ] = GLbyte(x + y);
+		  }
+		}
 
-		//GLuint t;
-		//glGenTextures(1, &t);
-		//glBindTexture(GL_TEXTURE_2D, t);
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 64, 64, 0, GL_RGB, GL_UNSIGNED_BYTE, tex); 
-		//glEnable(GL_TEXTURE_2D);
+		static GLfloat pixels[] =
+		{
+				1, 0, 0,
+				0, 1, 0,
+				0, 0, 1,
+				1, 1, 1
+		};
 
-		//// Define shapes enclosed within a pair of glBegin and glEnd
-		//glColor3f(1.0f, 1.0f, 1.0f);
-		//glBegin(GL_QUADS);              // Each set of 4 vertices form a quad
-		////glColor3f(1.0f, 0.0f, 0.0f); // Red
+		GLuint t;
+		glGenTextures(1, &t);
+		glBindTexture(GL_TEXTURE0, t);
+		glTexImage2D(GL_TEXTURE0, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
+		glTexParameteri(GL_TEXTURE0, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE0, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glBindTexture(GL_TEXTURE0, 0);
+
+
+		// Define shapes enclosed within a pair of glBegin and glEnd
+		glBindTexture(GL_TEXTURE0, t);
+		glBegin(GL_QUADS);              // Each set of 4 vertices form a quad
+		glColor3f(1.0f, 1.0f, 1.0f);
+
+		glTexCoord2f(0.0, 0.0);
+		glVertex2f(0.0, 0.0);
+		glTexCoord2f(1.0, 0.0);
+		glVertex2f(100.0, 0.0);
+		glTexCoord2f(1.0, 1.0);
+		glVertex2f(100.0, 100.0);
+		glTexCoord2f(0.0, 1.0);
+		glVertex2f(0.0, 100.0);
+
+		//glColor3f(1.0f, 0.0f, 0.0f); // Red
 		//glTexCoord2f(0.0f, 0.0f);
-		//glVertex2f(-1.0f, 0.0f);     // Define vertices in counter-clockwise (CCW) order
+		//glVertex2i(128 + 32, 32);     // Define vertices in counter-clockwise (CCW) order
 
 		////glColor3f(0.0f, 1.0f, 0.0f); // green
 		//glTexCoord2f(1.0f, 0.0f);
-		//glVertex2f(-0.0f, 0.0f);     //  so that the normal (front-face) is facing you
+		//glVertex2i(32, 32);     //  so that the normal (front-face) is facing you
 		////glColor3f(0.0f, 0.0f, 1.0f); // blue
 		//glTexCoord2f(1.0f, 1.0f);
-		//glVertex2f(-0.0f, 1.0f);
+		//glVertex2i(32, 32 + 128);
 		////glColor3f(0.5f, 0.5f, 0.5f); // gray
 		//glTexCoord2f(0.0f, 1.0f);
-		//glVertex2f(-1.0f, 1.0f);
+		//glVertex2f( 32 + 128, 32 + 128);
 
-		//glDisable(GL_TEXTURE_2D);
+		glDisable(GL_TEXTURE_2D);
+		glEnd();
 
 		//glColor3f(0.0f, 1.0f, 0.0f); // Green
 		//glVertex2f(-0.7f, -0.6f);

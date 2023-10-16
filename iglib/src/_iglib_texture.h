@@ -19,6 +19,10 @@ namespace ig
 
 		~Texture() noexcept;
 		
+		void bind() const noexcept;
+		void unbind() const noexcept;
+		bool is_binded() const noexcept;
+
 		glTextureHdl_t get_opengl_handle() const noexcept;
 
 	private:

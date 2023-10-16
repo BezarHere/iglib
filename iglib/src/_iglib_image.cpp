@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "_iglib_image.h"
+#include "draw_internal.h"
 
 FORCEINLINE byte *realloc_image_data(const byte *buf, const size_t len)
 {
@@ -122,6 +123,24 @@ namespace ig
 	size_t Image::get_buffer_size() const
 	{
 		return size_t(m_sz.area()) * (int)m_ch;
+	}
+
+	void Image::flip_v()
+	{
+		::flip_v(m_buf, get_width(), get_height(), get_channels());
+	}
+
+	void Image::flip_h()
+	{
+		::flip_h(m_buf, get_width(), get_height(), get_channels());
+	}
+
+	void Image::rotate_clockwise()
+	{
+	}
+
+	void Image::rotate_counter_clockwise()
+	{
 	}
 
 	// tga 2.0

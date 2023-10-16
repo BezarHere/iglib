@@ -37,9 +37,14 @@ namespace ig
 		const byte *get_buffer() const;
 		size_t get_buffer_size() const;
 
+
+		void flip_v();
+		void flip_h();
+		void rotate_clockwise();
+		void rotate_counter_clockwise();
+
 		//void save_png(const std::string &path) const;
-
-
+		
 		// tga 2.0
 		void save_tga(const std::string &path) const;
 

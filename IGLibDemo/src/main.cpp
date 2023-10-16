@@ -47,7 +47,10 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 {
 	if (key == ig::Key_W)
 	{
-		window.to_image().save_tga("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.tga");
+		window.ping();
+		ig::Image img = window.to_image();
+		img.flip_v();
+		img.save_tga("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.tga");
 	}
 
 	std::cout << (int)key << '\n';
@@ -113,7 +116,6 @@ int main()
 		while (!i.should_close())
 		{
 			//std::cout << i.size() << ' ' << i.position() << '\n';
-
 			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 60.0)));
 
 			//std::cout << "mouse pos: " << i.get_mouse_position() << '\n';
