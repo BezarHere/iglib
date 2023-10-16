@@ -166,20 +166,20 @@ namespace ig
 
 		return ;
 
-		StreamWriter wr{ path, EndianOrder::Little };
-		
-		wr.write<byte>(0); // id field length
-		wr.write<byte>(0); // color map
-		wr.write<byte>(0); // type
-		
-		wr.write<uint16_t>(0); // first colormap entry index
-		wr.write<uint16_t>(0); // number of colormap entries
-		wr.write<byte>(BitPerPixel); // bits per colormap entry
+		//StreamWriter wr{ path, EndianOrder::Little };
+		//
+		//wr.write<byte>(0); // id field length
+		//wr.write<byte>(0); // color map
+		//wr.write<byte>(0); // type
+		//
+		//wr.write<uint16_t>(0); // first colormap entry index
+		//wr.write<uint16_t>(0); // number of colormap entries
+		//wr.write<byte>(BitPerPixel); // bits per colormap entry
 
-		wr.write<Vector2s>({0, 0}); // origin
-		wr.write<Vector2s>(get_size()); // size
-		wr.write<byte>(BitPerPixel); // pixel depth
-		wr.write<byte>(0); // descriptor
+		//wr.write<Vector2s>({0, 0}); // origin
+		//wr.write<Vector2s>(get_size()); // size
+		//wr.write<byte>(BitPerPixel); // pixel depth
+		//wr.write<byte>(0); // descriptor
 
 		//wr.write<somethin>() // img id field
 		//wr.write<somethin>() // colormap field

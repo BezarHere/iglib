@@ -42,25 +42,23 @@ constexpr FORCEINLINE int to_gldraw_type(const VertexDrawType type)
   case ig::VertexDrawType::QuadStrip:
     return GL_QUAD_STRIP;
   default:
-    break;
+		raise(format("invalid draw type value {}", (int)type));
+		return -1;
   }
-  raise(format("invalid draw type value {}", (int)type));
-  return -1;
 }
 
-constexpr FORCEINLINE int to_glshader_type(const ShaderType type)
+constexpr FORCEINLINE int to_glshader_type(const SubshaderType type)
 {
   switch (type)
   {
-	case ShaderType::Vertex:
+	case SubshaderType::Vertex:
     return GL_VERTEX_SHADER;
-	case ShaderType::Fragment:
+	case SubshaderType::Fragment:
     return GL_FRAGMENT_SHADER;
   default:
-    break;
+		raise(format("invalid shader type value {}", (int)type));
+		return -1;
   }
-  raise(format("invalid shader type value {}", (int)type));
-  return -1;
 }
 
 FORCEINLINE void glVertex(const Vertex &_Vert)
@@ -125,5 +123,14 @@ FORCEINLINE void flip_h(unsigned char *data, const size_t ww, const size_t hh, c
 			}
 		}
 	}
-	
 }
+
+FORCEINLINE void use_shader(const Shader &shader)
+{
+	if (!shader.is_valid())
+		warn("Shader with an error code used: " + std::to_string(shader.get_log().code) + " with massege \"" + shader.get_log().msg + "\"");
+	if (shader._is_current())
+		return;
+	glUseProgram(shader.get_id());
+}
+
