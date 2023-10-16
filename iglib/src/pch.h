@@ -20,6 +20,8 @@
 
 #include <SOIL/SOIL.h>
 
+#include <ft2build.h>
+
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>

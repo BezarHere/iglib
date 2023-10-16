@@ -84,11 +84,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>F:\Assets\CppLibs\soil\lib;F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>F:\Assets\CppLibs\freetype\include;F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>F:\Assets\CppLibs\soil\lib;F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>F:\Assets\CppLibs\freetype\include;F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -209,6 +209,7 @@
     <ClInclude Include="src\_iglib_errors.h" />
     <ClInclude Include="src\_iglib_monitor.h" />
     <ClInclude Include="src\_iglib_rect.h" />
+    <ClInclude Include="src\_iglib_shader.h" />
     <ClInclude Include="src\_iglib_vector.h" />
     <ClInclude Include="src\_iglib_batchdraw.h" />
     <ClInclude Include="src\_iglib_window.h" />
