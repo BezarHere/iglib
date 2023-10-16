@@ -237,6 +237,7 @@
     <ClCompile Include="src\_iglib_image.cpp" />
     <ClCompile Include="src\_iglib_monitor.cpp" />
     <ClCompile Include="src\_iglib_polygon.cpp" />
+    <ClCompile Include="src\_iglib_shader.cpp" />
     <ClCompile Include="src\_iglib_texture.cpp" />
     <ClCompile Include="src\_iglib_batchdraw.cpp" />
     <ClCompile Include="src\_iglib_window.cpp" />

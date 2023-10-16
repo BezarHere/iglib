@@ -18,7 +18,7 @@ namespace ig
 		g_WorkingBatchDraw = this;
 		g_WorkingBatchDrawType = type;
 		g_WorkingBatchDrawWindow = &c.get_window();
-		glBegin(to_gldraw_v(type));
+		glBegin(to_gldraw_type(type));
 	}
 
 	BatchDraw::~BatchDraw()

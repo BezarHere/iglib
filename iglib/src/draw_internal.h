@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "_iglib_vertex.h"
+#include "_iglib_shader.h"
 
 FORCEINLINE void glColor3(const Colorb clr)
 {
@@ -22,7 +23,7 @@ FORCEINLINE void glVertex2f(const Vector2f f)
   glVertex2f(f.x, f.y);
 }
 
-constexpr FORCEINLINE int to_gldraw_v(const VertexDrawType type)
+constexpr FORCEINLINE int to_gldraw_type(const VertexDrawType type)
 {
   switch (type)
   {
@@ -44,6 +45,21 @@ constexpr FORCEINLINE int to_gldraw_v(const VertexDrawType type)
     break;
   }
   raise(format("invalid draw type value {}", (int)type));
+  return -1;
+}
+
+constexpr FORCEINLINE int to_glshader_type(const ShaderType type)
+{
+  switch (type)
+  {
+	case ShaderType::Vertex:
+    return GL_VERTEX_SHADER;
+	case ShaderType::Fragment:
+    return GL_FRAGMENT_SHADER;
+  default:
+    break;
+  }
+  raise(format("invalid shader type value {}", (int)type));
   return -1;
 }
 

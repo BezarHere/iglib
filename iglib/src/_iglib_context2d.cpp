@@ -247,7 +247,7 @@ namespace ig
 
 	void Context2D::vertecies(Vertex *vert, size_t count, VertexDrawType draw_type)
 	{
-		glBegin(to_gldraw_v(draw_type));
+		glBegin(to_gldraw_type(draw_type));
 
 		for (const Vertex &v : std::initializer_list<Vertex>(vert, vert + count))
 			glVertex(v);

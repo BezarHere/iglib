@@ -13,7 +13,7 @@ namespace ig
 	typedef void(*Action_t)();
 	struct Report
 	{
-		intptr_t code;
+		int code;
 		std::string msg;
 	};
 
