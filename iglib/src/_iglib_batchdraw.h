@@ -11,7 +11,7 @@ namespace ig
 	class BatchDraw
 	{
 	public:
-		BatchDraw(Context2D c, VertexDrawType type);
+		BatchDraw(Context2D c, ShapeDrawType type);
 		~BatchDraw();
 
 		void vertex(Vector2f v);

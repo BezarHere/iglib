@@ -5,13 +5,13 @@
 #include "draw_internal.h"
 
 const BatchDraw *g_WorkingBatchDraw = nullptr;
-VertexDrawType g_WorkingBatchDrawType;
+ShapeDrawType g_WorkingBatchDrawType;
 const Window *g_WorkingBatchDrawWindow;
 
 namespace ig
 {
 
-	BatchDraw::BatchDraw(Context2D c, VertexDrawType type)
+	BatchDraw::BatchDraw(Context2D c, ShapeDrawType type)
 	{
 		if (g_WorkingBatchDraw)
 			raise("Can't create more then one BatchDraw object at the same time");

@@ -245,11 +245,11 @@ namespace ig
 		glEnd();
 	}
 
-	void Context2D::vertecies(Vertex *vert, size_t count, VertexDrawType draw_type)
+	void Context2D::vertecies(Vertex2D *vert, size_t count, ShapeDrawType draw_type)
 	{
 		glBegin(to_gldraw_type(draw_type));
 
-		for (const Vertex &v : std::initializer_list<Vertex>(vert, vert + count))
+		for (const Vertex2D &v : std::initializer_list<Vertex2D>(vert, vert + count))
 			glVertex(v);
 
 		glEnd();
@@ -394,6 +394,23 @@ namespace ig
 		glEnd();
 
 		glFlush();  // Render now
+	}
+
+	void Context2D::bind_shader(const Shader &shader)
+	{
+		glUseProgram(shader.get_id());
+		m_shader = shader.get_id();
+	}
+
+	void Context2D::unbind_shader()
+	{
+		glUseProgram(0);
+		m_shader = 0;
+	}
+
+	ShaderId_t Context2D::get_shader_id() const noexcept
+	{
+		return m_shader;
 	}
 
 	const Window &Context2D::get_window() const

@@ -21,16 +21,21 @@ namespace ig
 
 		void traingle_strips(const vector2f_buffer_view_t points, const Colorb clr);
 
-		void vertecies(Vertex *vert, size_t count, VertexDrawType draw_type);
+		void vertecies(Vertex2D *vert, size_t count, ShapeDrawType draw_type);
 
 		void circle(float radius, Vector2f center, const Colorb clr, const uint16_t vertcies_count = 32);
 		
 		void demo();
 
+		void bind_shader(const Shader &shader);
+		void unbind_shader();
+		ShaderId_t get_shader_id() const noexcept;
+
 		const Window &get_window() const;
 
 	private:
 		const Window &m_wnd;
+		ShaderId_t m_shader;
 	};
 
 	typedef void(*Draw2DCallback)(Context2D context);

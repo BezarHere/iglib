@@ -335,7 +335,7 @@ namespace ig
 		// glew not init
 		if (!c)
 		{
-			warn("Start ig::Application to get the opengl version");
+			warn("start ig::Application to get the opengl version\n");
 			return std::string();
 		}
 

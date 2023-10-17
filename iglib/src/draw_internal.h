@@ -23,23 +23,23 @@ FORCEINLINE void glVertex2f(const Vector2f f)
   glVertex2f(f.x, f.y);
 }
 
-constexpr FORCEINLINE int to_gldraw_type(const VertexDrawType type)
+constexpr FORCEINLINE int to_gldraw_type(const ShapeDrawType type)
 {
   switch (type)
   {
-  case ig::VertexDrawType::Quad:
+  case ig::ShapeDrawType::Quad:
     return GL_QUADS;
-  case ig::VertexDrawType::Triangle:
+  case ig::ShapeDrawType::Triangle:
     return GL_TRIANGLES;
-  case ig::VertexDrawType::Line:
+  case ig::ShapeDrawType::Line:
     return GL_LINES;
-  case ig::VertexDrawType::LineStript:
+  case ig::ShapeDrawType::LineStript:
     return GL_LINE_STRIP;
-  case ig::VertexDrawType::TriangleStrip:
+  case ig::ShapeDrawType::TriangleStrip:
     return GL_TRIANGLE_STRIP;
-  case ig::VertexDrawType::TriangleFan:
+  case ig::ShapeDrawType::TriangleFan:
     return GL_TRIANGLE_FAN;
-  case ig::VertexDrawType::QuadStrip:
+  case ig::ShapeDrawType::QuadStrip:
     return GL_QUAD_STRIP;
   default:
 		raise(format("invalid draw type value {}", (int)type));
@@ -61,7 +61,7 @@ constexpr FORCEINLINE int to_glshader_type(const SubshaderType type)
   }
 }
 
-FORCEINLINE void glVertex(const Vertex &_Vert)
+FORCEINLINE void glVertex(const Vertex2D &_Vert)
 {
   glColor3(_Vert.clr);
   glTexCoord2f(_Vert.tex_coord);

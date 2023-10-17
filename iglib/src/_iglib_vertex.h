@@ -5,7 +5,7 @@
 
 namespace ig
 {
-	enum class VertexDrawType
+	enum class ShapeDrawType
 	{
 		Quad,
 		Triangle,
@@ -16,7 +16,7 @@ namespace ig
 		QuadStrip
 	};
 
-	struct Vertex
+	struct Vertex2D
 	{
 		Vector2i pos;
 		Colorb clr;

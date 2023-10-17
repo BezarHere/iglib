@@ -49,7 +49,7 @@ FORCEINLINE Report gen_shader(ShaderId_t id, const Shader::Subshader &vertex, co
 	
 	if (!vertex.log.code)
 	{
-		warn("vertex subshader: " + vertex.log.msg);
+		warn("vertex subshader: " + vertex.log.msg + '\n');
 	}
 	else
 	{
@@ -59,7 +59,7 @@ FORCEINLINE Report gen_shader(ShaderId_t id, const Shader::Subshader &vertex, co
 
 	if (!fragment.log.code)
 	{
-		warn("fragment subshader: " + fragment.log.msg);
+		warn("fragment subshader: " + fragment.log.msg + '\n');
 	}
 	else
 	{
@@ -68,16 +68,14 @@ FORCEINLINE Report gen_shader(ShaderId_t id, const Shader::Subshader &vertex, co
 	
 	int success;
 	constexpr int log_length = 512;
-	char msg[ log_length ];
+	char msg[ log_length ]{};
 	glGetProgramiv(id, GL_LINK_STATUS, &success);
 	glGetProgramInfoLog(id, log_length, NULL, msg);
 
-	if (!success)
-	{
-		bite::warn("shader error: " + std::string(msg));
-	}
+	if (success)
+		bite::warn("shader error: " + std::string(msg) + '\n');
 
-	return { success, success ? std::string() : std::string(msg) };
+	return { success, success ? std::string(msg) : std::string() };
 }
 
 namespace ig

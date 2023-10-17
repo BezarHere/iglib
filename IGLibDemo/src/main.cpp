@@ -75,6 +75,11 @@ void draw2d_callback(Context2D c)
 
 	c.demo();
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
+
+	ig::Shader ss{};
+	
+
+	c.bind_shader(ss);
 	c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
 	
 }
