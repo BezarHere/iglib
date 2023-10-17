@@ -22,4 +22,26 @@ namespace ig
 		Colorb clr;
 		Vector2f tex_coord;
 	};
+
+	struct Vertex3D
+	{
+		Vector3i pos;
+		Colorb clr;
+		Vector2f tex_coord;
+	};
+
+	typedef unsigned VertexBufferId_t;
+	template <typename _T>
+	class BasicVertexBuffer
+	{
+	public:
+
+
+	private:
+		VertexBufferId_t m_id;
+		
+	};
+
+	using VertexBuffer2D = BasicVertexBuffer<Vertex2D>;
+
 }
