@@ -38,7 +38,7 @@ FORCEINLINE Shader::Subshader gen_subshader(const std::string &src, const Subsha
 	std::unique_ptr<char[]> msg(new char[ report_str_len ]);
 	glGetShaderInfoLog(id, report_str_len, NULL, msg.get());
 
-	std::cout << "shader id " << id << " reported: " << report_code << '\n';
+	//std::cout << "shader id " << id << " reported: " << report_code << '\n';
 
 	return Shader::Subshader{ type, id, src, Report{ report_code, std::string(msg.get()) } };
 }
@@ -47,24 +47,35 @@ FORCEINLINE Report gen_shader(ShaderId_t id, const Shader::Subshader &vertex, co
 {
 	// error reporting!
 	
-	if (vertex.log.code)
+	if (!vertex.log.code)
 	{
-
+		warn("vertex subshader: " + vertex.log.msg);
+	}
+	else
+	{
+		glAttachShader(id, vertex.id);
 	}
 
-	if (fragment.log.code)
+
+	if (!fragment.log.code)
 	{
-
+		warn("fragment subshader: " + fragment.log.msg);
 	}
-
-	glAttachShader(id, fragment.id);
-	glAttachShader(id, vertex.id);
-
+	else
+	{
+		glAttachShader(id, fragment.id);
+	}
+	
 	int success;
 	constexpr int log_length = 512;
 	char msg[ log_length ];
 	glGetProgramiv(id, GL_LINK_STATUS, &success);
 	glGetProgramInfoLog(id, log_length, NULL, msg);
+
+	if (!success)
+	{
+		bite::warn("shader error: " + std::string(msg));
+	}
 
 	return { success, success ? std::string() : std::string(msg) };
 }

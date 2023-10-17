@@ -16,6 +16,7 @@ namespace ig
 	class Shader
 	{
 	public:
+
 		struct Subshader
 		{
 			~Subshader();
