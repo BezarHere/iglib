@@ -21,4 +21,7 @@ namespace ig
 		static int bee();
 
 	};
+
+	extern std::string get_gl_version();
+
 }

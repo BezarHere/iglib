@@ -559,4 +559,11 @@ namespace ig
 		return 69+420;
 	}
 
+	std::string get_gl_version()
+	{
+		auto c = glGetString(GL_VERSION);
+		std::cout << c << '\n';
+		return std::string();
+	}
+
 }

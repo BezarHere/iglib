@@ -26,6 +26,7 @@ namespace ig
 			Report log;
 		};
 
+		Shader();
 		Shader(const std::string &vert_src, const std::string &frag_src);
 		~Shader();
 

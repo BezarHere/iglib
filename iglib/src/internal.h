@@ -48,4 +48,4 @@ extern void push_to_draw_pipline(WindowHandle_t hdl);
 extern WindowHandle_t top_draw_pipline();
 extern void pop_draw_pipline();
 
-
+extern void lazyload_opengl_procs();

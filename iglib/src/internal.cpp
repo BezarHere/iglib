@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "internal.h"
 
-bool glew_init = false;
+bool g_glew_init = false;
 bool glfw_init = false;
 //GLuint glew_program_pid;
 
@@ -38,7 +38,7 @@ const std::vector<MonitorHandle_t> &get_monitors()
 
 bool is_glew_running()
 {
-	return glew_init;
+	return g_glew_init;
 }
 
 bool is_glfw_running()
@@ -131,8 +131,10 @@ void init_glew()
 {
 	glewExperimental = GL_TRUE;
 
-	if (glew_init)
+	if (!g_glew_init)
 	{
+		
+
 		GLenum glew_err = glewInit();
 		if (glew_err != GLEW_OK)
 		{
@@ -140,11 +142,12 @@ void init_glew()
 				"glew error: " + std::string((const char *)glewGetErrorString(glew_err))
 			);
 		}
-	}
-	//else
-	//	warn("Can't init glew, already running!");
 
-	glew_init = true;
+		//lazyload_opengl_procs();
+
+	}
+
+	g_glew_init = true;
 
 	// callbacks
 	
@@ -182,6 +185,20 @@ void pop_draw_pipline()
 {
 	glfw_current_window_pipline_stack.pop();
 	glfwMakeContextCurrent(top_draw_pipline());
+}
+
+void lazyload_opengl_procs()
+{
+	if (__glewCreateProgram == NULL)
+	{
+		PROC glcreateporgram = wglGetProcAddress("__glewCreateProgram");
+		if (glcreateporgram == nullptr || glcreateporgram == (PROC)0x1 || glcreateporgram == (PROC)0x2 || glcreateporgram == (PROC)0x3 || glcreateporgram == (PROC)-1)
+		{
+			HMODULE opengl32 = LoadLibraryA("opengl32.dll");
+			assert(opengl32 != NULL);
+			glcreateporgram = (PROC)GetProcAddress(opengl32, "__glewCreateProgram");
+		}
+	}
 }
 
 

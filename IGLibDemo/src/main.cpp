@@ -77,20 +77,21 @@ void draw2d_callback(Context2D c)
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 	c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
 	
-
 }
 
 int main()
 {
-	std::cout << "hello there\n";
-	auto k = ig::Image("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.png");
-	std::cout << "hello there\n";
-	std::cout << k.get_buffer_size() << '\n';
-	std::cout << "hello there\n";
-	std::cout << (int)k.get_channels() << '\n';
-	std::cout << "hello there\n";
-	std::cout << k.get_size() << '\n';
-	std::cout << "wadawdasdawdas" << '\n';
+
+
+	//std::cout << "hello there\n";
+	//auto k = ig::Image("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.png");
+	//std::cout << "hello there\n";
+	//std::cout << k.get_buffer_size() << '\n';
+	//std::cout << "hello there\n";
+	//std::cout << (int)k.get_channels() << '\n';
+	//std::cout << "hello there\n";
+	//std::cout << k.get_size() << '\n';
+	//std::cout << "wadawdasdawdas" << '\n';
 
 	//a(LARGE{}, LARGE{}, LARGE{}, LARGE{});
 	try
@@ -113,6 +114,7 @@ int main()
 		i.set_draw2d_callback(draw2d_callback);
 		p.set_draw2d_callback(draw2d_callback);
 
+
 		while (!i.should_close())
 		{
 			//std::cout << i.size() << ' ' << i.position() << '\n';
@@ -123,6 +125,7 @@ int main()
 			i.clear();
 			i.render();
 			i.poll();
+		
 
 			//p.clear();
 			//p.render();
@@ -132,7 +135,7 @@ int main()
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << "EXCEPTION:" << '\n' << e.what() << '\n';
+		std::cerr << "EXCEPTION:" << '\n' << e.what() << std::endl;
 		throw e;
 	}
 }

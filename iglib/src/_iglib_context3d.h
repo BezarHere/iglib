@@ -1,4 +1,6 @@
 #pragma once
+#include "_iglib_image.h"
+#include "_iglib_shader.h"
 
 namespace ig
 {

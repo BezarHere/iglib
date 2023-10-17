@@ -2,7 +2,26 @@
 #include "pch.h"
 #include "draw_internal.h"
 
-//Shader g_Default;
+constexpr auto VertexDefaultSrc =
+	"#version 330 core\n"
+	"layout (location = 0) in vec3 aPos;\n"
+	"out vec4 vColor;\n"
+	"void main() {\n"
+	"gl_Position = vec4(aPos, 1.0);\n"
+	"vColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
+	"}\n"
+;
+
+constexpr auto FragmentDefaultSrc =
+	"#version 330 core\n"
+	"out vec4 fColor;\n"
+	"in vec4 vColor;\n"
+	"void main() {\n"
+	"fColor = vColor;\n"
+	"}\n"
+;
+
+//static Shader g_Default( VertexDefaultSrc, FragmentDefaultSrc );
 
 FORCEINLINE Shader::Subshader gen_subshader(const std::string &src, const SubshaderType type)
 {
@@ -52,8 +71,13 @@ FORCEINLINE Report gen_shader(ShaderId_t id, const Shader::Subshader &vertex, co
 
 namespace ig
 {
+	Shader::Shader()
+		: Shader( VertexDefaultSrc, FragmentDefaultSrc )
+	{
+	}
+
 	Shader::Shader(const std::string &vert_src, const std::string &frag_src)
-		: m_id{ glCreateProgram() },
+		: m_id{ __glewCreateProgram() },
 			m_v{ gen_subshader(vert_src, SubshaderType::Vertex) }, m_f{ gen_subshader(frag_src, SubshaderType::Fragment) },
 			m_log{ gen_shader(m_id, m_v, m_f) }
 	{

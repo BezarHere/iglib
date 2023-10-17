@@ -2,6 +2,7 @@
 #include "_iglib_vertex.h"
 #include "_iglib_batchdraw.h"
 #include "_iglib_image.h"
+#include "_iglib_shader.h"
 
 namespace ig
 {

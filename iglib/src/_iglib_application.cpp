@@ -9,12 +9,6 @@ class _AppGlobal
 public:
 	_AppGlobal()
 	{
-		glcreateporgram = wglGetProcAddress("glCreateProgram");
-		if (glcreateporgram == nullptr || glcreateporgram == (PROC)0x1 || glcreateporgram == (PROC)0x2 || glcreateporgram == (PROC)0x3 || glcreateporgram == (PROC)-1)
-		{
-			HMODULE opengl32 = LoadLibraryA("opengl32.dll");
-			glcreateporgram = (PROC)GetProcAddress(opengl32, "glCreateProgram");
-		}
 	}
 
 	inline GLuint register_application(Application *app)
@@ -64,6 +58,7 @@ namespace ig
 			m_running_thread{ config.main_threaded ? nullptr : new std::thread() },
 			m_windows{}
 	{
+
 		m_windows.reserve(256);
 		create_window(config.size.x, config.size.y, config.title, config.fullscreen);
 	}
@@ -91,6 +86,7 @@ namespace ig
 
 		if (!is_glew_running())
 		{
+			glfwMakeContextCurrent(hdl);
 			init_glew();
 		}
 
