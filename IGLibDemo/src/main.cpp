@@ -81,7 +81,7 @@ void draw2d_callback(Context2D c)
 
 int main()
 {
-
+	std::cout << ig::get_opengl_version() << '\n';
 
 	//std::cout << "hello there\n";
 	//auto k = ig::Image("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.png");

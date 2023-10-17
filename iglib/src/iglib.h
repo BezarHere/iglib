@@ -22,6 +22,6 @@ namespace ig
 
 	};
 
-	extern std::string get_gl_version();
+	extern std::string get_opengl_version();
 
 }
