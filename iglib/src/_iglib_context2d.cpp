@@ -245,9 +245,9 @@ namespace ig
 		glEnd();
 	}
 
-	void Context2D::vertecies(Vertex2D *vert, size_t count, ShapeDrawType draw_type)
+	void Context2D::vertecies(Vertex2D *vert, size_t count, PrimitiveType draw_type)
 	{
-		glBegin(to_gldraw_type(draw_type));
+		glBegin(to_glprimitve(draw_type));
 
 		for (const Vertex2D &v : std::initializer_list<Vertex2D>(vert, vert + count))
 			glVertex(v);
@@ -266,40 +266,107 @@ namespace ig
 		glEnd();
 	}
 
+	void Context2D::vertex_buffer(const Vertex2DBuffer &buf)
+	{
+		buf._bind_array_buffer();
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+
+		glVertexAttribPointer(0, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, pos));
+		glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, clr));
+		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, uv));
+
+		glDrawArrays(to_glprimitve(buf.get_primitive()), 0, (int)buf.get_size());
+
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
+
+		if (!buf._unbind_array_buffer())
+			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
+	}
+
 	void Context2D::demo()
 	{
-		glEnable(GL_TEXTURE_2D);
+		//glEnable(GL_TEXTURE_2D);
 
-		//glClear(GL_COLOR_BUFFER_BIT);   // Clear the color buffer with current clearing color
+		////glClear(GL_COLOR_BUFFER_BIT);   // Clear the color buffer with current clearing color
 
-		GLbyte tex[ 64 * 64 ];
-		for (size_t x{}; x < 64; x++)
+		//GLbyte tex[ 64 * 64 ];
+		//for (size_t x{}; x < 64; x++)
+		//{
+		//  for (size_t y{}; y < 64; y++)
+		//  {
+		//		tex[ x + (y * 64) ] = GLbyte(x + y);
+		//  }
+		//}
+
+		//static GLfloat pixels[] =
+		//{
+		//		1, 0, 0,
+		//		0, 1, 0,
+		//		0, 0, 1,
+		//		1, 1, 1
+		//};
+
+		//GLuint t;
+		//glGenTextures(1, &t);
+		//glBindTexture(GL_TEXTURE0, t);
+		//glTexImage2D(GL_TEXTURE0, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
+		//glTexParameteri(GL_TEXTURE0, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//glTexParameteri(GL_TEXTURE0, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//glBindTexture(GL_TEXTURE0, 0);
+
+
+		//// Define shapes enclosed within a pair of glBegin and glEnd
+		//glBindTexture(GL_TEXTURE0, t);
+
+		constexpr Colorf White = { 1.f, 1.f, 1.f, 1.f };
+		constexpr Colorf Red = { 1.f, 0.f, 0.f, 1.f };
+		Vertex2D vert[ 8 ]
 		{
-		  for (size_t y{}; y < 64; y++)
-		  {
-				tex[ x + (y * 64) ] = GLbyte(x + y);
-		  }
-		}
-
-		static GLfloat pixels[] =
-		{
-				1, 0, 0,
-				0, 1, 0,
-				0, 0, 1,
-				1, 1, 1
+			{ Vector2f{-80.f, 80.f}, White, Vector2f{ 0.f, 0.f } },
+			{ Vector2f{-80.f, -80.f}, White, Vector2f{ 0.f, 1.f } },
+			{ Vector2f{80.f, -80.f}, White, Vector2f{ 1.f, 1.f } },
+			{ Vector2f{80.f, 80.f}, White, Vector2f{ 1.f, 0.f } },
+			{ Vector2f{80.f, 80.f}, White, Vector2f{ 0.f, 0.f } },
+			{ Vector2f{80.f, 180.f}, White, Vector2f{ 0.f, 1.f } },
+			{ Vector2f{280.f, 380.f}, White, Vector2f{ 1.f, 1.f } },
+			{ Vector2f{480.f, 80.f}, White, Vector2f{ 1.f, 0.f } },
 		};
 
-		GLuint t;
-		glGenTextures(1, &t);
-		glBindTexture(GL_TEXTURE0, t);
-		glTexImage2D(GL_TEXTURE0, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
-		glTexParameteri(GL_TEXTURE0, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE0, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glBindTexture(GL_TEXTURE0, 0);
+		//GLuint buffer;
+		//glGenBuffers(1, &buffer);
+		//glBindBuffer(GL_ARRAY_BUFFER, buffer);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
+
+		//
+		//glEnableVertexAttribArray(0);
+		//glEnableVertexAttribArray(1);
+		//glEnableVertexAttribArray(2);
+		//glVertexAttribPointer(0, 2, GL_FLOAT, 0, sizeof(Vertex2D), nullptr);
+		//glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)sizeof(Vector2f));
+		//glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)(sizeof(Vector2f) + sizeof(Colorf)));
 
 
-		// Define shapes enclosed within a pair of glBegin and glEnd
-		glBindTexture(GL_TEXTURE0, t);
+		Vertex2DBuffer buff{ 8 };
+		//
+		buff.update(vert);
+
+		auto ss = Shader::get_default();
+
+		this->bind_shader(ss.get());
+
+		this->vertex_buffer(buff);
+
+		/*if (!buffer._unbind_array_buffer())
+			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");*/
+		this->unbind_shader();
+		//glDeleteBuffers(1, &buffer);
+
+#if 0
 		glBegin(GL_QUADS);              // Each set of 4 vertices form a quad
 		glColor3f(1.0f, 1.0f, 1.0f);
 
@@ -392,14 +459,18 @@ namespace ig
 		glVertex2f(0.4f, 0.6f);
 		glVertex2f(0.3f, 0.4f);
 		glEnd();
+#endif
 
 		glFlush();  // Render now
 	}
 
-	void Context2D::bind_shader(const Shader &shader)
+	void Context2D::bind_shader(const Shader *shader)
 	{
-		glUseProgram(shader.get_id());
-		m_shader = shader.get_id();
+		glUseProgram(shader->get_id());
+
+		glUniform2f(0, m_wnd.get_width(), m_wnd.get_height());
+
+		m_shader = shader->get_id();
 	}
 
 	void Context2D::unbind_shader()

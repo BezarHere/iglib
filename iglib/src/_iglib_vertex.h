@@ -5,7 +5,7 @@
 
 namespace ig
 {
-	enum class ShapeDrawType
+	enum class PrimitiveType
 	{
 		Quad,
 		Triangle,
@@ -16,32 +16,95 @@ namespace ig
 		QuadStrip
 	};
 
+	enum class BufferUsage
+	{
+		Static = 0,
+		Dynamic = 1,
+		Stream = 2
+	};
+
 	struct Vertex2D
 	{
-		Vector2i pos;
-		Colorb clr;
-		Vector2f tex_coord;
+		Vector2f pos;
+		Colorf clr;
+		Vector2f uv; // <- also called 'tex_coord'
 	};
 
 	struct Vertex3D
 	{
-		Vector3i pos;
-		Colorb clr;
-		Vector2f tex_coord;
+		Vector3f pos;
+		Colorf clr;
+		Vector2f uv; // <- also called 'tex_coord'
+		Vector3f normal;
 	};
 
 	typedef unsigned VertexBufferId_t;
-	template <typename _T>
-	class BasicVertexBuffer
+
+	class BaseVertexBuffer
 	{
 	public:
 
+		size_t get_size() const noexcept;
+		BufferUsage get_usage() const noexcept;
+		PrimitiveType get_primitive() const noexcept;
 
-	private:
+		void set_primitive(PrimitiveType prim);
+
+		/// Internal OpenGL function
+		VertexBufferId_t get_id() const noexcept;
+
+		/// Internal OpenGL function, !ONLY !CALL !IF !YOU !KNOW !WHAT !YOU !ARE !DOING
+		void _bind_array_buffer() const;
+
+		/// Internal OpenGL function, !ONLY !CALL !IF !YOU !KNOW !WHAT !YOU !ARE !DOING
+		bool _unbind_array_buffer() const;
+
+	protected:
+		BaseVertexBuffer(VertexBufferId_t id, size_t size = 0, BufferUsage usage = BufferUsage::Static, PrimitiveType type = PrimitiveType::TriangleStrip);
+
+
+	protected:
 		VertexBufferId_t m_id;
-		
+		size_t m_size;
+		BufferUsage m_usage;
+		PrimitiveType m_type;
 	};
 
-	using VertexBuffer2D = BasicVertexBuffer<Vertex2D>;
+	class Vertex2DBuffer : public BaseVertexBuffer
+	{
+	public:
+		using vertex_type = Vertex2D;
+
+		Vertex2DBuffer();
+		Vertex2DBuffer(size_t size);
+
+		~Vertex2DBuffer();
+
+		void create(const size_t size, const vertex_type *vertices = nullptr);
+
+		/// updates the vertex buffer
+		/// \param vertcies: the vertices that are loaded
+		/// \param vertices_count: the vertices count to be loaded
+		/// \param offset: where should the vertcies be put (e.g. 0 will put the vertices at the begining of the buffer and forward and 2 will put them at index [2] and forward)
+		void update(const vertex_type *vertcies, const size_t vertices_count, const uint32_t offset);
+
+		/// will update the entire current buffer with \p vertcies, \p vertices should be an array with size not smaller then the buffer size
+		///
+		/// same as vert_buffer.update(vertcies, vert_buffer.get_size(), 0)
+		void update(const vertex_type *vertcies);
+
+	};
+
+	class Vertex3DBuffer : public BaseVertexBuffer
+	{
+	public:
+		using vertex_type = Vertex3D;
+
+		Vertex3DBuffer();
+		~Vertex3DBuffer();
+
+
+	};
+
 
 }

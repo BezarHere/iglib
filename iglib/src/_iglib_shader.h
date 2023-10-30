@@ -3,46 +3,34 @@
 
 namespace ig
 {
-
-	typedef uint32_t SubshaderId_t;
 	typedef uint32_t ShaderId_t;
 
-	enum class SubshaderType
-	{
-		Vertex,
-		Fragment
-	};
 
 	class Shader
 	{
 	public:
-
-		struct Subshader
-		{
-			~Subshader();
-
-			const SubshaderType type;
-			SubshaderId_t id;
-			std::string src;
-			Report log;
-		};
-
+		// WILL CREATE AN INVALID SHADER
 		Shader();
-		Shader(const std::string &vert_src, const std::string &frag_src);
 		~Shader();
+
+		static std::shared_ptr<Shader> get_default();
+		static std::shared_ptr<Shader> create(const std::string &vertex_src, const std::string &fragment_src);
+		
 
 		ShaderId_t get_id() const noexcept;
 		bool is_valid() const noexcept;
-		const Report &get_log() const noexcept;
-
-		const Subshader &get_subshader(const SubshaderType type) const noexcept;
 
 		bool _is_current() const;
 
+
+	private:
+		Shader(ShaderId_t id);
+		Shader(const Shader &copy) = delete;
+		Shader(Shader &&move) = delete;
+		Shader &operator=(const Shader &copy) = delete;
+		Shader &operator=(Shader &&move) = delete;
 	private:
 		const ShaderId_t m_id;
-		Subshader m_v, m_f;
-		Report m_log;
 	};
 }
 

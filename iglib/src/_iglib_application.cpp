@@ -60,7 +60,7 @@ namespace ig
 	{
 
 		m_windows.reserve(256);
-		create_window(config.size.x, config.size.y, config.title, config.fullscreen);
+		this->create_window(config.size.x, config.size.y, config.title, config.fullscreen);
 	}
 
 	Application::~Application()
@@ -84,11 +84,18 @@ namespace ig
 
 		m_windows.push_back(Window((void *const)hdl, title, false));
 
+
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
 		if (!is_glew_running())
 		{
 			glfwMakeContextCurrent(hdl);
 			init_glew();
 		}
+
 
 		return m_windows[m_windows.size() - 1];
 	}

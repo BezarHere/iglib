@@ -5,20 +5,20 @@
 #include "draw_internal.h"
 
 const BatchDraw *g_WorkingBatchDraw = nullptr;
-ShapeDrawType g_WorkingBatchDrawType;
+PrimitiveType g_WorkingBatchDrawType;
 const Window *g_WorkingBatchDrawWindow;
 
 namespace ig
 {
 
-	BatchDraw::BatchDraw(Context2D c, ShapeDrawType type)
+	BatchDraw::BatchDraw(Context2D c, PrimitiveType type)
 	{
 		if (g_WorkingBatchDraw)
 			raise("Can't create more then one BatchDraw object at the same time");
 		g_WorkingBatchDraw = this;
 		g_WorkingBatchDrawType = type;
 		g_WorkingBatchDrawWindow = &c.get_window();
-		glBegin(to_gldraw_type(type));
+		glBegin(to_glprimitve(type));
 	}
 
 	BatchDraw::~BatchDraw()

@@ -3,10 +3,14 @@
 #include <string>
 #include <thread>
 #include <intrin.h>
+#include <istream>
+#include <fstream>
 
 #include <winsock.h>
 
 using namespace ig;
+
+const std::string current_dir = "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\";
 
 struct LARGE
 {
@@ -43,6 +47,26 @@ void callback(ig::Window &window, ig::WindowCallbackReason reason)
 	//std::cout << window.get_title() << ": " << (int)reason << '\n';
 }
 
+std::string readall(const std::string &fs)
+{
+	FILE *f;
+	auto err = fopen_s(&f, fs.c_str(), "r");
+	
+	if (f == NULL)
+		return "invalid file";
+
+	const size_t begin = ftell(f);
+	fseek(f, 0, FILE_END);
+	const size_t size = ftell(f) - begin;
+	fseek(f, begin, FILE_BEGIN);
+	char *buf = new char[ size ];
+	fread(buf, 1, size, f);
+	std::string st{ buf, size };
+	delete[] buf;
+	fclose(f);
+	return st;
+}
+
 void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::KeyModFlags mods)
 {
 	if (key == ig::Key_W)
@@ -73,20 +97,22 @@ void draw2d_callback(Context2D c)
 	}*/
 
 
+	//ig::Shader ss{};
 	c.demo();
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 
-	ig::Shader ss{};
 	
 
-	c.bind_shader(ss);
-	c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
+	//c.bind_shader(ss);
+	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
 	
 }
 
+
 int main()
 {
-	std::cout << ig::get_opengl_version() << '\n';
+
+	std::cout << readall(current_dir + "main.cpp") << '\n';
 
 	//std::cout << "hello there\n";
 	//auto k = ig::Image("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.png");
@@ -99,7 +125,7 @@ int main()
 	//std::cout << "wadawdasdawdas" << '\n';
 
 	//a(LARGE{}, LARGE{}, LARGE{}, LARGE{});
-	try
+	
 	{
 		ig::ApplicationConfig appcfg{};
 		appcfg.fullscreen = false;
@@ -137,10 +163,5 @@ int main()
 			//p.poll();
 		}
 
-	}
-	catch (const std::exception &e)
-	{
-		std::cerr << "EXCEPTION:" << '\n' << e.what() << std::endl;
-		throw e;
 	}
 }

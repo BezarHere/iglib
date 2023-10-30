@@ -8,6 +8,11 @@ FORCEINLINE void glColor3(const Colorb clr)
   glColor3ub(clr.r, clr.g, clr.b);
 }
 
+FORCEINLINE void glColor3f(const Colorf &clr)
+{
+  glColor3f(clr.r, clr.g, clr.b);
+}
+
 FORCEINLINE void glTexCoord2f(const Vector2f v)
 {
   glTexCoord2f(v.x, v.y);
@@ -23,23 +28,23 @@ FORCEINLINE void glVertex2f(const Vector2f f)
   glVertex2f(f.x, f.y);
 }
 
-constexpr FORCEINLINE int to_gldraw_type(const ShapeDrawType type)
+constexpr FORCEINLINE int to_glprimitve(const PrimitiveType type)
 {
   switch (type)
   {
-  case ig::ShapeDrawType::Quad:
+  case ig::PrimitiveType::Quad:
     return GL_QUADS;
-  case ig::ShapeDrawType::Triangle:
+  case ig::PrimitiveType::Triangle:
     return GL_TRIANGLES;
-  case ig::ShapeDrawType::Line:
+  case ig::PrimitiveType::Line:
     return GL_LINES;
-  case ig::ShapeDrawType::LineStript:
+  case ig::PrimitiveType::LineStript:
     return GL_LINE_STRIP;
-  case ig::ShapeDrawType::TriangleStrip:
+  case ig::PrimitiveType::TriangleStrip:
     return GL_TRIANGLE_STRIP;
-  case ig::ShapeDrawType::TriangleFan:
+  case ig::PrimitiveType::TriangleFan:
     return GL_TRIANGLE_FAN;
-  case ig::ShapeDrawType::QuadStrip:
+  case ig::PrimitiveType::QuadStrip:
     return GL_QUAD_STRIP;
   default:
 		raise(format("invalid draw type value {}", (int)type));
@@ -47,24 +52,22 @@ constexpr FORCEINLINE int to_gldraw_type(const ShapeDrawType type)
   }
 }
 
-constexpr FORCEINLINE int to_glshader_type(const SubshaderType type)
+
+constexpr FORCEINLINE int to_gldrawusage(const BufferUsage usage)
 {
-  switch (type)
-  {
-	case SubshaderType::Vertex:
-    return GL_VERTEX_SHADER;
-	case SubshaderType::Fragment:
-    return GL_FRAGMENT_SHADER;
-  default:
-		raise(format("invalid shader type value {}", (int)type));
-		return -1;
-  }
+	constexpr int LookupTable[]
+	{
+		GL_STATIC_DRAW,
+		GL_DYNAMIC_DRAW,
+		GL_STREAM_DRAW
+	};
+	return LookupTable[ (int)usage ];
 }
 
 FORCEINLINE void glVertex(const Vertex2D &_Vert)
 {
-  glColor3(_Vert.clr);
-  glTexCoord2f(_Vert.tex_coord);
+  glColor3f(_Vert.clr);
+  glTexCoord2f(_Vert.uv);
   glVertex2i(_Vert.pos);
 }
 
@@ -127,9 +130,7 @@ FORCEINLINE void flip_h(unsigned char *data, const size_t ww, const size_t hh, c
 
 FORCEINLINE void use_shader(const Shader &shader)
 {
-	if (!shader.is_valid())
-		warn("Shader with an error code used: " + std::to_string(shader.get_log().code) + " with massege \"" + shader.get_log().msg + "\"");
-	if (shader._is_current())
+	if (!shader.is_valid() || shader._is_current())
 		return;
 	glUseProgram(shader.get_id());
 }

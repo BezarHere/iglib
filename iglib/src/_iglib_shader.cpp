@@ -3,101 +3,189 @@
 #include "draw_internal.h"
 
 constexpr auto VertexDefaultSrc =
-	"#version 330 core\n"
-	"layout (location = 0) in vec3 aPos;\n"
-	"out vec4 vColor;\n"
-	"void main() {\n"
-	"gl_Position = vec4(aPos, 1.0);\n"
-	"vColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
-	"}\n"
+"#version 330 core\n"
+"layout (location = 0) in vec2 pos;\n"
+"layout (location = 1) in vec4 clr;\n"
+"layout (location = 2) in vec2 uv;\n"
+"layout (location = 3) in vec2 normal;\n"
+"out vec4 out_color;\n"
+"uniform vec2 screen_size;\n"
+"void main() {\n"
+"vec2 native_pos = vec2(pos.x / screen_size.x, 1.0 - (pos.y / screen_size.y)) * 2.0 - vec2(1.0);"
+"gl_Position = vec4(native_pos, 0.0, 1.0);\n"
+//"out_color = vec4(1.0, 1.0, 0.0, 1.0);\n"
+//"out_color = clr;\n"
+"out_color = vec4(uv, 0.0, 1.0) * clr;\n"
+"}\n"
 ;
 
 constexpr auto FragmentDefaultSrc =
-	"#version 330 core\n"
-	"out vec4 fColor;\n"
-	"in vec4 vColor;\n"
-	"void main() {\n"
-	"fColor = vColor;\n"
-	"}\n"
+"#version 330 core\n"
+"out vec4 fColor;\n"
+"in vec4 vColor;\n"
+"void main() {\n"
+"fColor = vColor;\n"
+"}\n"
 ;
 
 //static Shader g_Default( VertexDefaultSrc, FragmentDefaultSrc );
 
-FORCEINLINE Shader::Subshader gen_subshader(const std::string &src, const SubshaderType type)
+GLuint compileShaders(std::string shader, GLenum type)
 {
-	SubshaderId_t id = glCreateShader(to_glshader_type(type));
+
+	const char *shaderCode = shader.c_str();
+	GLuint shaderId = glCreateShader(type);
+
+	if (shaderId == 0) { // Error: Cannot create shader object
+		std::cout << "Error creating shaders";
+		return 0;
+	}
+
+	// Attach source code to this object
+	glShaderSource(shaderId, 1, &shaderCode, NULL);
+	glCompileShader(shaderId); // compile the shader object
+
+	GLint compileStatus;
+
+	// check for compilation status
+	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &compileStatus);
+
+	if (!compileStatus) { // If compilation was not successful
+		int length;
+		glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &length);
+		char *cMessage = new char[ length ];
+
+		// Get additional information
+		glGetShaderInfoLog(shaderId, length, &length, cMessage);
+		std::cout << "Cannot Compile Shader: " << cMessage;
+		delete[] cMessage;
+		glDeleteShader(shaderId);
+		return 0;
+	}
+
+	return shaderId;
+}
+
+FORCEINLINE GLuint gen_shader(const std::string &src, const GLuint type)
+{
+	GLuint id = glCreateShader(type);
 	const char *cstr = src.c_str();
+
+	assert(id != NULL);
 
 	glShaderSource(id, 1, &cstr, NULL);
 	glCompileShader(id);
 
-	int report_code, report_str_len;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &report_code);
-	glGetShaderiv(id, GL_INFO_LOG_LENGTH, &report_str_len);
+	GLint compileStatus;
 
-	std::unique_ptr<char[]> msg(new char[ report_str_len ]);
-	glGetShaderInfoLog(id, report_str_len, NULL, msg.get());
+	// check for compilation status
+	glGetShaderiv(id, GL_COMPILE_STATUS, &compileStatus);
 
-	//std::cout << "shader id " << id << " reported: " << report_code << '\n';
+	if (!compileStatus) { // If compilation was not successful
+		int length;
+		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		char *cMessage = new char[ length ];
 
-	return Shader::Subshader{ type, id, src, Report{ report_code, std::string(msg.get()) } };
+		// Get additional information
+		glGetShaderInfoLog(id, length, &length, cMessage);
+		std::cerr << "Shader Error: " << cMessage << '\n';
+		delete[] cMessage;
+		glDeleteShader(id);
+		return 0;
+	}
+	//std::cout << "shader id " << id << " reported: " << success << '\n';
+
+	return id;
 }
 
-FORCEINLINE Report gen_shader(ShaderId_t id, const Shader::Subshader &vertex, const Shader::Subshader &fragment)
+FORCEINLINE ShaderId_t gen_program(const GLuint vertex, const GLuint fragment)
 {
-	// error reporting!
-	
-	if (!vertex.log.code)
+	if (!vertex || !fragment)
 	{
-		warn("vertex subshader: " + vertex.log.msg + '\n');
-	}
-	else
-	{
-		glAttachShader(id, vertex.id);
+		if (vertex)
+			glDeleteShader(vertex);
+		else if (fragment)
+			glDeleteShader(fragment);
+
+		return 0;
 	}
 
 
-	if (!fragment.log.code)
+	ShaderId_t id = glCreateProgram();
+
+	if (id == NULL)
 	{
-		warn("fragment subshader: " + fragment.log.msg + '\n');
-	}
-	else
-	{
-		glAttachShader(id, fragment.id);
+		std::cerr << "couldn't create shader program\n";
+		return 0;
 	}
 	
+	//if (!vertex.log.code)
+	//{
+	//	raise("vertex subshader: " + vertex.log.msg);
+	//}
+	//
+
+
+	//if (!fragment.log.code)
+	//{
+	//	raise("fragment subshader: " + fragment.log.msg);
+	//}
+
+	glAttachShader(id, vertex);
+	glAttachShader(id, fragment);
+	
+	glLinkProgram(id);
+
+	glDetachShader(id, vertex);
+	glDetachShader(id, fragment);
+
+	glDeleteShader(vertex);
+	glDeleteShader(fragment);
+
 	int success;
 	constexpr int log_length = 512;
+	int log_ml;
 	char msg[ log_length ]{};
 	glGetProgramiv(id, GL_LINK_STATUS, &success);
-	glGetProgramInfoLog(id, log_length, NULL, msg);
+	glGetProgramInfoLog(id, log_length, &log_ml, msg);
+	
+	if (success == GL_FALSE)
+	{
+		glDeleteProgram(id);
+		std::cerr << "shader program error: " << msg << '\n';
+		return 0;
+	}
 
-	if (success)
-		bite::warn("shader error: " + std::string(msg) + '\n');
-
-	return { success, success ? std::string(msg) : std::string() };
+	return id;
 }
 
 namespace ig
 {
+	std::shared_ptr<Shader> Shader::get_default()
+	{
+		return create(VertexDefaultSrc, FragmentDefaultSrc);
+	}
+
+	std::shared_ptr<Shader> Shader::create(const std::string &vertex_src, const std::string &fragment_src)
+	{
+		return std::shared_ptr<Shader>(new Shader(gen_program(gen_shader(vertex_src, GL_VERTEX_SHADER), gen_shader(fragment_src, GL_FRAGMENT_SHADER))));
+	}
+
 	Shader::Shader()
-		: Shader( VertexDefaultSrc, FragmentDefaultSrc )
+		: m_id{ 0 }
 	{
 	}
 
-	Shader::Shader(const std::string &vert_src, const std::string &frag_src)
-		: m_id{ __glewCreateProgram() },
-			m_v{ gen_subshader(vert_src, SubshaderType::Vertex) }, m_f{ gen_subshader(frag_src, SubshaderType::Fragment) },
-			m_log{ gen_shader(m_id, m_v, m_f) }
+	Shader::Shader(ShaderId_t id)
+		: m_id{ id }
 	{
 	}
 
 	Shader::~Shader()
 	{
-		// TODO: add ability to make program id span multible object refs
-		glDeleteProgram(m_id);
+		if (m_id)
+			glDeleteProgram(m_id);
 	}
-
 
 	ShaderId_t Shader::get_id() const noexcept
 	{
@@ -106,30 +194,15 @@ namespace ig
 
 	bool Shader::is_valid() const noexcept
 	{
-		return m_log.code;
-	}
-
-	const Report &Shader::get_log() const noexcept
-	{
-		return m_log;
-	}
-
-	const Shader::Subshader &Shader::get_subshader(const SubshaderType type) const noexcept
-	{
-		if (type == SubshaderType::Fragment)
-			return m_f;
-		return m_v;
+		return m_id;
 	}
 
 	bool Shader::_is_current() const
 	{
-		int p;
-		glGetIntegerv(GL_CURRENT_PROGRAM, &p);
+		GLuint p;
+		glGetIntegerv(GL_CURRENT_PROGRAM, (GLint *) & p);
 		return p == m_id;
 	}
 
-	Shader::Subshader::~Subshader()
-	{
-		glDeleteShader(id);
-	}
+
 }

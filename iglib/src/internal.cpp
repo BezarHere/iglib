@@ -75,7 +75,7 @@ void monitor_callback(MonitorHandle_t monitor, int event)
 	}
 }
 
-void init_monitors()
+void glfw_init_monitors()
 {
 	int mon_count{};
 	MonitorHandle_t *mons = glfwGetMonitors(&mon_count);
@@ -89,6 +89,13 @@ void init_monitors()
 	glfwSetMonitorCallback(monitor_callback);
 }
 
+void glfw_init_window_hints()
+{
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+}
 
 // runs before 'main'
 void static_init()
@@ -107,7 +114,8 @@ void init_glfw()
 			glfwerror(true);
 		}
 
-		init_monitors();
+		glfw_init_monitors();
+		glfw_init_window_hints();
 	}
 	else
 		warn("Can't init glfw, already running!");
