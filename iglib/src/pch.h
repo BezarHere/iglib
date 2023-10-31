@@ -60,4 +60,8 @@ constexpr dye::TerminalColor ErrorColor{ dye::ColorCode::LightRed, dye::ColorCod
 constexpr dye::TerminalColor WarningColor{ dye::ColorCode::LightYellow, dye::ColorCode::Black };
 constexpr dye::TerminalColor PingColor{ dye::ColorCode::LightBlue, dye::ColorCode::Black };
 
+#ifndef ASSERT
+#define ASSERT(cond) if (!(cond)) bite::raise(bite::format("\"{}\" at \"{}\" line {}", #cond, __FILE__, __LINE__))
+#endif
+
 #endif

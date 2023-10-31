@@ -52,6 +52,26 @@ constexpr FORCEINLINE int to_glprimitve(const PrimitiveType type)
   }
 }
 
+constexpr FORCEINLINE int to_glpixelformat(const Channels type)
+{
+  switch (type)
+  {
+  case ig::Channels::Invalid:
+    return NULL;
+  case ig::Channels::L:
+    return GL_LUMINANCE;
+  case ig::Channels::LA:
+    return GL_LUMINANCE_ALPHA;
+  case ig::Channels::RGB:
+    return GL_RGB;
+  case ig::Channels::RGBA:
+    return GL_RGBA;
+  default:
+		raise(format("invalid draw type value {}", (int)type));
+		return -1;
+  }
+}
+
 
 constexpr FORCEINLINE int to_gldrawusage(const BufferUsage usage)
 {
