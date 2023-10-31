@@ -63,7 +63,13 @@ namespace ig
 		BaseVertexBuffer(VertexBufferId_t id, size_t size = 0, BufferUsage usage = BufferUsage::Static, PrimitiveType type = PrimitiveType::TriangleStrip);
 
 
-	protected:
+	private:
+		BaseVertexBuffer(const BaseVertexBuffer &copy) = delete;
+		BaseVertexBuffer(BaseVertexBuffer &&move) = delete;
+		BaseVertexBuffer &operator =(const BaseVertexBuffer &copy) = delete;
+		BaseVertexBuffer &operator =(BaseVertexBuffer &&move) = delete;
+
+	private:
 		VertexBufferId_t m_id;
 		size_t m_size;
 		BufferUsage m_usage;

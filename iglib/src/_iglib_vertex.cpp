@@ -55,10 +55,10 @@ namespace ig
 
 	bool BaseVertexBuffer::_unbind_array_buffer() const
 	{
-		int current_ab;
-		glGetIntegerv(GL_ARRAY_BUFFER, &current_ab);
+		//int current_ab;
+		//glGetIntegerv(GL_ARRAY_BUFFER, &current_ab);
 		//if (current_ab == m_id)
-			glBindBuffer(GL_ARRAY_BUFFER, NULL);
+		glBindBuffer(GL_ARRAY_BUFFER, NULL);
 		return true;
 	}
 	
@@ -68,7 +68,7 @@ namespace ig
 	}
 
 	Vertex2DBuffer::Vertex2DBuffer(size_t size)
-		: BaseVertexBuffer(create_buffer())
+		: BaseVertexBuffer(0)
 	{
 		create(size);
 	}
@@ -88,8 +88,8 @@ namespace ig
 		m_id = create_buffer();
 		_bind_array_buffer();
 		
-		if (vertices)
-			glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex_type), vertices, to_gldrawusage(m_usage));
+		
+		glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex_type), vertices, to_gldrawusage(m_usage));
 
 		if (!_unbind_array_buffer())
 			raise(format("POSSIBLE RACE COND: at 'create': last bound vertex buffer 2d (id {}) was unbounded mid process", m_id));
@@ -97,6 +97,9 @@ namespace ig
 
 	void Vertex2DBuffer::update(const vertex_type *vertcies, const size_t vertices_count, const uint32_t offset)
 	{
+		if (offset + vertices_count > m_size)
+			raise("overflowing a vertex buffer 2d");
+
 		_bind_array_buffer();
 
 		glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(vertex_type), vertices_count * sizeof(vertex_type), vertcies);

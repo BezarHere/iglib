@@ -8,6 +8,14 @@
 
 namespace ig
 {
+	constexpr float Pi = 3.1415926f;
+	constexpr float Tau = Pi * 2.f;
+	constexpr float E = 2.7182818f;
+
+	constexpr double dPi = 3.141592653589793;
+	constexpr double dTau = dPi * 2.0;
+	constexpr double dE = 2.718281828459045;
+
 	typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::microseconds> TimeMs_t;
 	typedef uint8_t byte;
 	typedef void(*Action_t)();

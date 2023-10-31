@@ -277,12 +277,13 @@ namespace ig
 		glVertexAttribPointer(0, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, pos));
 		glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, clr));
 		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, uv));
-
+		
 		glDrawArrays(to_glprimitve(buf.get_primitive()), 0, (int)buf.get_size());
-
+		
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
+		
 
 		if (!buf._unbind_array_buffer())
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
@@ -332,9 +333,9 @@ namespace ig
 			{ Vector2f{80.f, -80.f}, White, Vector2f{ 1.f, 1.f } },
 			{ Vector2f{80.f, 80.f}, White, Vector2f{ 1.f, 0.f } },
 			{ Vector2f{80.f, 80.f}, White, Vector2f{ 0.f, 0.f } },
+			{ Vector2f{180.f, 80.f}, White, Vector2f{ 1.f, 0.f } },
+			{ Vector2f{180.f, 180.f}, White, Vector2f{ 1.f, 1.f } },
 			{ Vector2f{80.f, 180.f}, White, Vector2f{ 0.f, 1.f } },
-			{ Vector2f{280.f, 380.f}, White, Vector2f{ 1.f, 1.f } },
-			{ Vector2f{480.f, 80.f}, White, Vector2f{ 1.f, 0.f } },
 		};
 
 		//GLuint buffer;
@@ -352,14 +353,17 @@ namespace ig
 
 
 		Vertex2DBuffer buff{ 8 };
-		//
 		buff.update(vert);
+		buff.set_primitive(PrimitiveType::Quad);
 
 		auto ss = Shader::get_default();
 
 		this->bind_shader(ss.get());
 
+
 		this->vertex_buffer(buff);
+
+		//glDrawArrays(GL_QUADS, 0, 8);
 
 		/*if (!buffer._unbind_array_buffer())
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");*/

@@ -90,6 +90,9 @@
     <ClInclude Include="src\_iglib_shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\_iglib_refcounter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp">

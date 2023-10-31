@@ -14,7 +14,7 @@ constexpr auto VertexDefaultSrc =
 "vec2 native_pos = vec2(pos.x / screen_size.x, 1.0 - (pos.y / screen_size.y)) * 2.0 - vec2(1.0);"
 "gl_Position = vec4(native_pos, 0.0, 1.0);\n"
 //"out_color = vec4(1.0, 1.0, 0.0, 1.0);\n"
-//"out_color = clr;\n"
+"out_color = clr;\n"
 "out_color = vec4(uv, 0.0, 1.0) * clr;\n"
 "}\n"
 ;
@@ -22,9 +22,9 @@ constexpr auto VertexDefaultSrc =
 constexpr auto FragmentDefaultSrc =
 "#version 330 core\n"
 "out vec4 fColor;\n"
-"in vec4 vColor;\n"
+"in vec4 out_color;\n"
 "void main() {\n"
-"fColor = vColor;\n"
+"fColor = out_color;\n"
 "}\n"
 ;
 
