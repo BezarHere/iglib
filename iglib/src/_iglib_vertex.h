@@ -69,7 +69,7 @@ namespace ig
 		BaseVertexBuffer &operator =(const BaseVertexBuffer &copy) = delete;
 		BaseVertexBuffer &operator =(BaseVertexBuffer &&move) = delete;
 
-	private:
+	protected:
 		VertexBufferId_t m_id;
 		size_t m_size;
 		BufferUsage m_usage;

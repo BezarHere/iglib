@@ -21,11 +21,11 @@ namespace ig
 
 		void traingle_strips(const vector2f_buffer_view_t points, const Colorb clr);
 
-		void vertecies(Vertex2D *vert, size_t count, PrimitiveType draw_type);
 
 		void circle(float radius, Vector2f center, const Colorb clr, const uint16_t vertcies_count = 32);
 		
-		void vertex_buffer(const Vertex2DBuffer &buf);
+		void draw(Vertex2D *vert, size_t count, PrimitiveType draw_type);
+		void draw(const Vertex2DBuffer &buf);
 
 		void demo();
 

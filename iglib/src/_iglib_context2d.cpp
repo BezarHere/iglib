@@ -245,7 +245,7 @@ namespace ig
 		glEnd();
 	}
 
-	void Context2D::vertecies(Vertex2D *vert, size_t count, PrimitiveType draw_type)
+	void Context2D::draw(Vertex2D *vert, size_t count, PrimitiveType draw_type)
 	{
 		glBegin(to_glprimitve(draw_type));
 
@@ -266,7 +266,7 @@ namespace ig
 		glEnd();
 	}
 
-	void Context2D::vertex_buffer(const Vertex2DBuffer &buf)
+	void Context2D::draw(const Vertex2DBuffer &buf)
 	{
 		buf._bind_array_buffer();
 
@@ -361,7 +361,7 @@ namespace ig
 		this->bind_shader(ss.get());
 
 
-		this->vertex_buffer(buff);
+		this->draw(buff);
 
 		//glDrawArrays(GL_QUADS, 0, 8);
 
