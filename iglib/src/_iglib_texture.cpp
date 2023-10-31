@@ -5,9 +5,9 @@
 
 struct TextureInternal
 {
-	uint32_t w, h;
-	Channels c;
-	std::shared_ptr<unsigned char[]> buffer;
+	uint32_t w = 0, h = 0;
+	Channels c = Channels::Invalid;
+	std::shared_ptr<unsigned char[]> buffer{};
 };
 
 std::vector<TextureInternal> g_tex(1024);
@@ -73,7 +73,7 @@ namespace ig
 		: m_handle{
 			register_tex(
 				img.get_width(), img.get_height(), img.get_channels(),
-				std::shared_ptr<unsigned char[]>(memcpy(new unsigned char[img.get_buffer_size()] , img.get_buffer(), img.get_buffer_size()))
+				std::shared_ptr<unsigned char[]>((unsigned char *)memcpy(new unsigned char[img.get_buffer_size()] , img.get_buffer(), img.get_buffer_size()))
 			)
 		}
 	{
@@ -137,7 +137,7 @@ namespace ig
 
 	Vector2i Texture::get_size() const noexcept
 	{
-		return { g_tex[ m_handle ].w, g_tex[ m_handle ].h };
+		return { (int)g_tex[ m_handle ].w, (int)g_tex[ m_handle ].h };
 	}
 
 	Channels Texture::get_channels() const noexcept

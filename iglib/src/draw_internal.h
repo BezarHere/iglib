@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "_iglib_vertex.h"
 #include "_iglib_shader.h"
+#include "_iglib_image.h"
 
 FORCEINLINE void glColor3(const Colorb clr)
 {

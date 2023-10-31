@@ -147,7 +147,7 @@ namespace ig
 	void Image::save_tga(const std::string &path) const
 	{
 		// 8 for every channel
-		constexpr byte BitPerPixel = 8 * 4;
+		//constexpr byte BitPerPixel = 8 * 4;
 		enum TgaImageType
 		{
 			None,
