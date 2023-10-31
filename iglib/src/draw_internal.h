@@ -94,8 +94,8 @@ FORCEINLINE void glVertex(const Vertex2D &_Vert)
 
 FORCEINLINE void flip_v(unsigned char *data, const size_t ww, const size_t hh, const size_t ch_count)
 {
-	assert(ch_count <= 4 && ch_count > 0);
-	assert(ww * hh > 0);
+	ASSERT(ch_count <= 4 && ch_count > 0);
+	ASSERT(ww * hh > 0);
 	NOTNULL(data);
 	const size_t halfheight = hh >> 1;
 
@@ -124,8 +124,8 @@ FORCEINLINE void flip_v(unsigned char *data, const size_t ww, const size_t hh, c
 
 FORCEINLINE void flip_h(unsigned char *data, const size_t ww, const size_t hh, const size_t ch_count)
 {
-	assert(ch_count <= 4 && ch_count > 0);
-	assert(ww * hh > 0);
+	ASSERT(ch_count <= 4 && ch_count > 0);
+	ASSERT(ww * hh > 0);
 	NOTNULL(data);
 	const size_t halfwidth = ww >> 1;
 

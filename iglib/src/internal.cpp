@@ -26,10 +26,10 @@ GLFWwindow *create_window(int width, int height, const std::string &title, GLFWm
 	}
 
 
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 
 	GLFWwindow *hdl = glfwCreateWindow(
@@ -222,7 +222,7 @@ void lazyload_opengl_procs()
 		if (glcreateporgram == nullptr || glcreateporgram == (PROC)0x1 || glcreateporgram == (PROC)0x2 || glcreateporgram == (PROC)0x3 || glcreateporgram == (PROC)-1)
 		{
 			HMODULE opengl32 = LoadLibraryA("opengl32.dll");
-			assert(opengl32 != NULL);
+			ASSERT(opengl32 != NULL);
 			glcreateporgram = (PROC)GetProcAddress(opengl32, "__glewCreateProgram");
 		}
 	}

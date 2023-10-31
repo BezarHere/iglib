@@ -141,6 +141,7 @@ int main()
 		i.set_draw2d_callback(draw2d_callback);
 		p.set_draw2d_callback(draw2d_callback);
 
+		std::cout << ig::get_opengl_version() << '\n';
 
 		while (!i.should_close())
 		{

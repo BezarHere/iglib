@@ -71,7 +71,7 @@ FORCEINLINE GLuint gen_shader(const std::string &src, const GLuint type)
 	GLuint id = glCreateShader(type);
 	const char *cstr = src.c_str();
 
-	assert(id != NULL);
+	ASSERT(id != NULL);
 
 	glShaderSource(id, 1, &cstr, NULL);
 	glCompileShader(id);

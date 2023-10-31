@@ -30,8 +30,8 @@
 
 #define PEEK(p) std::cout << #p << ": " << (p) << '\n'
 
-#define NOTNULL(exp) assert(exp != nullptr)
-#define ISNULL(exp) assert(exp == nullptr)
+#define NOTNULL(exp) ASSERT(exp != nullptr)
+#define ISNULL(exp) ASSERT(exp == nullptr)
 #define FORCEINLINE __forceinline
 
 typedef GLFWwindow *WindowHandle_t;
