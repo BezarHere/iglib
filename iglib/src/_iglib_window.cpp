@@ -1,7 +1,14 @@
 #include "pch.h"
 #include "internal.h"
 #include "_iglib_window.h"
-#include <dxgi.h>
+
+FORCEINLINE void try_start_glfw()
+{
+	if (!is_glfw_running())
+	{
+		init_glfw();
+	}
+}
 
 namespace ig
 {
@@ -12,7 +19,7 @@ namespace ig
 	//}
 
 
-
+	Window *g_main_window;
 	std::vector<Window *> wce_available_windows;
 	std::unordered_map<WindowHandle_t, Window *> wce_handles_map;
 
@@ -55,6 +62,11 @@ namespace ig
 			NOTNULL(window->m_hdl);
 			if (has_hdl((WindowHandle_t)window->m_hdl))
 				raise("More then one window have the same handle, pease review you code for mis-use with window handles.");
+
+			if (!g_main_window)
+			{
+				g_main_window = window;
+			}
 
 			wce_available_windows.push_back(window);
 			wce_handles_map[ (WindowHandle_t)window->m_hdl ] = window;
@@ -170,6 +182,11 @@ namespace ig
 		{
 			NOTNULL(window);
 			NOTNULL(window->m_hdl);
+
+			if (g_main_window == window)
+			{
+				g_main_window = nullptr;
+			}
 
 			remove_from_listed_windows(window);
 			
@@ -339,6 +356,22 @@ namespace ig
 		refresh_rect();
 	}
 
+	Window::Window(Vector2i size, std::string title) noexcept
+		: Window(
+				create_window( size.x, size.y, title, nullptr,
+					g_main_window ? (GLFWwindow*)g_main_window->m_hdl : nullptr
+				),
+				title,
+				false
+			)
+	{
+	}
+
+	Window::Window(Vector2i size) noexcept
+		: Window(size, "Window")
+	{
+	}
+
 	//Window::Window(const Window &copy)
 	//	: m_hdl(copy.m_hdl)
 	//{
@@ -377,14 +410,16 @@ namespace ig
 		//m_handle_rc{ new size_t{1} }
 	{
 		if (handle == nullptr)
+		{
+			glfwerror(true); // <- if there is any glfw error, this will raise
 			raise("NULL window handle passed to a window ctor.");
+		}
 		WindowCallbackEngine::link(this);
 		refresh_rect();
 	}
 
 	Window::~Window()
 	{
-		
 		if (m_hdl)
 		{
 			close();

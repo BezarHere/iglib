@@ -202,7 +202,6 @@
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\_iglib_bitmap_font.h" />
     <ClInclude Include="src\_iglib_context2d.h" />
-    <ClInclude Include="src\_iglib_application.h" />
     <ClInclude Include="src\_iglib_application_config.h" />
     <ClInclude Include="src\_iglib_base.h" />
     <ClInclude Include="src\_iglib_context3d.h" />
@@ -232,7 +231,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\_iglib_application.cpp" />
     <ClCompile Include="src\_iglib_bitmap_font.cpp" />
     <ClCompile Include="src\_iglib_context2d.cpp" />
     <ClCompile Include="src\_iglib_context3d.cpp" />

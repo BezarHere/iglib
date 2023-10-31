@@ -126,13 +126,10 @@ int main()
 	//a(LARGE{}, LARGE{}, LARGE{}, LARGE{});
 	
 	{
-		ig::ApplicationConfig appcfg{};
-		appcfg.fullscreen = false;
-		ig::Application app{ appcfg };
-		ig::Window &i = app.get_primary_window();
+		ig::Window i = ig::Window({128, 128}, "Window !!!");
 
 
-		ig::Window &p = app.create_window(128, 128, "Other one", false);
+		ig::Window p = ig::Window({ 128, 128 }, "Other one");
 		
 		// NOTICE: Hiding window for later fixes
 		p.hide();

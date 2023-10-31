@@ -7,6 +7,9 @@
 
 namespace ig
 {
+	typedef void(*UpdateCallback_t)();
+	typedef void(*DrawCallback_t)();
+
 
 	enum class WindowCallbackReason
 	{
@@ -190,8 +193,9 @@ namespace ig
 		friend class Application;
 	public:
 		Window() noexcept;
-		//Window(Vector2i size, std::string title);
-		~Window();
+		Window(Vector2i size) noexcept;
+		Window(Vector2i size, std::string title) noexcept;
+		~Window() noexcept;
 
 		Window(const Window &copy) = delete;
 		Window(Window &&move) noexcept;

@@ -1,5 +1,6 @@
 #pragma once
 #include "_iglib_vertex.h"
+#include "_iglib_indexbuffer.h"
 #include "_iglib_batchdraw.h"
 #include "_iglib_image.h"
 #include "_iglib_shader.h"
@@ -26,6 +27,7 @@ namespace ig
 		
 		void draw(Vertex2D *vert, size_t count, PrimitiveType draw_type);
 		void draw(const Vertex2DBuffer &buf);
+		void draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies);
 
 		void demo();
 

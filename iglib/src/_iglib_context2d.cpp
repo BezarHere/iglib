@@ -161,7 +161,7 @@ __forceinline [[nodiscard]] void to_clamped_space(vector2_qbuffer &val, const Ve
 namespace ig
 {
 	Context2D::Context2D(const Window &wnd)
-		: m_wnd{ wnd }
+		: m_wnd{ wnd }, m_shader{ 0 }
 	{
 	}
 
@@ -285,6 +285,31 @@ namespace ig
 		glDisableVertexAttribArray(2);
 		
 
+		if (!buf._unbind_array_buffer())
+			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
+	}
+
+	void Context2D::draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies)
+	{
+		buf._bind_array_buffer();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indcies.get_id());
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+
+		glVertexAttribPointer(0, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, pos));
+		glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, clr));
+		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, uv));
+
+		glDrawElements(to_glprimitve(buf.get_primitive()), (int)buf.get_size(), GL_UNSIGNED_INT, nullptr);
+
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
+
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 		if (!buf._unbind_array_buffer())
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
 	}

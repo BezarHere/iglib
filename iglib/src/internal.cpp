@@ -20,6 +20,18 @@ struct __static_init_run
 
 GLFWwindow *create_window(int width, int height, const std::string &title, GLFWmonitor *fullscreen, GLFWwindow *share)
 {
+	if (!is_glfw_running())
+	{
+		init_glfw();
+	}
+
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+
 	GLFWwindow *hdl = glfwCreateWindow(
 		width, height, title.c_str(), fullscreen, share
 	);
@@ -27,6 +39,13 @@ GLFWwindow *create_window(int width, int height, const std::string &title, GLFWm
 	if (!hdl)
 		glfwerror(true);
 
+
+
+	if (!is_glew_running())
+	{
+		glfwMakeContextCurrent(hdl);
+		init_glew();
+	}
 
 	return hdl;
 }
