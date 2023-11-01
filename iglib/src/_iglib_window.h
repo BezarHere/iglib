@@ -246,6 +246,9 @@ namespace ig
 		Context3D &get_3d_context() noexcept;
 		const Context3D &get_3d_context() const noexcept;
 
+		TimeMs_t get_creation_time() const noexcept;
+		float get_shader_time() const noexcept;
+
 		void hide();
 		void show();
 
@@ -282,7 +285,8 @@ namespace ig
 		bool m_deffered_close{ false }; // did the user click close or pressed alt+f4?
 		//std::shared_ptr<size_t> m_handle_rc;
 
-		const TimeMs_t m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) };
+		const TimeMs_t m_creation_time;
+		const float m_stp;
 		
 		Context2D m_context_2d;
 		Context3D m_context_3d;

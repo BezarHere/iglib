@@ -33,8 +33,6 @@ FORCEINLINE void glfwerror(bool terminate = false)
 	dye::clear_colors();
 }
 
-extern GLFWwindow *create_window(int width, int height, const std::string &title, GLFWmonitor *fullscreen = nullptr, GLFWwindow *share = nullptr);
-
 extern const std::vector<MonitorHandle_t> &get_monitors();
 
 extern bool is_glew_running();

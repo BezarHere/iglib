@@ -268,6 +268,9 @@ namespace ig
 
 	void Context2D::draw(const Vertex2DBuffer &buf)
 	{
+		if (m_shader)
+			update_shader_uniforms();
+
 		buf._bind_array_buffer();
 
 		glEnableVertexAttribArray(0);
@@ -291,6 +294,9 @@ namespace ig
 
 	void Context2D::draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies)
 	{
+		if (m_shader)
+			update_shader_uniforms();
+
 		buf._bind_array_buffer();
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indcies.get_id());
 
@@ -497,7 +503,7 @@ namespace ig
 	{
 		glUseProgram(shader->get_id());
 
-		glUniform2f(0, m_wnd.get_width(), m_wnd.get_height());
+		update_shader_uniforms();
 
 		m_shader = shader->get_id();
 	}
@@ -511,6 +517,12 @@ namespace ig
 	ShaderId_t Context2D::get_shader_id() const noexcept
 	{
 		return m_shader;
+	}
+
+	void Context2D::update_shader_uniforms()
+	{
+		glUniform2f(0, m_wnd.get_width(), m_wnd.get_height());
+		glUniform1f(1, m_wnd.get_shader_time());
 	}
 
 	const Window &Context2D::get_window() const

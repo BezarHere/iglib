@@ -9,13 +9,14 @@ constexpr auto VertexDefaultSrc =
 "layout (location = 2) in vec2 uv;\n"
 "layout (location = 3) in vec2 normal;\n"
 "out vec4 out_color;\n"
-"uniform vec2 screen_size;\n"
+"uniform vec2 _screensize;\n"
+"uniform float _time;\n"
 "void main() {\n"
-"vec2 native_pos = vec2(pos.x / screen_size.x, 1.0 - (pos.y / screen_size.y)) * 2.0 - vec2(1.0);"
+"vec2 native_pos = vec2(pos.x / _screensize.x, 1.0 - (pos.y / _screensize.y)) * 2.0 - vec2(1.0);"
 "gl_Position = vec4(native_pos, 0.0, 1.0);\n"
 //"out_color = vec4(1.0, 1.0, 0.0, 1.0);\n"
 "out_color = clr;\n"
-"out_color = vec4(uv, 0.0, 1.0) * clr;\n"
+"out_color = vec4(uv, (sin(_time) + 1.0) / 2.0, 1.0) * clr;\n"
 "}\n"
 ;
 

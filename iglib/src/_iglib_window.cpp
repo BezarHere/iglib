@@ -2,18 +2,43 @@
 #include "internal.h"
 #include "_iglib_window.h"
 
-FORCEINLINE void try_start_glfw()
+
+GLFWwindow *create_glfw_window(int width, int height, const std::string &title, GLFWmonitor *fullscreen, GLFWwindow *share)
 {
 	if (!is_glfw_running())
 	{
 		init_glfw();
 	}
+
+
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+
+	GLFWwindow *hdl = glfwCreateWindow(
+		width, height, title.c_str(), fullscreen, share
+	);
+
+	if (!hdl)
+		glfwerror(true);
+
+
+
+	if (!is_glew_running())
+	{
+		glfwMakeContextCurrent(hdl);
+		init_glew();
+	}
+
+	return hdl;
 }
 
 namespace ig
 {
 	//Window::Window(Vector2i size, std::string title)
-	//	: m_hdl((void *)create_window(size.x, size.y, title))
+	//	: m_hdl((void *)create_glfw_window(size.x, size.y, title))
 	//{
 	//	glCreateProgram();
 	//}
@@ -349,8 +374,9 @@ namespace ig
 		m_focused{ false },
 		m_hidden{ false },
 		m_context_2d{ *this },
-		m_context_3d{ *this }
-
+		m_context_3d{ *this },
+		m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) },
+		m_stp{ (float)glfwGetTime() }
 			//m_handle_rc{ new size_t{1} }
 	{
 		refresh_rect();
@@ -358,7 +384,7 @@ namespace ig
 
 	Window::Window(Vector2i size, std::string title) noexcept
 		: Window(
-				create_window( size.x, size.y, title, nullptr,
+				create_glfw_window( size.x, size.y, title, nullptr,
 					g_main_window ? (GLFWwindow*)g_main_window->m_hdl : nullptr
 				),
 				title,
@@ -389,7 +415,8 @@ namespace ig
 			m_title( move.m_title ),
 			m_hidden{ move.m_hidden },
 			m_context_2d{ *this },
-			m_context_3d{ *this }
+			m_context_3d{ *this },
+			m_stp{ move.m_stp }
 	{
 		if (move.m_hdl == nullptr)
 			return;
@@ -406,7 +433,9 @@ namespace ig
 			m_title{ title },
 			m_hidden{ hidden },
 			m_context_2d{ *this },
-			m_context_3d{ *this }
+			m_context_3d{ *this },
+			m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) },
+			m_stp{ (float)glfwGetTime() }
 		//m_handle_rc{ new size_t{1} }
 	{
 		if (handle == nullptr)
@@ -675,6 +704,16 @@ namespace ig
 	const Context3D &Window::get_3d_context() const noexcept
 	{
 		return m_context_3d;
+	}
+
+	TimeMs_t Window::get_creation_time() const noexcept
+	{
+		return m_creation_time;
+	}
+
+	float Window::get_shader_time() const noexcept
+	{
+		return (float)glfwGetTime() - m_stp;
 	}
 
 	void Window::close() noexcept

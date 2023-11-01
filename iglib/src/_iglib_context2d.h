@@ -35,6 +35,9 @@ namespace ig
 		void unbind_shader();
 		ShaderId_t get_shader_id() const noexcept;
 
+		// will update the _screensize and _time
+		void update_shader_uniforms();
+
 		const Window &get_window() const;
 
 	private:
