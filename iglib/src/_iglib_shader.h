@@ -14,7 +14,10 @@ namespace ig
 		~Shader();
 
 		static std::shared_ptr<Shader> get_default();
-		static std::shared_ptr<Shader> create(const std::string &vertex_src, const std::string &fragment_src);
+		static std::shared_ptr<Shader> compile(const std::string &vertex_src, const std::string &fragment_src);
+
+		// will create a raw shader, it's hard to be complaient with the current implementation so try to not use it
+		static std::shared_ptr<Shader> compile_raw(const std::string &vertex_src, const std::string &fragment_src);
 		
 
 		ShaderId_t get_id() const noexcept;

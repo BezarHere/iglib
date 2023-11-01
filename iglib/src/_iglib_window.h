@@ -1,8 +1,7 @@
 #pragma once
 #include "_iglib_base.h"
 #include "_iglib_rect.h"
-#include "_iglib_context2d.h"
-#include "_iglib_context3d.h"
+#include "_iglib_canvas.h"
 #include <memory>
 
 namespace ig
@@ -233,18 +232,8 @@ namespace ig
 		bool is_deffered_to_close() const noexcept;
 		bool is_focused() const noexcept;
 
-		void set_draw2d_callback(Draw2DCallback callback) noexcept;
-		Draw2DCallback get_draw2d_callback() const noexcept;
-
-		void set_draw3d_callback(Draw3DCallback callback) noexcept;
-		Draw3DCallback get_draw3d_callback() const noexcept;
-
-		Context2D &get_2d_context() noexcept;
-		const Context2D &get_2d_context() const noexcept;
-
-		// Not recomended to draw to this, full of unpredictable behivore. use 
-		Context3D &get_3d_context() noexcept;
-		const Context3D &get_3d_context() const noexcept;
+		void set_draw_callback(DrawCallback callback) noexcept;
+		DrawCallback get_draw_callback() const noexcept;
 
 		TimeMs_t get_creation_time() const noexcept;
 		float get_shader_time() const noexcept;
@@ -287,12 +276,8 @@ namespace ig
 
 		const TimeMs_t m_creation_time;
 		const float m_stp;
-		
-		Context2D m_context_2d;
-		Context3D m_context_3d;
 
-		Draw2DCallback m_draw_2d_callback = nullptr;
-		Draw3DCallback m_draw_3d_callback = nullptr;
+		DrawCallback m_draw_callback = nullptr;
 
 		WindowCallback_t m_callback = nullptr;
 		KeyCallback_t m_key_callback = nullptr;

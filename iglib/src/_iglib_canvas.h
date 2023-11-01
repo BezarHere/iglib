@@ -9,10 +9,11 @@ namespace ig
 {
 	class Window;
 
-	class Context2D
+	class Canvas
 	{
 	public:
-		Context2D(const Window &wnd);
+		Canvas(const Window &wnd);
+		~Canvas();
 
 		void quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorb clr);
 		void rect(Vector2f start, Vector2f end, const Colorb clr);
@@ -45,6 +46,6 @@ namespace ig
 		ShaderId_t m_shader;
 	};
 
-	typedef void(*Draw2DCallback)(Context2D context);
+	typedef void(*DrawCallback)(Canvas canvas);
 
 }

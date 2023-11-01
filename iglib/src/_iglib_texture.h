@@ -9,7 +9,7 @@ namespace ig
 	// an 2D array of pixel saved in the VRAM
 	class Texture
 	{
-		friend class Context2D;
+		friend class Canvas;
 		friend class Context3D;
 	public:
 		Texture();

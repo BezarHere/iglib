@@ -80,7 +80,7 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 	std::cout << (int)key << '\n';
 }
 
-void draw2d_callback(Context2D c)
+void draw2d_callback(Canvas c)
 {
 	const ig::Vector2f m = c.get_window().get_mouse_position();
 	/*constexpr size_t iters = 100000;
@@ -138,8 +138,8 @@ int main()
 
 		i.set_callback(callback);
 		i.set_key_callback(key_callback);
-		i.set_draw2d_callback(draw2d_callback);
-		p.set_draw2d_callback(draw2d_callback);
+		i.set_draw_callback(draw2d_callback);
+		p.set_draw_callback(draw2d_callback);
 
 		std::cout << ig::get_opengl_version() << '\n';
 

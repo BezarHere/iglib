@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "_iglib_window.h"
-#include "_iglib_context2d.h"
+#include "_iglib_canvas.h"
 #include "internal.h"
 #include "intrinsics.h"
 #include "draw_internal.h"
@@ -160,12 +160,17 @@ __forceinline [[nodiscard]] void to_clamped_space(vector2_qbuffer &val, const Ve
 
 namespace ig
 {
-	Context2D::Context2D(const Window &wnd)
+	Canvas::Canvas(const Window &wnd)
 		: m_wnd{ wnd }, m_shader{ 0 }
 	{
 	}
 
-	void Context2D::quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorb clr)
+	Canvas::~Canvas()
+	{
+		glUseProgram(0);
+	}
+
+	void Canvas::quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorb clr)
 	{
 		const Vector2f wf = m_wnd.get_size();
 		p0 = to_clamped_space(p0, wf);
@@ -193,7 +198,7 @@ namespace ig
 		//glEnd();
 	}
 
-	void Context2D::rect(Vector2f start, Vector2f end, const Colorb clr)
+	void Canvas::rect(Vector2f start, Vector2f end, const Colorb clr)
 	{
 		start = to_clamped_space(start, m_wnd.get_size());
 		end = to_clamped_space(end, m_wnd.get_size());
@@ -202,7 +207,7 @@ namespace ig
 		glRectf(start.x, start.y, end.x, end.y);
 	}
 
-	void Context2D::traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorb clr)
+	void Canvas::traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorb clr)
 	{
 		p0 = to_clamped_space(p0, m_wnd.get_size());
 		p1 = to_clamped_space(p1, m_wnd.get_size());
@@ -216,12 +221,12 @@ namespace ig
 		glEnd();
 	}
 
-	void Context2D::line(Vector2f start, Vector2f end, const Colorb clr)
+	void Canvas::line(Vector2f start, Vector2f end, const Colorb clr)
 	{
 		line(start, end, 1.0f, clr);
 	}
 
-	void Context2D::line(Vector2f start, Vector2f end, float_t width, const Colorb clr)
+	void Canvas::line(Vector2f start, Vector2f end, float_t width, const Colorb clr)
 	{
 		start = to_clamped_space(start, m_wnd.get_size());
 		end = to_clamped_space(end, m_wnd.get_size());
@@ -234,7 +239,7 @@ namespace ig
 		glEnd();
 	}
 
-	void Context2D::traingle_strips(const vector2f_buffer_view_t points, const Colorb clr)
+	void Canvas::traingle_strips(const vector2f_buffer_view_t points, const Colorb clr)
 	{
 		glBegin(GL_TRIANGLE_STRIP);
 		glColor3(clr);
@@ -245,7 +250,7 @@ namespace ig
 		glEnd();
 	}
 
-	void Context2D::draw(Vertex2D *vert, size_t count, PrimitiveType draw_type)
+	void Canvas::draw(Vertex2D *vert, size_t count, PrimitiveType draw_type)
 	{
 		glBegin(to_glprimitve(draw_type));
 
@@ -255,7 +260,7 @@ namespace ig
 		glEnd();
 	}
 
-	void Context2D::circle(float radius, Vector2f center, const Colorb clr, const uint16_t res)
+	void Canvas::circle(float radius, Vector2f center, const Colorb clr, const uint16_t res)
 	{
 		glBegin(GL_TRIANGLE_FAN);
 		glColor3(clr);
@@ -266,7 +271,7 @@ namespace ig
 		glEnd();
 	}
 
-	void Context2D::draw(const Vertex2DBuffer &buf)
+	void Canvas::draw(const Vertex2DBuffer &buf)
 	{
 		if (m_shader)
 			update_shader_uniforms();
@@ -292,7 +297,7 @@ namespace ig
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
 	}
 
-	void Context2D::draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies)
+	void Canvas::draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies)
 	{
 		if (m_shader)
 			update_shader_uniforms();
@@ -320,7 +325,7 @@ namespace ig
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
 	}
 
-	void Context2D::demo()
+	void Canvas::demo()
 	{
 		//glEnable(GL_TEXTURE_2D);
 
@@ -499,7 +504,7 @@ namespace ig
 		glFlush();  // Render now
 	}
 
-	void Context2D::bind_shader(const Shader *shader)
+	void Canvas::bind_shader(const Shader *shader)
 	{
 		glUseProgram(shader->get_id());
 
@@ -508,24 +513,24 @@ namespace ig
 		m_shader = shader->get_id();
 	}
 
-	void Context2D::unbind_shader()
+	void Canvas::unbind_shader()
 	{
 		glUseProgram(0);
 		m_shader = 0;
 	}
 
-	ShaderId_t Context2D::get_shader_id() const noexcept
+	ShaderId_t Canvas::get_shader_id() const noexcept
 	{
 		return m_shader;
 	}
 
-	void Context2D::update_shader_uniforms()
+	void Canvas::update_shader_uniforms()
 	{
 		glUniform2f(0, m_wnd.get_width(), m_wnd.get_height());
 		glUniform1f(1, m_wnd.get_shader_time());
 	}
 
-	const Window &Context2D::get_window() const
+	const Window &Canvas::get_window() const
 	{
 		return m_wnd;
 	}

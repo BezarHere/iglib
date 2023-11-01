@@ -4,14 +4,14 @@
 
 namespace ig
 {
-	class Context2D;
+	class Canvas;
 
 	// unpredictable behivore outside render/draw callbacks
 	// only one can be created at a time
 	class BatchDraw
 	{
 	public:
-		BatchDraw(Context2D c, PrimitiveType type);
+		BatchDraw(Canvas c, PrimitiveType type);
 		~BatchDraw();
 
 		void vertex(Vector2f v);

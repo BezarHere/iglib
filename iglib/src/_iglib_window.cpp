@@ -373,8 +373,6 @@ namespace ig
 		m_visible_state{ WindowVisibiltyState::Restored },
 		m_focused{ false },
 		m_hidden{ false },
-		m_context_2d{ *this },
-		m_context_3d{ *this },
 		m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) },
 		m_stp{ (float)glfwGetTime() }
 			//m_handle_rc{ new size_t{1} }
@@ -414,8 +412,6 @@ namespace ig
 			m_focused{ move.m_focused },
 			m_title( move.m_title ),
 			m_hidden{ move.m_hidden },
-			m_context_2d{ *this },
-			m_context_3d{ *this },
 			m_stp{ move.m_stp }
 	{
 		if (move.m_hdl == nullptr)
@@ -432,8 +428,6 @@ namespace ig
 			m_focused{ false },
 			m_title{ title },
 			m_hidden{ hidden },
-			m_context_2d{ *this },
-			m_context_3d{ *this },
 			m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) },
 			m_stp{ (float)glfwGetTime() }
 		//m_handle_rc{ new size_t{1} }
@@ -586,11 +580,9 @@ namespace ig
 		glLoadIdentity();
 		glOrtho(0.f, get_width(), get_height(), 0.f, 0.f, 1.f);
 
-		if (m_draw_2d_callback)
-			m_draw_2d_callback(m_context_2d);
 
-		if (m_draw_3d_callback)
-			m_draw_3d_callback(m_context_3d);
+		if (m_draw_callback)
+			m_draw_callback(Canvas{*this});
 
 		pop_draw_pipline();
 		glfwSwapBuffers((GLFWwindow *)m_hdl);
@@ -621,24 +613,14 @@ namespace ig
 		return m_focused;
 	}
 
-	void Window::set_draw2d_callback(Draw2DCallback callback) noexcept
+	void Window::set_draw_callback(DrawCallback callback) noexcept
 	{
-		m_draw_2d_callback = callback;
+		m_draw_callback = callback;
 	}
 
-	Draw2DCallback Window::get_draw2d_callback() const noexcept
+	DrawCallback Window::get_draw_callback() const noexcept
 	{
-		return m_draw_2d_callback;
-	}
-
-	void Window::set_draw3d_callback(Draw3DCallback callback) noexcept
-	{
-		m_draw_3d_callback = callback;
-	}
-
-	Draw3DCallback Window::get_draw3d_callback() const noexcept
-	{
-		return m_draw_3d_callback;
+		return m_draw_callback;
 	}
 
 	void Window::hide()
@@ -684,26 +666,6 @@ namespace ig
 	Image Window::to_image() const
 	{
 		return to_image({ 0, 0, get_width(), get_height() });
-	}
-
-	Context2D &Window::get_2d_context() noexcept
-	{
-		return m_context_2d;
-	}
-
-	const Context2D &Window::get_2d_context() const noexcept
-	{
-		return m_context_2d;
-	}
-
-	Context3D &Window::get_3d_context() noexcept
-	{
-		return m_context_3d;
-	}
-
-	const Context3D &Window::get_3d_context() const noexcept
-	{
-		return m_context_3d;
 	}
 
 	TimeMs_t Window::get_creation_time() const noexcept

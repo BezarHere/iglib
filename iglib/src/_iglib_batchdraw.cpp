@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "_iglib_batchdraw.h"
-#include "_iglib_context2d.h"
+#include "_iglib_canvas.h"
 #include "_iglib_window.h"
 #include "draw_internal.h"
 
@@ -11,7 +11,7 @@ const Window *g_WorkingBatchDrawWindow;
 namespace ig
 {
 
-	BatchDraw::BatchDraw(Context2D c, PrimitiveType type)
+	BatchDraw::BatchDraw(Canvas c, PrimitiveType type)
 	{
 		if (g_WorkingBatchDraw)
 			raise("Can't create more then one BatchDraw object at the same time");

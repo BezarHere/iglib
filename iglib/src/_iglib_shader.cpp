@@ -8,30 +8,42 @@ constexpr auto VertexDefaultSrc =
 "layout (location = 1) in vec4 clr;\n"
 "layout (location = 2) in vec2 uv;\n"
 "layout (location = 3) in vec2 normal;\n"
-"out vec4 out_color;\n"
+"out vec4 FragColor;\n"
+//"out float Time;\n"
 "uniform vec2 _screensize;\n"
 "uniform float _time;\n"
 "void main() {\n"
-"vec2 native_pos = vec2(pos.x / _screensize.x, 1.0 - (pos.y / _screensize.y)) * 2.0 - vec2(1.0);"
+"vec2 native_pos = vec2((pos.x + (sin(_time) * 8.0)) / _screensize.x, 1.0 - ((pos.y + (cos(_time) * 8.0)) / _screensize.y)) * 2.0 - vec2(1.0);"
 "gl_Position = vec4(native_pos, 0.0, 1.0);\n"
-//"out_color = vec4(1.0, 1.0, 0.0, 1.0);\n"
-"out_color = clr;\n"
-"out_color = vec4(uv, (sin(_time) + 1.0) / 2.0, 1.0) * clr;\n"
-"}\n"
-;
+//"FragColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
+"FragColor = clr;\n"
+"FragColor = vec4(uv, (sin(_time) + 1.0) / 2.0, 1.0) * clr;\n"
+//"Time = _time;\n"
+"}\n";
 
 constexpr auto FragmentDefaultSrc =
 "#version 330 core\n"
-"out vec4 fColor;\n"
-"in vec4 out_color;\n"
+"out vec4 OutColor;\n"
+"in vec4 FragColor;\n"
+//"in float Time;\n"
 "void main() {\n"
-"fColor = out_color;\n"
-"}\n"
-;
+"OutColor = FragColor;\n"
+"}\n";
+
+struct ShaderTemplate
+{
+	int version; // compat version are negtive
+	bool fragtime = true;
+};
 
 //static Shader g_Default( VertexDefaultSrc, FragmentDefaultSrc );
 
-GLuint compileShaders(std::string shader, GLenum type)
+//GLuint compile_template_shader(const std::string &src, GLenum type, const ShaderTemplate &t)
+//{
+//	
+//}
+
+GLuint compile_shaders(const std::string &shader, GLenum type)
 {
 
 	const char *shaderCode = shader.c_str();
@@ -164,10 +176,15 @@ namespace ig
 {
 	std::shared_ptr<Shader> Shader::get_default()
 	{
-		return create(VertexDefaultSrc, FragmentDefaultSrc);
+		return compile_raw(VertexDefaultSrc, FragmentDefaultSrc);
 	}
 
-	std::shared_ptr<Shader> Shader::create(const std::string &vertex_src, const std::string &fragment_src)
+	std::shared_ptr<Shader> Shader::compile(const std::string &vertex_src, const std::string &fragment_src)
+	{
+		return std::shared_ptr<Shader>();
+	}
+
+	std::shared_ptr<Shader> Shader::compile_raw(const std::string &vertex_src, const std::string &fragment_src)
 	{
 		return std::shared_ptr<Shader>(new Shader(gen_program(gen_shader(vertex_src, GL_VERTEX_SHADER), gen_shader(fragment_src, GL_FRAGMENT_SHADER))));
 	}
