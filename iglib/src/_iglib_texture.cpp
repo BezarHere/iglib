@@ -11,11 +11,11 @@ struct TextureInternal
 };
 
 std::vector<TextureInternal> g_tex(1024);
-glTextureHdl_t g_BindedHdl;
+TextureId_t g_BindedHdl;
 
-FORCEINLINE glTextureHdl_t register_tex(uint32_t w, uint32_t h, Channels c, std::shared_ptr<unsigned char[]> buf)
+FORCEINLINE TextureId_t register_tex(uint32_t w, uint32_t h, Channels c, std::shared_ptr<unsigned char[]> buf)
 {
-	glTextureHdl_t ghdl;
+	TextureId_t ghdl;
 	glGenTextures(1, &ghdl);
 
 	if (ghdl == NULL)
@@ -43,7 +43,7 @@ FORCEINLINE glTextureHdl_t register_tex(uint32_t w, uint32_t h, Channels c, std:
 	return ghdl;
 }
 
-FORCEINLINE void unregister_tex(glTextureHdl_t hdl)
+FORCEINLINE void unregister_tex(TextureId_t hdl)
 {
 	if (!hdl)
 		return;
@@ -51,7 +51,7 @@ FORCEINLINE void unregister_tex(glTextureHdl_t hdl)
 	glDeleteTextures(1, &hdl);
 }
 
-FORCEINLINE glTextureHdl_t duplicate_tex(const glTextureHdl_t hdl)
+FORCEINLINE TextureId_t duplicate_tex(const TextureId_t hdl)
 {
 	if (!hdl)
 		return NULL;
@@ -145,7 +145,7 @@ namespace ig
 		return g_tex[ m_handle ].c;
 	}
 
-	glTextureHdl_t Texture::get_handle() const noexcept
+	TextureId_t Texture::get_handle() const noexcept
 	{
 		return m_handle;
 	}

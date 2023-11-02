@@ -156,7 +156,7 @@ namespace ig
 			return *this;
 		}
 
-		inline this_type &operator*=(const _T other)
+		inline this_type &operator*=(const value_type other)
 		{
 			x *= other;
 			y *= other;
@@ -170,7 +170,7 @@ namespace ig
 			return *this;
 		}
 
-		inline this_type &operator/=(const _T other)
+		inline this_type &operator/=(const value_type other)
 		{
 			x /= other;
 			y /= other;

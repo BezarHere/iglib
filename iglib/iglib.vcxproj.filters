@@ -54,7 +54,7 @@
     <ClInclude Include="src\_iglib_color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\_iglib_transform2d.h">
+    <ClInclude Include="src\_iglib_transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\intrinsics.h">

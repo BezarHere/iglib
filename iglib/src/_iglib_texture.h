@@ -4,7 +4,7 @@
 
 namespace ig
 {
-	typedef unsigned int glTextureHdl_t;
+	typedef unsigned int TextureId_t;
 
 	// an 2D array of pixel saved in the VRAM
 	class Texture
@@ -34,9 +34,9 @@ namespace ig
 		Vector2i get_size() const noexcept;
 		Channels get_channels() const noexcept;
 
-		glTextureHdl_t get_handle() const noexcept;
+		TextureId_t get_handle() const noexcept;
 
 	private:
-		glTextureHdl_t m_handle;
+		TextureId_t m_handle;
 	};
 }

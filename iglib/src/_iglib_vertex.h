@@ -107,10 +107,24 @@ namespace ig
 		using vertex_type = Vertex3D;
 
 		Vertex3DBuffer();
+		Vertex3DBuffer(size_t size);
+
 		~Vertex3DBuffer();
 
+		void create(const size_t size, const vertex_type *vertices = nullptr);
 
+		/// updates the vertex buffer
+		/// \param vertcies: the vertices that are loaded
+		/// \param vertices_count: the vertices count to be loaded
+		/// \param offset: where should the vertcies be put (e.g. 0 will put the vertices at the begining of the buffer and forward and 2 will put them at index [2] and forward)
+		void update(const vertex_type *vertcies, const size_t vertices_count, const uint32_t offset);
+
+		/// will update the entire current buffer with \p vertcies, \p vertices should be an array with size not smaller then the buffer size
+		///
+		/// same as vert_buffer.update(vertcies, vert_buffer.get_size(), 0)
+		void update(const vertex_type *vertcies);
 	};
 
+	// TODO: add a Vertex2DBatch and a Vertex3DBatch
 
 }

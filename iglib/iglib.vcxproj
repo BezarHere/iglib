@@ -215,7 +215,7 @@
     <ClInclude Include="src\_iglib_window.h" />
     <ClInclude Include="src\_iglib_matrix.h" />
     <ClInclude Include="src\_iglib_color.h" />
-    <ClInclude Include="src\_iglib_transform2d.h" />
+    <ClInclude Include="src\_iglib_transform.h" />
     <ClInclude Include="src\_iglib_polygon.h" />
     <ClInclude Include="src\_iglib_image.h" />
     <ClInclude Include="src\_iglib_texture.h" />

@@ -63,12 +63,12 @@ namespace ig
 	}
 	
 	Vertex2DBuffer::Vertex2DBuffer()
-		: BaseVertexBuffer(create_buffer())
+		: BaseVertexBuffer(NULL)
 	{
 	}
 
 	Vertex2DBuffer::Vertex2DBuffer(size_t size)
-		: BaseVertexBuffer(0)
+		: BaseVertexBuffer(NULL)
 	{
 		create(size);
 	}
@@ -114,11 +114,54 @@ namespace ig
 	}
 
 	Vertex3DBuffer::Vertex3DBuffer()
-		: BaseVertexBuffer(create_buffer())
+		: BaseVertexBuffer(NULL)
 	{
+	}
+
+	Vertex3DBuffer::Vertex3DBuffer(size_t size)
+		: BaseVertexBuffer(NULL)
+	{
+		create(size);
 	}
 
 	Vertex3DBuffer::~Vertex3DBuffer()
 	{
+		if (m_id)
+			free_buffer(m_id);
 	}
+
+	void Vertex3DBuffer::create(const size_t size, const vertex_type *vertices)
+	{
+		if (m_id)
+			free_buffer(m_id);
+
+		m_size = size;
+		m_id = create_buffer();
+		_bind_array_buffer();
+
+
+		glBufferData(GL_ARRAY_BUFFER, size * sizeof(vertex_type), vertices, to_gldrawusage(m_usage));
+
+		if (!_unbind_array_buffer())
+			raise(format("POSSIBLE RACE COND: at 'create': last bound vertex buffer 3d (id {}) was unbounded mid process", m_id));
+	}
+
+	void Vertex3DBuffer::update(const vertex_type *vertcies, const size_t vertices_count, const uint32_t offset)
+	{
+		if (offset + vertices_count > m_size)
+			raise("overflowing a vertex buffer 2d");
+
+		_bind_array_buffer();
+
+		glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(vertex_type), vertices_count * sizeof(vertex_type), vertcies);
+
+		if (!_unbind_array_buffer())
+			raise(format("POSSIBLE RACE COND: at 'update': last bound vertex buffer 3d (id {}) was unbounded mid process", m_id));
+	}
+
+	void Vertex3DBuffer::update(const vertex_type *vertcies)
+	{
+		update(vertcies, get_size(), 0);
+	}
+
 }

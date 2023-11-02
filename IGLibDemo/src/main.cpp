@@ -12,6 +12,8 @@ using namespace ig;
 
 const std::string current_dir = "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\";
 
+ig::Transform2D tr{};
+
 struct LARGE
 {
 	LARGE()
@@ -67,14 +69,35 @@ std::string readall(const std::string &fs)
 	return st;
 }
 
+Vector2f mouse_pos_when_space = { 0.f, 0.f };
 void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::KeyModFlags mods)
 {
 	if (key == ig::Key_W)
 	{
+		tr.rotate(0.1);
 		window.ping();
-		ig::Image img = window.to_image();
+		/*ig::Image img = window.to_image();
 		img.flip_v();
-		img.save_tga("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.tga");
+		img.save_tga("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.tga");*/
+	}
+
+	if (key == ig::Key_S)
+	{
+		tr.rotate(-0.1);
+	}
+
+
+	if (key == ig::Key_Space)
+	{
+		mouse_pos_when_space = window.get_mouse_position();
+		tr.set_scale(tr.get_scale() + Vector2f{ 0.1f, 0.1f });
+	}
+
+
+	if (key == ig::Key_LeftControl)
+	{
+		mouse_pos_when_space = window.get_mouse_position();
+		tr.set_scale(tr.get_scale() - Vector2f{ 0.1f, 0.1f });
 	}
 
 	std::cout << (int)key << '\n';
@@ -97,10 +120,12 @@ void draw2d_callback(Canvas c)
 	}*/
 
 	//ig::Shader ss{};
+	tr.set_position(m);
+	c.transform2d() = tr;
 	c.demo();
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 
-	
+	//c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 255, 255, 200, 255 });
 
 	//c.bind_shader(ss);
 	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});

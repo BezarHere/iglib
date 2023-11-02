@@ -3,7 +3,9 @@
 #include "_iglib_indexbuffer.h"
 #include "_iglib_batchdraw.h"
 #include "_iglib_image.h"
+#include "_iglib_texture.h"
 #include "_iglib_shader.h"
+#include "_iglib_transform.h"
 
 namespace ig
 {
@@ -21,18 +23,17 @@ namespace ig
 		void line(Vector2f start, Vector2f end, const Colorb clr);
 		void line(Vector2f start, Vector2f end, float_t width, const Colorb clr);
 
-		void traingle_strips(const vector2f_buffer_view_t points, const Colorb clr);
-
-
 		void circle(float radius, Vector2f center, const Colorb clr, const uint16_t vertcies_count = 32);
 		
 		void draw(Vertex2D *vert, size_t count, PrimitiveType draw_type);
 		void draw(const Vertex2DBuffer &buf);
 		void draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies);
 
+		void draw(const Vertex3DBuffer &buf);
+
 		void demo();
 
-		void bind_shader(const Shader *shader);
+		void bind_shader(const std::shared_ptr<Shader> &shader);
 		void unbind_shader();
 		ShaderId_t get_shader_id() const noexcept;
 
@@ -41,9 +42,18 @@ namespace ig
 
 		const Window &get_window() const;
 
+		inline Transform2D &transform2d() noexcept { return m_trans2d; }
+		inline const Transform2D &transform2d() const noexcept { return m_trans2d; }
+
+		//inline Transform3D &transform3d() noexcept { return m_trans3d; }
+		//inline const Transform3D &transform3d() const noexcept { return m_trans3d; }
+
 	private:
 		const Window &m_wnd;
-		ShaderId_t m_shader;
+		std::shared_ptr<const Shader> m_shader;
+		TextureId_t m_tex;
+		Transform2D m_trans2d{};
+		//Transform3D m_trans3d;
 	};
 
 	typedef void(*DrawCallback)(Canvas canvas);
