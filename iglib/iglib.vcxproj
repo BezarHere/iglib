@@ -240,6 +240,8 @@
     <ClCompile Include="src\_iglib_texture.cpp" />
     <ClCompile Include="src\_iglib_batchdraw.cpp" />
     <ClCompile Include="src\_iglib_vertex.cpp" />
+    <ClCompile Include="src\_iglib_wavefront_obj.cpp" />
+    <ClCompile Include="src\_iglib_wavefront_obj.h" />
     <ClCompile Include="src\_iglib_window.cpp" />
   </ItemGroup>
   <ItemGroup>
