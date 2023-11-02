@@ -90,6 +90,9 @@
     <ClInclude Include="src\_iglib_indexbuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\_iglib_wavefront_obj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp">
@@ -132,9 +135,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\_iglib_indexbuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\_iglib_wavefront_obj.h">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\_iglib_wavefront_obj.cpp">

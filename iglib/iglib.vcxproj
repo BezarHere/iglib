@@ -150,6 +150,8 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -212,6 +214,7 @@
     <ClInclude Include="src\_iglib_shader.h" />
     <ClInclude Include="src\_iglib_vector.h" />
     <ClInclude Include="src\_iglib_batchdraw.h" />
+    <ClInclude Include="src\_iglib_wavefront_obj.h" />
     <ClInclude Include="src\_iglib_window.h" />
     <ClInclude Include="src\_iglib_matrix.h" />
     <ClInclude Include="src\_iglib_color.h" />
@@ -241,7 +244,6 @@
     <ClCompile Include="src\_iglib_batchdraw.cpp" />
     <ClCompile Include="src\_iglib_vertex.cpp" />
     <ClCompile Include="src\_iglib_wavefront_obj.cpp" />
-    <ClCompile Include="src\_iglib_wavefront_obj.h" />
     <ClCompile Include="src\_iglib_window.cpp" />
   </ItemGroup>
   <ItemGroup>

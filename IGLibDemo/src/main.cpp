@@ -135,6 +135,7 @@ void draw2d_callback(Canvas c)
 
 int main()
 {
+	ig::wavefront::Obj o{ "v 12 44 41\nv 54 65 11\n\nvp 12" };
 
 	std::cout << readall(current_dir + "\\main.cpp") << '\n';
 
