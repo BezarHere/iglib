@@ -49,6 +49,7 @@ namespace ig
 		PrimitiveType get_primitive() const noexcept;
 
 		void set_primitive(PrimitiveType prim);
+		void set_usage(BufferUsage usage);
 
 		/// Internal OpenGL function
 		VertexBufferId_t get_id() const noexcept;

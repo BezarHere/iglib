@@ -43,6 +43,11 @@ namespace ig
 		m_type = prim;
 	}
 
+	void BaseVertexBuffer::set_usage(BufferUsage usage)
+	{
+		m_usage = usage;
+	}
+
 	VertexBufferId_t BaseVertexBuffer::get_id() const noexcept
 	{
 		return m_id;
