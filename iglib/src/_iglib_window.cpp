@@ -575,6 +575,7 @@ namespace ig
 	{
 		push_to_draw_pipline((WindowHandle_t)m_hdl);
 		glDisable(GL_DEPTH);
+		//glEnable(GL_DEPTH_TEST);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -599,7 +600,7 @@ namespace ig
 	{
 		push_to_draw_pipline((WindowHandle_t)m_hdl);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		pop_draw_pipline();
 	}
 

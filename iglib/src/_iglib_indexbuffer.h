@@ -6,8 +6,14 @@ namespace ig
 	class IndexBuffer
 	{
 	public:
+#ifdef HIGH_RANGE_INDECIES
+		using index_type = unsigned int;
+#else
+		using index_type = unsigned short;
+#endif
+
 		IndexBuffer();
-		IndexBuffer(size_t size, const uint32_t *indcies = nullptr);
+		IndexBuffer(size_t size, const index_type *indcies = nullptr);
 
 		size_t get_size() const;
 		uint32_t get_id() const;
@@ -16,14 +22,14 @@ namespace ig
 		void set_usage(BufferUsage usage);
 
 		
-		void generate(size_t size, const uint32_t *indcies = nullptr);
+		void generate(size_t size, const index_type *indcies = nullptr);
 
-		void update(const uint32_t *indcies, const size_t indcies_count, const uint32_t offset);
+		void update(const index_type *indcies, const size_t indcies_count, const uint32_t offset);
 
 		/// @brief will update the entire current buffer with @p vertcies, @p vertices should be an array with size not smaller then the buffer size
 		///
 		/// same as index_buffer.update(indcies, index_buffer.get_size(), 0)
-		void update(const uint32_t *indcies);
+		void update(const index_type *indcies);
 
 	private:
 		struct _buffer

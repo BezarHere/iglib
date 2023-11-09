@@ -123,13 +123,14 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 			ss << "layout (location = 3) in vec3 normal;";
 
 		ss << "out vec4 FragColor;";
+		ss << "out vec2 UV;";
 
 		//if (temp.fragtime)
 		//	ss << "out float FragTime;";
 
 
 		ss << "uniform vec2 _screensize;"
-			"uniform vec2 _t;";
+			"uniform vec2 _time;";
 
 
 		if (temp.usage == ShaderUsage::Usage3D)
@@ -142,7 +143,6 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 			ss << "uniform mat2 _trans;";
 			ss << "uniform vec2 _offset;";
 		}
-		ss << "uniform sampler2D _tex;";
 
 		if (temp.custom_code.state == CustomCodeState::AfterUniforms)
 		{
@@ -162,17 +162,34 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 
 		if (temp.usage != ShaderUsage::ScreenSpace)
 		{
-			ss << (temp.usage == ShaderUsage::Usage2D ? "vec2" : "vec3");
-			ss << " tpos = (pos * _trans) + _offset;";
-			ss << "gl_Position = vec4(vec2(tpos.x / _screensize.x, 1.0 - (tpos.y / _screensize.y)) * 2.0 - vec2(1.0), 0.0, 1.0);";
+			
+			if (temp.usage == ShaderUsage::Usage3D)
+			{
+
+				ss << "vec3 tpos = ";
+				ss << "(pos * _trans) + _offset;";
+				ss << "gl_Position = vec4(vec2(tpos.x / _screensize.x, 1.0 - (tpos.y / _screensize.y)) * 2.0 - vec2(1.0), tpos.z, 1.0);";
+				/*ss << "vec2 tpos = ";
+				ss << "pos;";
+				ss << "gl_Position = vec4(vec2(tpos.x / _screensize.x, 1.0 - (tpos.y / _screensize.y)) * 2.0 - vec2(1.0), 0.0, 1.0);";*/
+			}
+			else
+			{
+				ss << "vec2 tpos = ";
+				ss << "(pos * _trans) + _offset;";
+				ss << "gl_Position = vec4(vec2(tpos.x / _screensize.x, 1.0 - (tpos.y / _screensize.y)) * 2.0 - vec2(1.0), 0.0, 1.0);";
+			}
 		}
 		else
 		{
 			ss << "gl_Position = vec4(vec2(pos.x / _screensize.x, 1.0 - (pos.y / _screensize.y)) * 2.0 - vec2(1.0), 0.0, 1.0);";
 		}
 
-		
-		ss << "FragColor = vec4(texcoord, 0.0, 0.0) * clr;";
+		//if (temp.usage == ShaderUsage::Usage2D)
+		//	ss << "FragColor = vec4(_trans[0].xyz, 1.0) * clr;";
+		//else
+		ss << "FragColor = clr;";
+		ss << "UV = texcoord;";
 
 		//if (temp.fragtime)
 		//{
@@ -184,8 +201,10 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 	else if (temp.type == GL_FRAGMENT_SHADER)
 	{
 		ss << "out vec4 Color;"
-					"in vec4 FragColor;";
+					"in vec4 FragColor;"
+					"in vec2 UV;";
 
+		ss << "uniform sampler2D _tex;";
 		//if (temp.fragtime)
 		//{
 		//	ss << "in float FragTime;";
@@ -205,11 +224,11 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 			return ss.str();
 		}
 
+		//ss << "Color = texture(_tex, UV) * FragColor;";
 		ss << "Color = FragColor;";
 		ss << "}";
 	}
 
-	std::cout << ss.str() << '\n';
 	return ss.str();
 }
 
@@ -346,19 +365,22 @@ namespace ig
 {
 	std::shared_ptr<Shader> Shader::get_default(ShaderUsage usage)
 	{
-		static std::string defaul_vertex;
-		static std::string defaul_fragment;
-		static bool _first_call = true;
-		if (_first_call)
+		struct
 		{
-			defaul_vertex = generate_shader_code({ DefaultShaderVersion, GL_VERTEX_SHADER, usage });
-			defaul_fragment = generate_shader_code({ DefaultShaderVersion, GL_FRAGMENT_SHADER, usage });
-			_first_call = false;
+			bool inited = false;
+			std::string vertex, fragment;
+		} static cache_defaults[ (int)ShaderUsage::_Max ]{};
+
+		if (!cache_defaults[(int)usage].inited)
+		{
+			cache_defaults[ (int)usage ].vertex = generate_shader_code({ DefaultShaderVersion, GL_VERTEX_SHADER, usage });
+			cache_defaults[ (int)usage ].fragment = generate_shader_code({ DefaultShaderVersion, GL_FRAGMENT_SHADER, usage });
+			cache_defaults[ (int)usage ].inited = true;
 		}
 
 		return compile_raw(
-			defaul_vertex,
-			defaul_fragment,
+			cache_defaults[ (int)usage ].vertex,
+			cache_defaults[ (int)usage ].fragment,
 			usage
 		);
 	}

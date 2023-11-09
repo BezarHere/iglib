@@ -2,29 +2,42 @@
 #include "_iglib_texture.h"
 #include "draw_internal.h"
 #include "internal.h"
+#include <map>
 
-struct TextureInternal
+static struct Texture::_TextureInternal
 {
+
+	FORCEINLINE ~_TextureInternal()
+	{
+		if (handle)
+			glDeleteTextures(1, &handle);
+	}
+
+	TextureId_t handle;
 	uint32_t w = 0, h = 0;
 	Channels c = Channels::Invalid;
 	std::shared_ptr<unsigned char[]> buffer{};
 };
 
-std::vector<TextureInternal> g_tex(1024);
-TextureId_t g_BindedHdl;
+using TextureInternal = Texture::_TextureInternal;
 
-FORCEINLINE TextureId_t register_tex(uint32_t w, uint32_t h, Channels c, std::shared_ptr<unsigned char[]> buf)
+static TextureId_t g_BindedHdl;
+
+
+FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h, Channels c, std::shared_ptr<unsigned char[]> buf)
 {
-	TextureId_t ghdl;
-	glGenTextures(1, &ghdl);
+	std::unique_ptr<TextureInternal> tex{ new TextureInternal{} };
+	TextureId_t hdl = 0;
+	glGenTextures(1, &hdl);
+	tex->handle = hdl;
 
-	if (ghdl == NULL)
+	if (tex->handle == NULL)
 	{
 		glfwerror();
-		return 0;
+		return tex;
 	}
 
-	glBindTexture(GL_TEXTURE_2D, ghdl);
+	glBindTexture(GL_TEXTURE_2D, tex->handle);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, to_glpixelformat(c), w, h, 0, to_glpixelformat(c), GL_UNSIGNED_BYTE, buf.get());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -32,45 +45,33 @@ FORCEINLINE TextureId_t register_tex(uint32_t w, uint32_t h, Channels c, std::sh
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	if (g_tex.size() < ghdl)
-		g_tex.resize((size_t)(ghdl * 2));
+	tex->w = w;
+	tex->h = h;
+	tex->c = c;
+	tex->buffer = buf;
 
-	g_tex[ ghdl ].w = w;
-	g_tex[ ghdl ].h = h;
-	g_tex[ ghdl ].c = c;
-	g_tex[ ghdl ].buffer = buf;
-
-	return ghdl;
+	return tex;
 }
 
-FORCEINLINE void unregister_tex(TextureId_t hdl)
+FORCEINLINE std::unique_ptr<TextureInternal> duplicate_tex(const TextureInternal *inter)
 {
-	if (!hdl)
-		return;
-	g_tex[ hdl ].buffer.reset();
-	glDeleteTextures(1, &hdl);
-}
-
-FORCEINLINE TextureId_t duplicate_tex(const TextureId_t hdl)
-{
-	if (!hdl)
+	if (!inter->handle)
 		return NULL;
 
-	ASSERT(g_tex.size() > hdl);
-	ASSERT(g_tex[ hdl ].buffer.get() != nullptr);
+	ASSERT(inter->buffer.get() != nullptr);
 
-	return register_tex(g_tex[ hdl ].w, g_tex[ hdl ].h, g_tex[ hdl ].c, g_tex[ hdl ].buffer);
+	return register_tex(inter->w, inter->h, inter->c, inter->buffer);
 }
 
 namespace ig
 {
 	Texture::Texture()
-		: m_handle{ register_tex(0, 0, Channels::Invalid, std::shared_ptr<unsigned char[]>()) }
+		: m_internal{ register_tex(0, 0, Channels::Invalid, std::shared_ptr<unsigned char[]>()) }
 	{
 	}
 
 	Texture::Texture(const Image &img)
-		: m_handle{
+		: m_internal{
 			register_tex(
 				img.get_width(), img.get_height(), img.get_channels(),
 				std::shared_ptr<unsigned char[]>((unsigned char *)memcpy(new unsigned char[img.get_buffer_size()] , img.get_buffer(), img.get_buffer_size()))
@@ -80,48 +81,43 @@ namespace ig
 	}
 
 	Texture::Texture(const Texture &copy) noexcept
-		: m_handle{ duplicate_tex(copy.m_handle) }
+		: m_internal{ duplicate_tex(copy.m_internal.get()) }
 	{
 	}
 
 	Texture::Texture(Texture &&move) noexcept
-		: m_handle{ move.m_handle }
+		: m_internal{ move.m_internal.release() }
 	{
-		move.m_handle = NULL;
 	}
 
 	Texture &Texture::operator=(const Texture &copy)
 	{
-		unregister_tex(m_handle);
-		m_handle = duplicate_tex(copy.m_handle);
+		m_internal = duplicate_tex(copy.m_internal.get());
 		return *this;
 	}
 
 	Texture &Texture::operator=(Texture &&move) noexcept
 	{
-		unregister_tex(m_handle);
-		m_handle = move.m_handle;
-		move.m_handle = NULL;
+		m_internal.swap(move.m_internal);
 		return *this;
 	}
 
 	Texture::~Texture() noexcept
 	{
-		unregister_tex(m_handle);
 	}
 
 	bool Texture::is_valid() const noexcept
 	{
-		return m_handle;
+		return m_internal->handle;
 	}
 
 	void Texture::bind() const noexcept
 	{
-		if (g_BindedHdl && g_BindedHdl != m_handle)
+		if (g_BindedHdl && g_BindedHdl != m_internal->handle)
 			return;
 
-		glBindTexture(GL_TEXTURE_2D, m_handle);
-		g_BindedHdl = m_handle;
+		glBindTexture(GL_TEXTURE_2D, m_internal->handle);
+		g_BindedHdl = m_internal->handle;
 	}
 
 	void Texture::unbind() const noexcept
@@ -132,21 +128,21 @@ namespace ig
 
 	bool Texture::is_binded() const noexcept
 	{
-		return g_BindedHdl == m_handle;
+		return g_BindedHdl == m_internal->handle;
 	}
 
 	Vector2i Texture::get_size() const noexcept
 	{
-		return { (int)g_tex[ m_handle ].w, (int)g_tex[ m_handle ].h };
+		return { (int)m_internal->w, (int)m_internal->h };
 	}
 
 	Channels Texture::get_channels() const noexcept
 	{
-		return g_tex[ m_handle ].c;
+		return m_internal->c;
 	}
 
 	TextureId_t Texture::get_handle() const noexcept
 	{
-		return m_handle;
+		return m_internal->handle;
 	}
 }

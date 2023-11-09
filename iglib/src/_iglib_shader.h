@@ -9,7 +9,8 @@ namespace ig
 	{
 		Usage2D,
 		Usage3D,
-		ScreenSpace // <- isn't transformable but it's very light
+		ScreenSpace, // <- isn't transformable but it's very light
+		_Max
 	};
 
 	class Shader

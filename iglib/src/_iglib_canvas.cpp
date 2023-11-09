@@ -159,14 +159,87 @@ __forceinline [[nodiscard]] void to_clamped_space(vector2_qbuffer &val, const Ve
 }
 
 
-static std::shared_ptr<Shader> DefaultShader{};
+static std::shared_ptr<Shader> DefaultShader2D{};
+static std::shared_ptr<Shader> DefaultShader3D{};
+
+// a cube consists of two quads each one consisting of two tringles
+static Vertex3DBuffer DefaultCubeBuffer{};
+constexpr IndexBuffer::index_type DefaultCubeIndexBuffer_Values[]
+{
+	// front
+	0, 1, 2,
+	1, 2, 3,
+	
+	// right
+	2, 3, 4,
+	3, 4, 5,
+	
+	// back
+	4, 5, 6,
+	5, 6, 7,
+	
+	// left
+	6, 7, 0,
+	7, 0, 1,
+	
+	
+	// top
+	7, 5, 1,
+	5, 1, 3,
+	
+	// bottom
+	6, 7, 0,
+	7, 0, 1,
+};
+
+static IndexBuffer DefaultCubeIndexBuffer{};
+static Vertex3DBuffer DefaultLineBuffer{};
+
+static Vertex2DBuffer g_Quad2DBuffer;
+static Vertex2DBuffer g_Triangle2DBuffer;
+static Vertex2DBuffer g_Line2DBuffer;
+
+static Vertex2D g_Quad2DVertcies[ 4 ]{};
+static Vertex2D g_Triangle2DVertcies[ 3 ]{};
+static Vertex2D g_Line2DVertcies[ 2 ]{};
+
+FORCEINLINE void generate_opengl_globals()
+{
+	static bool first = true;
+	if (first) first = false;
+	else return;
+
+	DefaultShader2D = Shader::get_default(ShaderUsage::Usage2D);
+	DefaultShader3D = Shader::get_default(ShaderUsage::Usage3D);
+
+	DefaultCubeIndexBuffer.generate(sizeof(DefaultCubeIndexBuffer_Values) / sizeof(*DefaultCubeIndexBuffer_Values), DefaultCubeIndexBuffer_Values);
+	DefaultLineBuffer.create(2u);
+	DefaultCubeBuffer.create(36u);
+
+	g_Quad2DBuffer.set_primitive(PrimitiveType::Quad);
+	g_Triangle2DBuffer.set_primitive(PrimitiveType::Triangle);
+	g_Line2DBuffer.set_primitive(PrimitiveType::Line);
+
+	g_Quad2DBuffer.create(4);
+	g_Triangle2DBuffer.create(3);
+	g_Line2DBuffer.create(2);
+
+
+	{
+		g_Quad2DVertcies[ 0 ].uv = { 0.f, 0.f };
+		g_Quad2DVertcies[ 1 ].uv = { 0.f, 1.f };
+		g_Quad2DVertcies[ 2 ].uv = { 1.f, 1.f };
+		g_Quad2DVertcies[ 3 ].uv = { 1.f, 0.f };
+	}
+}
+
 namespace ig
 {
 	Canvas::Canvas(const Window &wnd)
-		: m_wnd{ wnd }, m_shader{ 0 }, m_tex{0}, m_trans2d{}
+		: m_wnd{ wnd }, m_shader{ 0 }, m_tex{ 0 }, m_trans2d{}, m_trans3d{}
 	{
-		if (!DefaultShader)
-			DefaultShader = Shader::get_default(ShaderUsage::Usage2D);
+		generate_opengl_globals();
+			
 		this->unbind_shader();
 	}
 
@@ -175,55 +248,40 @@ namespace ig
 		glUseProgram(0);
 	}
 
-	void Canvas::quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorb clr)
+	void Canvas::quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr)
 	{
 		const Vector2f wf = m_wnd.get_size();
-		p0 = to_clamped_space(p0, wf);
-		p1 = to_clamped_space(p1, wf);
-		p2 = to_clamped_space(p2, wf);
-		p3 = to_clamped_space(p3, wf);
+		g_Quad2DVertcies[ 0 ].pos = to_clamped_space(p0, wf);
+		g_Quad2DVertcies[ 1 ].pos = to_clamped_space(p1, wf);
+		g_Quad2DVertcies[ 2 ].pos = to_clamped_space(p2, wf);
+		g_Quad2DVertcies[ 3 ].pos = to_clamped_space(p3, wf);
 
-		glBegin(GL_QUADS);
-		glColor4ub(clr.r, clr.g, clr.b, clr.a);
-		glVertex2f(p0.x, p0.y);
-		glVertex2f(p1.x, p1.y);
-		glVertex2f(p2.x, p2.y);
-		glVertex2f(p3.x, p3.y);
-		glEnd();
+		g_Quad2DVertcies[ 0 ].clr = clr;
+		g_Quad2DVertcies[ 1 ].clr = clr;
+		g_Quad2DVertcies[ 2 ].clr = clr;
+		g_Quad2DVertcies[ 3 ].clr = clr;
 
-		//vector2_qbuffer vq{};
-		//to_clamped_space(vq, m_wnd.get_size());
-
-		//glBegin(GL_QUADS);
-		//glColor4ub(clr.r, clr.g, clr.b, clr.a);
-		//glVertex2f(vq.v[ 0 ].x, vq.v[ 0 ].y);
-		//glVertex2f(vq.v[ 1 ].x, vq.v[ 1 ].y);
-		//glVertex2f(vq.v[ 2 ].x, vq.v[ 2 ].y);
-		//glVertex2f(vq.v[ 3 ].x, vq.v[ 3 ].y);
-		//glEnd();
+		g_Quad2DBuffer.update(g_Quad2DVertcies);
+		draw(g_Quad2DBuffer);
 	}
 
-	void Canvas::rect(Vector2f start, Vector2f end, const Colorb clr)
+	void Canvas::rect(Vector2f start, Vector2f end, const Colorf &clr)
 	{
-		start = to_clamped_space(start, m_wnd.get_size());
-		end = to_clamped_space(end, m_wnd.get_size());
-
-		glColor4ub(clr.r, clr.g, clr.b, clr.a);
-		glRectf(start.x, start.y, end.x, end.y);
+		quad(start, { start.x, end.y }, end, { end.x, start.y }, clr);
 	}
 
-	void Canvas::traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorb clr)
+	void Canvas::traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorf &clr)
 	{
-		p0 = to_clamped_space(p0, m_wnd.get_size());
-		p1 = to_clamped_space(p1, m_wnd.get_size());
-		p2 = to_clamped_space(p2, m_wnd.get_size());
+		g_Triangle2DVertcies[ 0 ].pos = to_clamped_space(p0, m_wnd.get_size());
+		g_Triangle2DVertcies[ 1 ].pos = to_clamped_space(p1, m_wnd.get_size());
+		g_Triangle2DVertcies[ 2 ].pos = to_clamped_space(p2, m_wnd.get_size());
 
-		glBegin(GL_TRIANGLES);
-		glColor4b(clr.r, clr.g, clr.b, clr.a);
-		glVertex2f(p0.x, p0.y);
-		glVertex2f(p1.x, p1.y);
-		glVertex2f(p2.x, p2.y);
-		glEnd();
+		g_Triangle2DVertcies[ 0 ].clr = clr;
+		g_Triangle2DVertcies[ 1 ].clr = clr;
+		g_Triangle2DVertcies[ 2 ].clr = clr;
+
+		g_Triangle2DBuffer.update(g_Triangle2DVertcies);
+		draw(g_Triangle2DBuffer);
 	}
 
 	void Canvas::line(Vector2f start, Vector2f end, const Colorb clr)
@@ -242,6 +300,86 @@ namespace ig
 		glVertex2f(start.x, start.y);
 		glVertex2f(end.x, end.y);
 		glEnd();
+	}
+
+	void Canvas::line(Vector3f start, Vector3f end, const Colorf &clr)
+	{
+		static Vertex3D ff[ 2 ]{};
+
+		ff[ 0 ].pos = start;
+		ff[ 1 ].pos = end;
+		ff[ 0 ].clr = clr;
+		ff[ 1 ].clr = clr;
+
+		DefaultLineBuffer.update(ff);
+		draw(DefaultLineBuffer);
+	}
+
+	void Canvas::cube(Vector3f start, Vector3f end, const Colorf &clr)
+	{
+		static GLfloat g_vertex_buffer_data[] = {
+		-1.0f,-1.0f,-1.0f, // triangle 1 : begin
+		-1.0f,-1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f, // triangle 1 : end
+		1.0f, 1.0f,-1.0f, // triangle 2 : begin
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f,-1.0f, // triangle 2 : end
+		1.0f,-1.0f, 1.0f,
+		-1.0f,-1.0f,-1.0f,
+		1.0f,-1.0f,-1.0f,
+		1.0f, 1.0f,-1.0f,
+		1.0f,-1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f,-1.0f,
+		1.0f,-1.0f, 1.0f,
+		-1.0f,-1.0f, 1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f, 1.0f,
+		-1.0f,-1.0f, 1.0f,
+		1.0f,-1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f,-1.0f,-1.0f,
+		1.0f, 1.0f,-1.0f,
+		1.0f,-1.0f,-1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f,-1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f,-1.0f,
+		-1.0f, 1.0f,-1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f,-1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f,-1.0f, 1.0f
+		};
+
+		const float Uvs[]
+		{
+			0.0f, 0.0f,
+			0.0f, 1.0f,
+			1.0f, 0.0f,
+			1.0f, 1.0f,
+			0.0f, 1.0f,
+			1.0f, 0.0f,
+		};
+
+		Vertex3D v[ sizeof(g_vertex_buffer_data) / (sizeof(GLfloat) * 3) ];
+		for (size_t i = 0; i < 36; i++)
+		{
+			v[ i ].pos.set(g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ]);
+			v[ i ].pos += Vector3f{ 1.0f, 1.0f, 1.0f };
+			v[ i ].pos *= 200.0f;
+			//v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 1.f, 1.f }, Pi / 2.0f);
+			v[ i ].clr = clr;
+			v[ i ].uv.x = Uvs[ (i * 2) % 6 ];
+			v[ i ].uv.y = Uvs[ ((i * 2) + 1) % 6 ];
+		}
+		DefaultCubeBuffer.update(v);
+
+		draw(DefaultCubeBuffer);
 	}
 
 	void Canvas::draw(Vertex2D *vert, size_t count, PrimitiveType draw_type)
@@ -267,8 +405,15 @@ namespace ig
 
 	void Canvas::draw(const Vertex2DBuffer &buf)
 	{
-		if (m_shader)
+		if (m_shader && m_shader->get_usage() == ShaderUsage::Usage2D)
+		{
 			update_shader_uniforms();
+		}
+		else
+		{
+			bind_shader(DefaultShader2D);
+			update_shader_uniforms();
+		}
 
 		buf._bind_array_buffer();
 
@@ -293,8 +438,15 @@ namespace ig
 
 	void Canvas::draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies)
 	{
-		if (m_shader)
+		if (m_shader && m_shader->get_usage() == ShaderUsage::Usage2D)
+		{
 			update_shader_uniforms();
+		}
+		else
+		{
+			bind_shader(DefaultShader2D);
+			update_shader_uniforms();
+		}
 
 		buf._bind_array_buffer();
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indcies.get_id());
@@ -321,8 +473,15 @@ namespace ig
 
 	void Canvas::draw(const Vertex3DBuffer &buf)
 	{
-		if (m_shader)
+		if (m_shader && m_shader->get_usage() == ShaderUsage::Usage3D)
+		{
 			update_shader_uniforms();
+		}
+		else
+		{
+			bind_shader(DefaultShader3D);
+			update_shader_uniforms();
+		}
 
 		buf._bind_array_buffer();
 
@@ -473,12 +632,57 @@ namespace ig
 			//glDeleteBuffers(1, &buffer);
 		}
 
+		{
+			Vertex3D vert[ 4 ]
+			{
+				{ Vector3f{-1.f, -1.f, -1.f}, White, Vector2f{ 0.f, 0.f } },
+				{ Vector3f{-1.f, 1.f, 1.f}, White, Vector2f{ 0.f, 1.f } },
+				{ Vector3f{1.f, -1.f, -1.f}, White, Vector2f{ 1.f, 0.f } },
+				{ Vector3f{-1.f, -1.f, -1.f}, White, Vector2f{ 1.f, 1.f } },
+			};
+
+			for (size_t i = 0; i < sizeof(vert) / sizeof(*vert); i++)
+			{
+				vert[ i ].pos *= 10.f;
+				vert[ i ].pos += Vector3f{ 20.f, 20.f, 0.f };
+			}
+
+
+
+			//GLuint buffer;
+			//glGenBuffers(1, &buffer);
+			//glBindBuffer(GL_ARRAY_BUFFER, buffer);
+			//glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
+
+			//
+			//glEnableVertexAttribArray(0);
+			//glEnableVertexAttribArray(1);
+			//glEnableVertexAttribArray(2);
+			//glVertexAttribPointer(0, 2, GL_FLOAT, 0, sizeof(Vertex2D), nullptr);
+			//glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)sizeof(Vector2f));
+			//glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)(sizeof(Vector2f) + sizeof(Colorf)));
+
+
+			Vertex3DBuffer buff{ 4 };
+			buff.update(vert);
+			buff.set_primitive(PrimitiveType::Quad);
+
+
+			this->draw(buff);
+
+			//glDrawArrays(GL_QUADS, 0, 8);
+
+			/*if (!buffer._unbind_array_buffer())
+				raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");*/
+				//glDeleteBuffers(1, &buffer);
+		}
+
 		glFlush();  // Render now
 	}
 
 	void Canvas::bind_shader(const std::shared_ptr<Shader> &shader)
 	{
-		if (!shader)
+		if (!shader || m_shader.get() == shader.get())
 			return;
 		glUseProgram(shader->get_id());
 
@@ -489,8 +693,8 @@ namespace ig
 
 	void Canvas::unbind_shader()
 	{
-		glUseProgram(DefaultShader->get_id());
-		m_shader = DefaultShader;
+		glUseProgram(DefaultShader2D->get_id());
+		m_shader = DefaultShader2D;
 	}
 
 	ShaderId_t Canvas::get_shader_id() const noexcept
@@ -503,6 +707,9 @@ namespace ig
 		if (!m_shader)
 			return;
 
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_tex);
+
 		GLint location = 0;
 		glUniform2f(glGetUniformLocation(m_shader->get_id(), "_screensize"), (float)m_wnd.get_width(), (float)m_wnd.get_height());
 		//glUniform1f(location++, m_wnd.get_shader_time());
@@ -513,7 +720,6 @@ namespace ig
 		};
 
 		int xxx4 = glGetUniformLocation(m_shader->get_id(), "_t");
-		int xxx5 = glGetUniformLocation(m_shader->get_id(), "_tex");
 
 		if (m_shader->get_usage() == ShaderUsage::Usage2D)
 		{
@@ -523,15 +729,27 @@ namespace ig
 		else if (m_shader->get_usage() == ShaderUsage::Usage3D)
 		{
 			//glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_FALSE, m_trans3d.get_data().f);
-			//glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), m_trans3d.get_data().origin.x, m_trans3d.get_data().origin.y, m_trans3d.get_data().origin.z);
+			glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), m_trans3d.get_data().origin.x, m_trans3d.get_data().origin.y, m_trans3d.get_data().origin.z);
+			//glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), 0.f, 0.f, 0.f);
+			constexpr float Identy[]
+			{
+				1.f, 0.f, 0.f,
+				0.f, 1.f, 0.f,
+				0.f, 0.f, 1.f,
+			};
+			glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_TRUE, m_trans3d.get_data().f);
 		}
 
-		glUniform1i(glGetUniformLocation(m_shader->get_id(), "_tex"), m_tex);
 	}
 
 	const Window &Canvas::get_window() const
 	{
 		return m_wnd;
+	}
+
+	void Canvas::set_texture(const Texture &tex)
+	{
+		m_tex = tex.get_handle();
 	}
 
 }

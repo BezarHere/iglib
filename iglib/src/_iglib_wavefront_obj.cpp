@@ -44,12 +44,12 @@ namespace ig
 		{
 			const auto lines = get_lines(src, false);
 
-			for (const auto [begin, end] : lines)
+			/*for (const auto [begin, end] : lines)
 			{
 				
 
 
-			}
+			}*/
 
 		}
 	}

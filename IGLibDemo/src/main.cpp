@@ -12,7 +12,10 @@ using namespace ig;
 
 const std::string current_dir = "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\";
 
+
+float zb = 0;
 ig::Transform2D tr{};
+ig::Texture tex;
 
 struct LARGE
 {
@@ -69,11 +72,15 @@ std::string readall(const std::string &fs)
 	return st;
 }
 
+
+static ig::Transform3D ply{};
 Vector2f mouse_pos_when_space = { 0.f, 0.f };
 void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::KeyModFlags mods)
 {
 	if (key == ig::Key_W)
 	{
+
+		zb -= 1.f;
 		tr.rotate(0.1);
 		window.ping();
 		/*ig::Image img = window.to_image();
@@ -83,6 +90,7 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 
 	if (key == ig::Key_S)
 	{
+		zb += 1.f;
 		tr.rotate(-0.1);
 	}
 
@@ -100,7 +108,37 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 		tr.set_scale(tr.get_scale() - Vector2f{ 0.1f, 0.1f });
 	}
 
-	std::cout << (int)key << '\n';
+
+	switch (key)
+	{
+	case ig::Key_A:
+		ply.set_position(ply.get_position() + Vector3f{ 10.0f, 0.0f, 0.0f });
+		break;
+	case ig::Key_D:
+		ply.set_position(ply.get_position() - Vector3f{ 10.0f, 0.0f, 0.0f });
+		break;
+	case ig::Key_S:
+		ply.set_position(ply.get_position() + Vector3f{ 0.0f, 0.0f, 10.0f });
+		break;
+	case ig::Key_W:
+		ply.set_position(ply.get_position() - Vector3f{ 0.0f, 0.0f, 10.0f });
+		break;
+	case ig::Key_Q:
+		ply.set_position(ply.get_position() + Vector3f{ 0.0f, 10.0f, 0.0f });
+		break;
+	case ig::Key_E:
+		ply.set_position(ply.get_position() - Vector3f{ 0.0f, 10.0f, 0.0f });
+		break;
+	case ig::Key_Z:
+		ply.set_scale(ply.get_scale() * 1.1f);
+		break;
+	case ig::Key_X:
+		ply.set_scale(ply.get_scale() / 1.1f);
+		break;
+	default:
+		break;
+	}
+
 }
 
 void draw2d_callback(Canvas c)
@@ -119,13 +157,21 @@ void draw2d_callback(Canvas c)
 		);
 	}*/
 
-	//ig::Shader ss{};
-	tr.set_position(m);
-	c.transform2d() = tr;
+	c.set_texture(tex);
+
+	
+	//std::cout << c.transform3d().get_position() << '\n';
+	c.transform3d() = ply;
+	//c.line(Vector3f{ 0.f, 0.f, 0.f }, Vector3f{ 1.f, 1.f, 1.f }, { 0.2f, 1.f, 0.2f, 1.f });
+	//c.line(Vector3f{ 0.f, 0.f, 0.f }, Vector3f{ 30.f, 20.f, 10.f }, { 0.2f, 1.f, 0.2f, 1.f });
+	//c.line(Vector3f{ 0.f, 0.f, 0.f }, Vector3f{ 400.f, 500.f, 600.f }, { 0.2f, 1.f, 0.2f, 1.f });
+	//c.line(Vector3f{ 0.f, 0.f, 0.f }, { m.x, m.y, 20.0f }, { 0.8f, 1.f, 0.4f, 1.f });
 	c.demo();
+	//c.cube({}, {}, { 1.0f, 0.5f, 0.6f, 1.f });
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 
-	//c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 255, 255, 200, 255 });
+	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0f, 0.8f, 0.1f});
+	c.rect(c.get_window().get_size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 0.f, 1.f, 0.8f, 255 });
 
 	//c.bind_shader(ss);
 	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
@@ -153,6 +199,10 @@ int main()
 	
 	{
 		ig::Window i = ig::Window({128, 128}, "Window !!!");
+
+
+		ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\test.png" };
+		tex = ig::Texture(img);
 
 
 		ig::Window p = ig::Window({ 128, 128 }, "Other one");

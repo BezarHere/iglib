@@ -36,7 +36,9 @@ namespace ig
 
 		TextureId_t get_handle() const noexcept;
 
+
+		struct _TextureInternal;
 	private:
-		TextureId_t m_handle;
+		std::unique_ptr<_TextureInternal> m_internal;
 	};
 }

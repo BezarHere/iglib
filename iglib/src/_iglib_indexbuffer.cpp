@@ -9,7 +9,7 @@ namespace ig
   {
   }
 
-  IndexBuffer::IndexBuffer(size_t size, const uint32_t *indcies)
+  IndexBuffer::IndexBuffer(size_t size, const index_type *indcies)
     : IndexBuffer()
   {
     generate(size, indcies);
@@ -25,28 +25,28 @@ namespace ig
     return m_buf->id;
   }
 
-  void IndexBuffer::generate(size_t size, const uint32_t *indcies)
+  void IndexBuffer::generate(size_t size, const index_type *indcies)
   {
     m_buf.reset(new _buffer());
     m_size = size;
 
     glGenBuffers(1, &m_buf->id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_buf->id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(uint32_t), indcies, to_gldrawusage(m_usage));
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(index_type), indcies, to_gldrawusage(m_usage));
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
 
-  void IndexBuffer::update(const uint32_t *indcies, const size_t indcies_count, const uint32_t offset)
+  void IndexBuffer::update(const index_type *indcies, const size_t indcies_count, const uint32_t offset)
   {
     if (!m_buf->id)
       return;
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_buf->id);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(uint32_t), indcies_count * sizeof(uint32_t), indcies);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset * sizeof(index_type), indcies_count * sizeof(index_type), indcies);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
 
-  void IndexBuffer::update(const uint32_t *indcies)
+  void IndexBuffer::update(const index_type *indcies)
   {
     update(indcies, m_size, 0);
   }
