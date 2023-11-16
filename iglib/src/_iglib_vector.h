@@ -764,12 +764,14 @@ namespace ig
 	using Vector2f = RealVector2Template<float_t>;
 	using Vector2d = RealVector2Template<double_t>;
 	using Vector2s = IntegralVector2Template<int16_t, float_t>;
+	using Vector2u = IntegralVector2Template<uint32_t, float_t>;
 	using Vector2i = IntegralVector2Template<int32_t, float_t>;
 	using Vector2l = IntegralVector2Template<int64_t, double_t>;
 
 	using Vector3f = RealVector3Template<float_t>;
 	using Vector3d = RealVector3Template<double_t>;
 	using Vector3s = IntegralVector3Template<int16_t, float_t>;
+	using Vector3u = IntegralVector3Template<uint32_t, float_t>;
 	using Vector3i = IntegralVector3Template<int32_t, float_t>;
 	using Vector3l = IntegralVector3Template<int64_t, double_t>;
 

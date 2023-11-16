@@ -5,6 +5,13 @@
 #include <string>
 #include <chrono>
 #include <memory>
+#include <stdint.h>
+
+#ifdef NOTE
+#error 'NOTE' is used macro and should not be defined before the 'iglib.h' header
+#endif
+#define NOTE(x)
+
 
 namespace ig
 {

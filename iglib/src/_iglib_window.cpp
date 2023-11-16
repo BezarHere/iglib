@@ -2,14 +2,23 @@
 #include "internal.h"
 #include "_iglib_window.h"
 
+static Vertex2D g_ScreenQuadVertcies[ 4 ]
+{
+	{ {0.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {0.f, 1.f} }, // topleft
+	{ {0.f, 1.f}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f} }, // bottomleft
+	{ {1.f, 1.f}, {1.f, 1.f, 1.f, 1.f}, {1.f, 0.f} }, // bottomright
+	{ {1.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {1.f, 1.f} } // topright
+};
 
-GLFWwindow *create_glfw_window(int width, int height, const std::string &title, GLFWmonitor *fullscreen, GLFWwindow *share)
+Vertex2DBuffer g_ScreenQuadBuffer{};
+ShaderInstance_t g_ScreenShader{};
+static GLFWwindow *create_glfw_window(int width, int height, const std::string &title, GLFWmonitor *fullscreen, GLFWwindow *share)
 {
 	if (!is_glfw_running())
 	{
 		init_glfw();
 	}
-
+	
 
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -21,9 +30,6 @@ GLFWwindow *create_glfw_window(int width, int height, const std::string &title, 
 		width, height, title.c_str(), fullscreen, share
 	);
 
-	if (!hdl)
-		glfwerror(true);
-
 
 
 	if (!is_glew_running())
@@ -31,6 +37,26 @@ GLFWwindow *create_glfw_window(int width, int height, const std::string &title, 
 		glfwMakeContextCurrent(hdl);
 		init_glew();
 	}
+
+
+	if (!g_ScreenShader)
+	{
+		static const std::string PostProcessing_Vert =
+			"void main() { gl_Position = vec4(to_native_space(pos), 0.0, 1.0); UV = texcoord; }";
+
+		static const std::string PostProcessing_Frag =
+			"void main() {"
+				"Color = vec4(texture(_tex, UV).rgb, 1.0);"
+			"}";
+
+		g_ScreenQuadBuffer.set_primitive(PrimitiveType::Quad);
+		g_ScreenQuadBuffer.set_usage(BufferUsage::Dynamic);
+		g_ScreenQuadBuffer.create(4, nullptr);
+		g_ScreenShader = Shader::compile(
+			PostProcessing_Vert, PostProcessing_Frag, ShaderUsage::ScreenSpace
+		);
+	}
+
 
 	return hdl;
 }
@@ -44,6 +70,7 @@ namespace ig
 	//}
 
 
+#pragma region(Window registry stuff)
 	Window *g_main_window;
 	std::vector<Window *> wce_available_windows;
 	std::unordered_map<WindowHandle_t, Window *> wce_handles_map;
@@ -70,6 +97,7 @@ namespace ig
 			static void contents_rescaled(WindowHandle_t hdl, float xfactor, float yfactor);
 
 			static void key_pressed(WindowHandle_t hdl, int key, int scancode, int action, int mods);
+			static void mouse_button(WindowHandle_t hdl, int button, int action, int mods);
 
 		};
 
@@ -181,6 +209,7 @@ namespace ig
 
 
 			(void)glfwSetKeyCallback(hdl, WindowCallbacksRouter::key_pressed);
+			(void)glfwSetMouseButtonCallback(hdl, WindowCallbacksRouter::mouse_button);
 		}
 
 		static inline void disconnect_callbacks(WindowHandle_t hdl)
@@ -201,6 +230,7 @@ namespace ig
 
 
 			(void)glfwSetKeyCallback(hdl, nullptr);
+			(void)glfwSetMouseButtonCallback(hdl, nullptr);
 		}
 
 		static void pop_weak(Window *window, WindowHandle_t hdl)
@@ -299,7 +329,6 @@ namespace ig
 	} __WindowCallbackEngine_Dummy;
 
 
-
 	void Window::WindowCallbackEngine::WindowCallbacksRouter::moved(WindowHandle_t hdl, int x, int y)
 	{
 		WindowCallbackEngine::recall_command(hdl, WindowCallbackReason::Moved, x, y);
@@ -367,6 +396,13 @@ namespace ig
 			WindowCallbacksRouter::requested_close(hdl);
 	}
 
+	void Window::WindowCallbackEngine::WindowCallbacksRouter::mouse_button(WindowHandle_t hdl, int button, int action, int mods)
+	{
+		Window *window = WindowCallbackEngine::get_window(hdl);
+		if (window->m_mouse_callback)
+			window->m_mouse_callback(*window, (MouseButton)button, (KeyAction)action, (KeyModFlags)mods);
+	}
+#pragma endregion
 
 	Window::Window() noexcept
 		: m_hdl(nullptr),
@@ -434,8 +470,9 @@ namespace ig
 	{
 		if (handle == nullptr)
 		{
+			warn("NULL window handle passed to a window ctor.");
 			glfwerror(true); // <- if there is any glfw error, this will raise
-			raise("NULL window handle passed to a window ctor.");
+			return;
 		}
 		WindowCallbackEngine::link(this);
 		refresh_rect();
@@ -534,6 +571,16 @@ namespace ig
 		return m_rect;
 	}
 
+	void Window::set_size(Vector2i size)
+	{
+		glfwSetWindowSize((GLFWwindow *)m_hdl, size.x, size.y);
+	}
+
+	void Window::set_position(Vector2i size)
+	{
+		glfwSetWindowPos((GLFWwindow *)m_hdl, size.x, size.y);
+	}
+
 	void Window::refresh_rect()
 	{
 		glfwGetWindowSize((GLFWwindow *)m_hdl, &m_rect.w, &m_rect.h);
@@ -571,22 +618,88 @@ namespace ig
 		m_key_callback = callback;
 	}
 
+	void Window::set_mouse_callback(MouseCallback_t callback) noexcept
+	{
+		m_mouse_callback = callback;
+	}
+	
+	MouseCallback_t Window::get_mouse_callback() const noexcept
+	{
+		return m_mouse_callback;
+	}
+
 	void Window::render()
 	{
 		push_to_draw_pipline((WindowHandle_t)m_hdl);
-		glDisable(GL_DEPTH);
-		//glEnable(GL_DEPTH_TEST);
+		// TODO: Invoke a query to update size, size is still updated by the resize callback but still
+		const Vector2i sz = get_size();
+
+		GLuint framebuffer;
+		glGenFramebuffers(1, &framebuffer);
+
+		GLuint texclr_buffer;
+		glGenTextures(1, &texclr_buffer);
+		glBindTexture(GL_TEXTURE_2D, texclr_buffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sz.x, sz.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // <- GL_NEAREST should be able to change to GL_LINEAR
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // <- GL_NEAREST should be able to change to GL_LINEAR
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // <- GL_NEAREST should be able to change to GL_LINEAR
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // <- GL_NEAREST should be able to change to GL_LINEAR
+	
+
+		GLuint rbo;
+		glGenRenderbuffers(1, &rbo);
+		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, sz.x, sz.y);
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texclr_buffer, 0);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			glfwerror(true);
+
+
+		//glDisable(GL_DEPTH);
+		glEnable(GL_DEPTH_TEST);
+
+
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(0.f, get_width(), get_height(), 0.f, 0.f, 1.f);
 
-
+		Canvas c = Canvas{ *this };
 		if (m_draw_callback)
-			m_draw_callback(Canvas{*this});
+			m_draw_callback(c);
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NULL);
+		glDisable(GL_DEPTH_TEST);
+
+		/// left to the user
+		//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		//glClear(GL_COLOR_BUFFER_BIT);
+
+		g_ScreenQuadVertcies[ 1 ].pos.y = (float)sz.y;
+		g_ScreenQuadVertcies[ 2 ].pos = Vector2f(sz);
+		g_ScreenQuadVertcies[ 3 ].pos.x = (float)sz.x;
+		g_ScreenQuadBuffer.update(g_ScreenQuadVertcies);
+
+		c.bind_shader(g_ScreenShader);
+		c.set_texture(texclr_buffer);
+		c.draw(g_ScreenQuadBuffer);
+
+		glDeleteTextures(1, &texclr_buffer);
+		glDeleteFramebuffers(1, &framebuffer);
+		glDeleteRenderbuffers(1, &rbo);
 
 		pop_draw_pipline();
 		glfwSwapBuffers((GLFWwindow *)m_hdl);
+
+
 	}
 
 	void Window::poll()
@@ -612,6 +725,27 @@ namespace ig
 	bool Window::is_focused() const noexcept
 	{
 		return m_focused;
+	}
+
+	void Window::set_resizable(bool value)
+	{
+		glfwSetWindowAttrib((GLFWwindow *)m_hdl, GLFW_RESIZABLE, value);
+	}
+
+	bool Window::is_resizable() const
+	{
+		
+		return glfwGetWindowAttrib((GLFWwindow *)m_hdl, GLFW_RESIZABLE);
+	}
+
+	void Window::set_decorated(bool value)
+	{
+		glfwSetWindowAttrib((GLFWwindow *)m_hdl, GLFW_DECORATED, value);
+	}
+
+	bool Window::is_decorated() const
+	{
+		return glfwGetWindowAttrib((GLFWwindow *)m_hdl, GLFW_DECORATED);
 	}
 
 	void Window::set_draw_callback(DrawCallback callback) noexcept

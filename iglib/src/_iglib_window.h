@@ -163,6 +163,19 @@ namespace ig
 		Key_Menu = 348
 	};
 
+	enum class MouseButton
+	{
+		Left = 0,
+		Right = 1,
+		Middle = 2,
+
+		Button4,
+		Button5,
+		Button6,
+		Button7,
+		Button8,
+	};
+
 	enum class KeyAction : uint8_t
 	{
 		Released,
@@ -186,6 +199,12 @@ namespace ig
 
 	typedef void(*WindowCallback_t)(Window &window, WindowCallbackReason reason);
 	typedef void(*KeyCallback_t)(Window &window, Key key, KeyAction action, KeyModFlags mods);
+	typedef void(*MouseCallback_t)(Window &window, MouseButton button, KeyAction action, KeyModFlags mods);
+
+	class PostprocessingEnvironment
+	{
+
+	};
 
 	class Window final
 	{
@@ -216,6 +235,15 @@ namespace ig
 		Vector2i get_position() const;
 		const Recti &get_rect() const;
 
+		void set_size(Vector2i size);
+		void set_position(Vector2i size);
+
+		void set_resizable(bool value);
+		bool is_resizable() const;
+
+		void set_decorated(bool value);
+		bool is_decorated() const;
+
 		// refreshes the windows position/size values, not the window's content
 		// only call if unexpected values are returned from get_width/get_height/get_size/get_position/get_rect
 		void refresh_rect();
@@ -226,11 +254,14 @@ namespace ig
 		WindowCallback_t get_callback() const;
 		void set_callback(WindowCallback_t callback);
 
+		bool is_deffered_to_close() const noexcept;
+		bool is_focused() const noexcept;
+
 		KeyCallback_t get_key_callback() const;
 		void set_key_callback(KeyCallback_t callback);
 
-		bool is_deffered_to_close() const noexcept;
-		bool is_focused() const noexcept;
+		void set_mouse_callback(MouseCallback_t callback) noexcept;
+		MouseCallback_t get_mouse_callback() const noexcept;
 
 		void set_draw_callback(DrawCallback callback) noexcept;
 		DrawCallback get_draw_callback() const noexcept;
@@ -273,6 +304,8 @@ namespace ig
 		Vector2f m_content_scale{ 1.0f, 1.0f };
 		bool m_deffered_close{ false }; // did the user click close or pressed alt+f4?
 		//std::shared_ptr<size_t> m_handle_rc;
+		bool m_postprocessing = true;
+		PostprocessingEnvironment m_env;
 
 		const TimeMs_t m_creation_time;
 		const float m_stp;
@@ -281,5 +314,6 @@ namespace ig
 
 		WindowCallback_t m_callback = nullptr;
 		KeyCallback_t m_key_callback = nullptr;
+		MouseCallback_t m_mouse_callback = nullptr;
 	};
 }

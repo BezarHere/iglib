@@ -2,6 +2,8 @@
 #include "_iglib_base.h"
 #include "_iglib_vector.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4201)
 namespace ig
 {
 
@@ -323,3 +325,4 @@ namespace ig
 	};
 
 }
+#pragma warning(pop)

@@ -49,7 +49,6 @@ constexpr FORCEINLINE int to_glprimitve(const PrimitiveType type)
     return GL_QUAD_STRIP;
   default:
 		raise(format("invalid draw type value {}", (int)type));
-		return -1;
   }
 }
 
@@ -69,7 +68,6 @@ constexpr FORCEINLINE int to_glpixelformat(const Channels type)
     return GL_RGBA;
   default:
 		raise(format("invalid draw type value {}", (int)type));
-		return -1;
   }
 }
 

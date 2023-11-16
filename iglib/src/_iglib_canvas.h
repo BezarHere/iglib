@@ -37,7 +37,7 @@ namespace ig
 
 		void demo();
 
-		void bind_shader(const std::shared_ptr<Shader> &shader);
+		void bind_shader(const ShaderInstance_t &shader);
 		void unbind_shader();
 
 		ShaderId_t get_shader_id() const noexcept;
@@ -54,6 +54,11 @@ namespace ig
 		inline const Transform3D &transform3d() const noexcept { return m_trans3d; }
 
 		void set_texture(const Texture &tex);
+
+		// USE ONLY IF YOU WANT TO INTEGRATE OPENGL CODE WITH IGLIB OR YOU KNOW WHAT ARE YOU DOING
+		void set_texture(const TextureId_t tex);
+
+		TextureId_t get_texture() const noexcept;
 
 	private:
 		const Window &m_wnd;

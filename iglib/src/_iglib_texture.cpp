@@ -4,16 +4,17 @@
 #include "internal.h"
 #include <map>
 
-static struct Texture::_TextureInternal
+struct Texture::_TextureInternal
 {
 
 	FORCEINLINE ~_TextureInternal()
 	{
 		if (handle)
-			glDeleteTextures(1, &handle);
+			glDeleteTextures(count, &handle);
 	}
 
 	TextureId_t handle;
+	GLsizei count = 1; // <- might be a VERY buggy thing
 	uint32_t w = 0, h = 0;
 	Channels c = Channels::Invalid;
 	std::shared_ptr<unsigned char[]> buffer{};

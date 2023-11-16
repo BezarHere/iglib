@@ -11,26 +11,26 @@ constexpr size_t RGBASize = 4;
 using bite::raise;
 using bite::warn;
 
-FORCEINLINE void glfwerror(bool terminate = false)
+FORCEINLINE DECLSPEC_NORETURN void glfwerror(bool terminate = false)
 {
 	const char *desc = nullptr;
 	int i = glfwGetError(&desc);
 
-	if (i == GLFW_NO_ERROR)
-		return;
-
-	if (terminate)
+	if (i != GLFW_NO_ERROR)
 	{
-		if (desc)
-			throw std::runtime_error("GLFW Error: [" + std::to_string(i) + "] as '" + desc + "'.");
-		throw std::runtime_error("GLFW Error: [" + std::to_string(i) + "].");
-	}
+		if (terminate)
+		{
+			if (desc)
+				bite::raise("GLFW Error: [" + std::to_string(i) + "] as '" + desc + "'.");
+			bite::raise("GLFW Error: [" + std::to_string(i) + "].");
+		}
 
-	dye::put_colors({ dye::ColorCode::Red, dye::ColorCode::Black });
-	if (desc)
-		std::cerr << "GLFW Error: [" << i << "] as '" << desc << "'.\n";
-	std::cerr << "GLFW Error: [" << i << "].\n";
-	dye::clear_colors();
+		dye::put_colors({ dye::ColorCode::Red, dye::ColorCode::Black });
+		if (desc)
+			std::cerr << "GLFW Error: [" << i << "] as '" << desc << "'.\n";
+		std::cerr << "GLFW Error: [" << i << "].\n";
+		dye::clear_colors();
+	}
 }
 
 extern const std::vector<MonitorHandle_t> &get_monitors();

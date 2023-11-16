@@ -44,9 +44,10 @@ FORCEINLINE [[nodiscard]] const Vector2fSpan_t _generate_circle_frame(uint16_t r
 FORCEINLINE const Vector2fSpan_t &get_circle_frame(uint16_t res)
 {
 	static std::vector<Vector2fSpan_t> s_CircleFrames(1 << 16);
+	static const Vector2fSpan_t VEmpty{};
 
 	if (res < 3)
-		return Vector2fSpan_t{};
+		return VEmpty;
 
 	if (!s_CircleFrames[res].sz)
 		s_CircleFrames[res] = _generate_circle_frame(res);
@@ -159,8 +160,8 @@ __forceinline [[nodiscard]] void to_clamped_space(vector2_qbuffer &val, const Ve
 }
 
 
-static std::shared_ptr<Shader> DefaultShader2D{};
-static std::shared_ptr<Shader> DefaultShader3D{};
+static ShaderInstance_t DefaultShader2D{};
+static ShaderInstance_t DefaultShader3D{};
 
 // a cube consists of two quads each one consisting of two tringles
 static Vertex3DBuffer DefaultCubeBuffer{};
@@ -380,6 +381,9 @@ namespace ig
 		DefaultCubeBuffer.update(v);
 
 		draw(DefaultCubeBuffer);
+
+		(void)end;
+		(void)start;
 	}
 
 	void Canvas::draw(Vertex2D *vert, size_t count, PrimitiveType draw_type)
@@ -405,7 +409,8 @@ namespace ig
 
 	void Canvas::draw(const Vertex2DBuffer &buf)
 	{
-		if (m_shader && m_shader->get_usage() == ShaderUsage::Usage2D)
+		//if (m_shader && m_shader->get_usage() == ShaderUsage::Usage2D)
+		if (m_shader)
 		{
 			update_shader_uniforms();
 		}
@@ -438,7 +443,8 @@ namespace ig
 
 	void Canvas::draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies)
 	{
-		if (m_shader && m_shader->get_usage() == ShaderUsage::Usage2D)
+		//if (m_shader && m_shader->get_usage() == ShaderUsage::Usage2D)
+		if (m_shader)
 		{
 			update_shader_uniforms();
 		}
@@ -473,7 +479,8 @@ namespace ig
 
 	void Canvas::draw(const Vertex3DBuffer &buf)
 	{
-		if (m_shader && m_shader->get_usage() == ShaderUsage::Usage3D)
+		//if (m_shader && m_shader->get_usage() == ShaderUsage::Usage3D)
+		if (m_shader)
 		{
 			update_shader_uniforms();
 		}
@@ -680,7 +687,7 @@ namespace ig
 		glFlush();  // Render now
 	}
 
-	void Canvas::bind_shader(const std::shared_ptr<Shader> &shader)
+	void Canvas::bind_shader(const ShaderInstance_t &shader)
 	{
 		if (!shader || m_shader.get() == shader.get())
 			return;
@@ -707,19 +714,11 @@ namespace ig
 		if (!m_shader)
 			return;
 
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, m_tex);
 
-		GLint location = 0;
 		glUniform2f(glGetUniformLocation(m_shader->get_id(), "_screensize"), (float)m_wnd.get_width(), (float)m_wnd.get_height());
 		//glUniform1f(location++, m_wnd.get_shader_time());
-		
-		float vvv[ 2 * 2 ]
-		{
-			0.4, 0.6, 0.7, 0.2
-		};
-
-		int xxx4 = glGetUniformLocation(m_shader->get_id(), "_t");
 
 		if (m_shader->get_usage() == ShaderUsage::Usage2D)
 		{
@@ -750,6 +749,16 @@ namespace ig
 	void Canvas::set_texture(const Texture &tex)
 	{
 		m_tex = tex.get_handle();
+	}
+
+	void ig::Canvas::set_texture(const TextureId_t tex)
+	{
+		m_tex = tex;
+	}
+
+	TextureId_t ig::Canvas::get_texture() const noexcept
+	{
+		return m_tex;
 	}
 
 }

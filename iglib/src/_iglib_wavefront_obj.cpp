@@ -42,7 +42,8 @@ namespace ig
 	{
 		Obj::Obj(const std::string &src)
 		{
-			const auto lines = get_lines(src, false);
+			(void)src;
+			//const auto slines = get_lines(src, false);
 
 			/*for (const auto [begin, end] : lines)
 			{

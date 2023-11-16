@@ -4,60 +4,6 @@
 
 constexpr int DefaultShaderVersion = 330;
 
-/*
-constexpr auto VertexDefaultSrc2D =
-"#version 330 core\n"
-"layout (location = 0) in vec2 pos;\n"
-"layout (location = 1) in vec4 clr;\n"
-"layout (location = 2) in vec2 uv;\n"
-"out vec4 FragColor;\n"
-//"out float Time;\n"
-"uniform vec2 _screensize;\n"
-"uniform float _time;\n"
-"uniform mat3x2 _trans;\n"
-"void main() {\n"
-"pos *= _trans"
-"vec2 native_pos = vec2((pos.x + (sin(_time) * 8.0)) / _screensize.x, 1.0 - ((pos.y + (cos(_time) * 8.0)) / _screensize.y)) * 2.0 - vec2(1.0);"
-"gl_Position = vec4(native_pos, 0.0, 1.0);\n"
-//"FragColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
-"FragColor = clr;\n"
-"FragColor = vec4(uv, (sin(_time) + 1.0) / 2.0, 1.0) * clr;\n"
-//"Time = _time;\n"
-"}\n";
-
-constexpr auto VertexDefaultSrc3D =
-"#version 330 core\n"
-"layout (location = 0) in vec3 pos;\n"
-"layout (location = 1) in vec4 clr;\n"
-"layout (location = 2) in vec2 uv;\n"
-"layout (location = 3) in vec3 normal;\n"
-"out vec4 FragColor;\n"
-//"out float FragTime;\n"
-"uniform vec2 _screensize;\n"
-"uniform float _time;\n"
-"uniform mat3 _trans;\n"
-"void main() {\n"
-"pos *= _trans;"
-"vec2 native_pos = vec2((pos.x + (sin(_time) * 8.0)) / _screensize.x, 1.0 - ((pos.y + (cos(_time) * 8.0)) / _screensize.y)) * 2.0 - vec2(1.0);"
-"gl_Position = vec4(native_pos, 0.0, 1.0);\n"
-//"FragColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
-"FragColor = clr;\n"
-"FragColor = vec4(uv, (sin(_time) + 1.0) / 2.0, 1.0) * clr;\n"
-//"Time = _time;\n"
-"}\n";
-
-constexpr auto FragmentDefaultSrc2D =
-"#version 330 core\n"
-"out vec4 OutColor;\n"
-"in vec4 FragColor;\n"
-//"in float FragTime;\n"
-"void main() {\n"
-"OutColor = FragColor;\n"
-"}\n";
-
-constexpr auto FragmentDefaultSrc3D = FragmentDefaultSrc2D;
-*/
-
 enum class CustomCodeState
 {
 	None,
@@ -143,6 +89,9 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 			ss << "uniform mat2 _trans;";
 			ss << "uniform vec2 _offset;";
 		}
+
+		ss << "\nvec2 to_native_space(in vec2 p) { return vec2(p.x / _screensize.x, 1.0 - (p.y / _screensize.y)) * 2.0 - vec2(1.0); }\n";
+
 
 		if (temp.custom_code.state == CustomCodeState::AfterUniforms)
 		{
@@ -363,7 +312,7 @@ FORCEINLINE ShaderId_t gen_program(const GLuint vertex, const GLuint fragment)
 
 namespace ig
 {
-	std::shared_ptr<Shader> Shader::get_default(ShaderUsage usage)
+	ShaderInstance_t Shader::get_default(ShaderUsage usage)
 	{
 		struct
 		{
@@ -385,7 +334,7 @@ namespace ig
 		);
 	}
 
-	std::shared_ptr<Shader> Shader::compile(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage)
+	ShaderInstance_t Shader::compile(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage)
 	{
 		return compile_raw(
 			generate_shader_code({
@@ -404,9 +353,9 @@ namespace ig
 		);
 	}
 
-	std::shared_ptr<Shader> Shader::compile_raw(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage)
+	ShaderInstance_t Shader::compile_raw(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage)
 	{
-		return std::shared_ptr<Shader>(
+		return ShaderInstance_t(
 			new Shader(
 				gen_program(gen_shader(vertex_src, GL_VERTEX_SHADER),
 										gen_shader(fragment_src, GL_FRAGMENT_SHADER)),
@@ -452,5 +401,29 @@ namespace ig
 		return m_usage;
 	}
 
+	_NODISCARD int Shader::get_uniform_location(const std::string &name) const noexcept
+	{
+		return glGetUniformLocation(get_id(), name.c_str());
+	}
+
+//#define SET_UNIFORM_DECL(type) void Shader::set_uniform(int location, type value)
+//#define SET_UNIFORM_DECLS(type) void Shader::set_uniform(const std::string &name, type value)
+//#define SET_UNIFORM_DECL1(type, gl_suffix) \
+//			SET_UNIFORM_DECL(type) { glUniform1## gl_suffix(this->get_id(), value); } \
+//			SET_UNIFORM_DECLS(type) { glUniform1## gl_suffix(, value); }
+//#define SET_UNIFORM_DECL2(type, gl_suffix) SET_UNIFORM_DECL(type) { glUniform2## gl_suffix(this->get_id(), value.x, value.y); }
+//#define SET_UNIFORM_DECL3(type, gl_suffix) SET_UNIFORM_DECL(type) { glUniform3## gl_suffix(this->get_id(), value.x, value.y, value.z); }
+//	SET_UNIFORM_DECL1(unsigned,	ui);
+//	SET_UNIFORM_DECL1(int,			i);
+//	SET_UNIFORM_DECL1(float,		f);
+//	SET_UNIFORM_DECL1(double,		d);
+//	SET_UNIFORM_DECL2(Vector2u,	ui);
+//	SET_UNIFORM_DECL2(Vector2i,	i);
+//	SET_UNIFORM_DECL2(Vector2f,	f);
+//	SET_UNIFORM_DECL2(Vector2d,	d);
+//	SET_UNIFORM_DECL3(Vector3u,	ui);
+//	SET_UNIFORM_DECL3(Vector3i,	i);
+//	SET_UNIFORM_DECL3(Vector3f,	f);
+//	SET_UNIFORM_DECL3(Vector3d,	d);
 
 }
