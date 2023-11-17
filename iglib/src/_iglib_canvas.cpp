@@ -40,7 +40,6 @@ FORCEINLINE [[nodiscard]] const Vector2fSpan_t _generate_circle_frame(uint16_t r
 	return Vector2fSpan_t{ verts, vcount };
 }
 
-
 FORCEINLINE const Vector2fSpan_t &get_circle_frame(uint16_t res)
 {
 	static std::vector<Vector2fSpan_t> s_CircleFrames(1 << 16);
@@ -373,7 +372,7 @@ namespace ig
 			v[ i ].pos.set(g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ]);
 			v[ i ].pos += Vector3f{ 1.0f, 1.0f, 1.0f };
 			v[ i ].pos *= 200.0f;
-			//v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 1.f, 1.f }, Pi / 2.0f);
+			//v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 0.f, 1.f }, Pi / 2.0f);
 			v[ i ].clr = clr;
 			v[ i ].uv.x = Uvs[ (i * 2) % 6 ];
 			v[ i ].uv.y = Uvs[ ((i * 2) + 1) % 6 ];
@@ -396,15 +395,21 @@ namespace ig
 		glEnd();
 	}
 
-	void Canvas::circle(float radius, Vector2f center, const Colorb clr, const uint16_t res)
+	void Canvas::circle(float radius, Vector2f center, const Colorf clr, const uint16_t res)
 	{
-		glBegin(GL_TRIANGLE_FAN);
-		glColor3(clr);
+		span<Vertex2D> verts( res );
 
-		for (const auto &v : get_circle_frame(res))
-			glVertex2f((v.x * radius) + center.x, (v.y * radius) + center.y);
+		const auto &poly = get_circle_frame(res);
+		for (size_t i = 0; i < poly.sz; i++)
+		{
+			verts[ i ].pos = Vector2f((poly.ptr.get()[ i ].x * radius) + center.x, (poly.ptr.get()[ i ].y * radius) + center.y);
+			verts[ i ].clr = clr;
+		}
 
-		glEnd();
+		Vertex2DBuffer buff{};
+		buff.set_primitive(PrimitiveType::TriangleFan);
+		buff.create(res, verts.begin());
+		draw(buff);
 	}
 
 	void Canvas::draw(const Vertex2DBuffer &buf)

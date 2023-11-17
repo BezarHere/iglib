@@ -81,6 +81,18 @@ namespace ig
 			return (dx * dx) + (dy * dy);
 		}
 
+		inline this_type direction(const this_type &other) const
+		{
+			return this_type(other.x - this->x, other.y - this->y).normalized();
+		}
+
+		inline constexpr this_type direction_squared(const this_type &other) const
+		{
+			const _T dx = other.x - this->x;
+			const _T dy = other.y - this->y;
+			return this_type(dx, dy) / ((dx * dx) + (dy * dy));
+		}
+
 		inline constexpr _T dot(const this_type &other) const
 		{
 			return (this->x * other.x) - (this->y * other.y);

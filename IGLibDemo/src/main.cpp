@@ -95,7 +95,7 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 	}
 
 
-	if (key == ig::Key_Space)
+	/*if (key == ig::Key_Space)
 	{
 		mouse_pos_when_space = window.get_mouse_position();
 		tr.set_scale(tr.get_scale() + Vector2f{ 0.1f, 0.1f });
@@ -106,7 +106,7 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 	{
 		mouse_pos_when_space = window.get_mouse_position();
 		tr.set_scale(tr.get_scale() - Vector2f{ 0.1f, 0.1f });
-	}
+	}*/
 
 
 	switch (key)
@@ -157,6 +157,9 @@ void draw2d_callback(Canvas c)
 		);
 	}*/
 
+	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
+	c.cube({}, {}, { 1.0f, 0.8f, 0.6f, 1.f });
+	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage2D));
 	c.set_texture(tex);
 
 	
@@ -167,7 +170,6 @@ void draw2d_callback(Canvas c)
 	//c.line(Vector3f{ 0.f, 0.f, 0.f }, Vector3f{ 400.f, 500.f, 600.f }, { 0.2f, 1.f, 0.2f, 1.f });
 	//c.line(Vector3f{ 0.f, 0.f, 0.f }, { m.x, m.y, 20.0f }, { 0.8f, 1.f, 0.4f, 1.f });
 	c.demo();
-	//c.cube({}, {}, { 1.0f, 0.5f, 0.6f, 1.f });
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 
 	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0f, 0.8f, 0.1f});

@@ -27,7 +27,7 @@ namespace ig
 
 		void cube(Vector3f start, Vector3f end, const Colorf &clr);
 		
-		void circle(float radius, Vector2f center, const Colorb clr, const uint16_t vertcies_count = 32);
+		void circle(float radius, Vector2f center, const Colorf clr, const uint16_t vertcies_count = 32);
 		
 		void draw(Vertex2D *vert, size_t count, PrimitiveType draw_type);
 		void draw(const Vertex2DBuffer &buf);

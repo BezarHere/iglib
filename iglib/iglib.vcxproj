@@ -216,6 +216,7 @@
     <ClInclude Include="src\_iglib_shader.h" />
     <ClInclude Include="src\_iglib_vector.h" />
     <ClInclude Include="src\_iglib_batchdraw.h" />
+    <ClInclude Include="src\_iglib_vertexarray.h" />
     <ClInclude Include="src\_iglib_wavefront_obj.h" />
     <ClInclude Include="src\_iglib_window.h" />
     <ClInclude Include="src\_iglib_matrix.h" />
