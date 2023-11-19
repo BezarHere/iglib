@@ -141,7 +141,7 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 
 }
 
-void draw2d_callback(Canvas c)
+void draw2d_callback(Canvas &c)
 {
 	const ig::Vector2f m = c.get_window().get_mouse_position();
 	/*constexpr size_t iters = 100000;

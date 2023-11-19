@@ -5,7 +5,14 @@
 #include "intrinsics.h"
 #include "draw_internal.h"
 
+// all of the unsigned int's bits turned on except the last one
+constexpr unsigned int UnsignedIntNonTrailingBitMask = (1u << (sizeof(unsigned int) * 8 - 1)) - 1;
+constexpr unsigned int UnsignedIntLastBit = 1u << ((sizeof(unsigned int) * 8) - 1);
+constexpr unsigned int DisabledTextureSlotMask = UnsignedIntLastBit;
 
+
+// yeah!
+#define to_clamped_space(v, w) v
 
 typedef basic_heap_span<Vector2f> Vector2fSpan_t;
 FORCEINLINE [[nodiscard]] const Vector2fSpan_t _generate_circle_frame(uint16_t res)
@@ -39,8 +46,7 @@ FORCEINLINE const Vector2fSpan_t &get_circle_frame(uint16_t res)
 		s_CircleFrames[res] = _generate_circle_frame(res);
 	return s_CircleFrames.at(res);
 }
-static ShaderInstance_t DefaultShader2D{};
-static ShaderInstance_t DefaultShader3D{};
+static ShaderInstance_t DefaultShaders[(int)ShaderUsage::_Max]{};
 
 // a cube consists of two quads each one consisting of two tringles
 static Vertex3DBuffer DefaultCubeBuffer{};
@@ -83,14 +89,19 @@ static Vertex2D g_Quad2DVertcies[ 4 ]{};
 static Vertex2D g_Triangle2DVertcies[ 3 ]{};
 static Vertex2D g_Line2DVertcies[ 2 ]{};
 
+static const Canvas *g_CurrentCanvas;
+static std::shared_ptr<const Texture> g_PlankTexture;
+
 FORCEINLINE void generate_opengl_globals()
 {
 	static bool first = true;
 	if (first) first = false;
 	else return;
 
-	DefaultShader2D = Shader::get_default(ShaderUsage::Usage2D);
-	DefaultShader3D = Shader::get_default(ShaderUsage::Usage3D);
+	for (int i = 0; i < (int)ShaderUsage::_Max; i++)
+	{
+		DefaultShaders[i] = Shader::get_default(ShaderUsage(i));
+	}
 
 	DefaultCubeIndexBuffer.generate(sizeof(DefaultCubeIndexBuffer_Values) / sizeof(*DefaultCubeIndexBuffer_Values), DefaultCubeIndexBuffer_Values);
 	DefaultLineBuffer.create(2u);
@@ -105,27 +116,47 @@ FORCEINLINE void generate_opengl_globals()
 	g_Line2DBuffer.create(2);
 
 
+	// uvs
 	{
 		g_Quad2DVertcies[ 0 ].uv = { 0.f, 0.f };
 		g_Quad2DVertcies[ 1 ].uv = { 0.f, 1.f };
 		g_Quad2DVertcies[ 2 ].uv = { 1.f, 1.f };
 		g_Quad2DVertcies[ 3 ].uv = { 1.f, 0.f };
 	}
+
+
+	// generating plank texutre
+	{
+		constexpr byte plank_white_data[ 4 * 4 ]
+		{
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+		};
+		g_PlankTexture.reset(new Texture(Image(plank_white_data, {2, 2}, Channels::RGBA)));
+	}
+
 }
 
 namespace ig
 {
 	Canvas::Canvas(const Window &wnd)
-		: m_wnd{ wnd }, m_shader{ 0 }, m_tex{ 0 }, m_trans2d{}, m_trans3d{}
+		: m_wnd{ wnd }, m_shader{ 0 }, m_trans2d{}, m_trans3d{}
 	{
 		generate_opengl_globals();
-			
+
+		if (g_CurrentCanvas)
+			bite::warn("More then on instances of ig::Canvas exists! you can't render on window/canvas while a canvas is alive!");
+		g_CurrentCanvas = this;
+
 		this->unbind_shader();
 	}
 
 	Canvas::~Canvas()
 	{
 		glUseProgram(0);
+		g_CurrentCanvas = nullptr;
 	}
 
 	void Canvas::quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr)
@@ -294,16 +325,7 @@ namespace ig
 
 	void Canvas::draw(const Vertex2DBuffer &buf)
 	{
-		//if (m_shader && m_shader->get_usage() == ShaderUsage::Usage2D)
-		if (m_shader)
-		{
-			update_shader_uniforms();
-		}
-		else
-		{
-			bind_shader(DefaultShader2D);
-			update_shader_uniforms();
-		}
+		update_shader_uniforms();
 
 		buf._bind_array_buffer();
 
@@ -328,16 +350,7 @@ namespace ig
 
 	void Canvas::draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies)
 	{
-		//if (m_shader && m_shader->get_usage() == ShaderUsage::Usage2D)
-		if (m_shader)
-		{
-			update_shader_uniforms();
-		}
-		else
-		{
-			bind_shader(DefaultShader2D);
-			update_shader_uniforms();
-		}
+		update_shader_uniforms();
 
 		buf._bind_array_buffer();
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indcies.get_id());
@@ -364,16 +377,7 @@ namespace ig
 
 	void Canvas::draw(const Vertex3DBuffer &buf)
 	{
-		//if (m_shader && m_shader->get_usage() == ShaderUsage::Usage3D)
-		if (m_shader)
-		{
-			update_shader_uniforms();
-		}
-		else
-		{
-			bind_shader(DefaultShader3D);
-			update_shader_uniforms();
-		}
+		update_shader_uniforms();
 
 		buf._bind_array_buffer();
 
@@ -574,19 +578,33 @@ namespace ig
 
 	void Canvas::bind_shader(const ShaderInstance_t &shader)
 	{
-		if (!shader || m_shader.get() == shader.get())
+		if (m_shader.get() == shader.get())
 			return;
+
+		if (!shader)
+		{
+			bite::warn("trying to bind a NULL shader to canvas!");
+			return;
+		}
+
 		glUseProgram(shader->get_id());
-
-		//update_shader_uniforms();
-
 		m_shader = shader;
 	}
 
 	void Canvas::unbind_shader()
 	{
-		glUseProgram(DefaultShader2D->get_id());
-		m_shader = DefaultShader2D;
+		glUseProgram(DefaultShaders[ (int)m_shading_usage ]->get_id());
+		m_shader = DefaultShaders[ (int)m_shading_usage ];
+	}
+
+	void Canvas::set_shading_usage(const ShaderUsage usage)
+	{
+		if (usage == ShaderUsage::_Max)
+		{
+			bite::warn("the shading usage ShaderUsage::_Max is not valid!");
+			return;
+		}
+		m_shading_usage = usage;
 	}
 
 	ShaderId_t Canvas::get_shader_id() const noexcept
@@ -599,11 +617,15 @@ namespace ig
 		if (!m_shader)
 			return;
 
-		glActiveTexture(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, m_tex);
+		const int atc = m_active_textrues_count;
+		for (int i = 0; i < atc; i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, m_textures[i] ? m_textures[i] : g_PlankTexture->get_handle());
+		}
+		
 
 		glUniform2f(glGetUniformLocation(m_shader->get_id(), "_screensize"), (float)m_wnd.get_width(), (float)m_wnd.get_height());
-		//glUniform1f(location++, m_wnd.get_shader_time());
 
 		if (m_shader->get_usage() == ShaderUsage::Usage2D)
 		{
@@ -631,19 +653,37 @@ namespace ig
 		return m_wnd;
 	}
 
-	void Canvas::set_texture(const Texture &tex)
+
+	void Canvas::set_texture(const TextureId_t tex, const TextureSlot slot)
 	{
-		m_tex = tex.get_handle();
+		m_textures[ int(slot) ] = tex;
 	}
 
-	void ig::Canvas::set_texture(const TextureId_t tex)
+	TextureId_t ig::Canvas::get_texture(const TextureSlot slot) const noexcept
 	{
-		m_tex = tex;
+		return m_textures[ int(slot) ];
 	}
 
-	TextureId_t ig::Canvas::get_texture() const noexcept
+	void Canvas::set_active_textures_count(int count)
 	{
-		return m_tex;
+		if (count < 0)
+		{
+			bite::warn("can't set the active textures count to less then zero");
+			return;
+		}
+
+		if (count >= int(TextureSlot::_MAX))
+		{
+			bite::warn("can't set the active textures count to greater or equal to zero");
+			return;
+		}
+
+		m_active_textrues_count = count;
+	}
+
+	int Canvas::get_active_textures_count() const noexcept
+	{
+		return m_active_textrues_count;
 	}
 
 }

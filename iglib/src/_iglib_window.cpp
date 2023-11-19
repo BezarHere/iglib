@@ -672,9 +672,9 @@ namespace ig
 		glLoadIdentity();
 		glOrtho(0.f, get_width(), get_height(), 0.f, 0.f, 1.f);
 
-		Canvas c = Canvas{ *this };
+		Canvas canvas{ *this };
 		if (m_draw_callback)
-			m_draw_callback(c);
+			m_draw_callback(canvas);
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NULL);
 		glDisable(GL_DEPTH_TEST);
@@ -688,9 +688,9 @@ namespace ig
 		g_ScreenQuadVertcies[ 3 ].pos.x = (float)sz.x;
 		g_ScreenQuadBuffer.update(g_ScreenQuadVertcies);
 
-		c.bind_shader(g_ScreenShader);
-		c.set_texture(texclr_buffer);
-		c.draw(g_ScreenQuadBuffer);
+		canvas.bind_shader(g_ScreenShader);
+		canvas.set_texture(texclr_buffer);
+		canvas.draw(g_ScreenQuadBuffer);
 
 		glDeleteTextures(1, &texclr_buffer);
 		glDeleteFramebuffers(1, &framebuffer);
@@ -698,8 +698,6 @@ namespace ig
 
 		pop_draw_pipline();
 		glfwSwapBuffers((GLFWwindow *)m_hdl);
-
-
 	}
 
 	void Window::poll()

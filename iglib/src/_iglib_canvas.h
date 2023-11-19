@@ -9,12 +9,19 @@
 
 namespace ig
 {
+	enum class TextureSlot
+	{
+		Slot0, Slot1, Slot2, Slot3,
+		Slot4, Slot5, Slot6, Slot7,
+		_MAX
+	};
+
 	class Window;
 
 	class Canvas
 	{
+		friend Window;
 	public:
-		Canvas(const Window &wnd);
 		~Canvas();
 
 		void quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr);
@@ -39,6 +46,8 @@ namespace ig
 
 		void bind_shader(const ShaderInstance_t &shader);
 		void unbind_shader();
+		// what will the canvas expect to draw in later calls? and what default shader will it resort to?
+		void set_shading_usage(const ShaderUsage usage);
 
 		ShaderId_t get_shader_id() const noexcept;
 
@@ -53,21 +62,30 @@ namespace ig
 		inline Transform3D &transform3d() noexcept { return m_trans3d; }
 		inline const Transform3D &transform3d() const noexcept { return m_trans3d; }
 
-		void set_texture(const Texture &tex);
-
 		// USE ONLY IF YOU WANT TO INTEGRATE OPENGL CODE WITH IGLIB OR YOU KNOW WHAT ARE YOU DOING
-		void set_texture(const TextureId_t tex);
+		void set_texture(const TextureId_t tex, const TextureSlot slot = TextureSlot::Slot0);
+		TextureId_t get_texture(const TextureSlot slot = TextureSlot::Slot0) const noexcept;
 
-		TextureId_t get_texture() const noexcept;
+		void set_active_textures_count(int count);
+		int get_active_textures_count() const noexcept;
+
+	private:
+		Canvas(const Window &wnd);
+		Canvas(const Canvas &) = delete;
+		Canvas(Canvas &&) = delete;
+		void operator=(const Canvas &) = delete;
+		void operator=(Canvas &&) = delete;
 
 	private:
 		const Window &m_wnd;
 		std::shared_ptr<const Shader> m_shader;
-		TextureId_t m_tex;
+		ShaderUsage m_shading_usage = ShaderUsage::Usage2D;
+		TextureId_t m_textures[int(TextureSlot::_MAX)];
+		int m_active_textrues_count = 1; // will upload all textures from 0 to m_active_textrues_count - 1
 		Transform2D m_trans2d{};
 		Transform3D m_trans3d;
 	};
 
-	typedef void(*DrawCallback)(Canvas canvas);
+	typedef void(*DrawCallback)(Canvas &canvas);
 
 }

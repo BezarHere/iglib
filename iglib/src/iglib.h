@@ -18,7 +18,6 @@ namespace ig
 		IGlib() = delete;
 
 		static Version version() noexcept;
-		static int bee();
 
 	};
 
