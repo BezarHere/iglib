@@ -10,8 +10,8 @@ static Vertex2D g_ScreenQuadVertcies[ 4 ]
 	{ {1.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {1.f, 1.f} } // topright
 };
 
-Vertex2DBuffer g_ScreenQuadBuffer{};
-ShaderInstance_t g_ScreenShader{};
+static Vertex2DBuffer g_ScreenQuadBuffer{};
+static ShaderInstance_t g_ScreenShader{};
 static GLFWwindow *create_glfw_window(int width, int height, const std::string &title, GLFWmonitor *fullscreen, GLFWwindow *share)
 {
 	if (!is_glfw_running())
@@ -46,7 +46,7 @@ static GLFWwindow *create_glfw_window(int width, int height, const std::string &
 
 		static const std::string PostProcessing_Frag =
 			"void main() {"
-				"Color = vec4(texture(_tex, UV).rgb, 1.0);"
+				"Color = vec4(texture(uTex0, UV).rgb, 1.0);"
 			"}";
 
 		g_ScreenQuadBuffer.set_primitive(PrimitiveType::Quad);

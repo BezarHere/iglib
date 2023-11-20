@@ -127,14 +127,74 @@ FORCEINLINE void generate_opengl_globals()
 
 	// generating plank texutre
 	{
-		constexpr byte plank_white_data[ 4 * 4 ]
+		constexpr byte plank_white_data[ 8 * 8 * 4 ]
 		{
 			255, 255, 255, 255,
 			255, 255, 255, 255,
 			255, 255, 255, 255,
 			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
+			255, 255, 255, 255,
 		};
-		g_PlankTexture.reset(new Texture(Image(plank_white_data, {2, 2}, Channels::RGBA)));
+		g_PlankTexture.reset(new Texture(Image(plank_white_data, {8, 8}, Channels::L)));
 	}
 
 }
@@ -323,7 +383,7 @@ namespace ig
 		draw(buff);
 	}
 
-	void Canvas::draw(const Vertex2DBuffer &buf)
+	void Canvas::draw(const Vertex2DBuffer &buf, int from, int to)
 	{
 		update_shader_uniforms();
 
@@ -336,13 +396,12 @@ namespace ig
 		glVertexAttribPointer(0, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, pos));
 		glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, clr));
 		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, uv));
-		
-		glDrawArrays(to_glprimitve(buf.get_primitive()), 0, (int)buf.get_size());
+
+		glDrawArrays(to_glprimitve(buf.get_primitive()), from, to < 1 ? (int)buf.get_size() : to);
 		
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
-		
 
 		if (!buf._unbind_array_buffer())
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
@@ -375,7 +434,7 @@ namespace ig
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
 	}
 
-	void Canvas::draw(const Vertex3DBuffer &buf)
+	void Canvas::draw(const Vertex3DBuffer &buf, int from, int to)
 	{
 		update_shader_uniforms();
 
@@ -391,7 +450,7 @@ namespace ig
 		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex3DBuffer::vertex_type), (const void *)offsetof(Vertex3DBuffer::vertex_type, uv));
 		glVertexAttribPointer(3, 3, GL_FLOAT, 0, sizeof(Vertex3DBuffer::vertex_type), (const void *)offsetof(Vertex3DBuffer::vertex_type, normal));
 
-		glDrawArrays(to_glprimitve(buf.get_primitive()), 0, (int)buf.get_size());
+		glDrawArrays(to_glprimitve(buf.get_primitive()), from, to < 1 ? (int)buf.get_size() : to);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -621,9 +680,15 @@ namespace ig
 		for (int i = 0; i < atc; i++)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(GL_TEXTURE_2D, m_textures[i] ? m_textures[i] : g_PlankTexture->get_handle());
+			const auto hdl = m_textures[ i ] ? m_textures[ i ] : g_PlankTexture->get_handle();
+			//const auto hdl = g_PlankTexId;
+			glBindTexture(GL_TEXTURE_2D, hdl);
 		}
-		
+
+		//glActiveTexture(GL_TEXTURE_2D);
+		//glBindTexture(GL_TEXTURE_2D, m_textures[ 0 ] ? m_textures[ 0 ] : g_CheckboardTexId);
+
+		glUniform1i(glGetUniformLocation(m_shader->get_id(), "uTex0"), 0);
 
 		glUniform2f(glGetUniformLocation(m_shader->get_id(), "_screensize"), (float)m_wnd.get_width(), (float)m_wnd.get_height());
 

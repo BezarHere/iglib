@@ -153,7 +153,10 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 					"in vec4 FragColor;"
 					"in vec2 UV;";
 
-		ss << "uniform sampler2D _tex;";
+		ss << "uniform sampler2D uTex0;";
+		ss << "uniform sampler2D uTex1;";
+		ss << "uniform sampler2D uTex2;";
+		ss << "uniform sampler2D uTex3;";
 		//if (temp.fragtime)
 		//{
 		//	ss << "in float FragTime;";
@@ -173,8 +176,10 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 			return ss.str();
 		}
 
-		ss << "Color = texture(_tex, UV) * FragColor;";
-		//ss << "Color = FragColor;";
+		//ss << "Color = (texture(_tex, UV) * FragColor) - ((texture(_tex, UV) * FragColor) * UV.x) + (FragColor * UV.x);";
+		//ss << "Color = texture(uTex0, UV) * FragColor;";
+		//ss << "Color = vec4(UV, 1.0, 1.0) * FragColor;";
+		ss << "Color = texture(uTex0, UV) * FragColor;";
 		//ss << "Color = vec4(1.0, 1.0, 1.0, 1.0);";
 		ss << "}";
 	}

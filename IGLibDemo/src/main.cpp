@@ -157,19 +157,22 @@ void draw2d_callback(Canvas &c)
 		);
 	}*/
 
+	c.demo();
+
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
+	c.transform3d() = ply;
 	c.cube({}, {}, { 1.0f, 0.8f, 0.6f, 1.f });
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage2D));
-	c.set_texture(tex);
+	//c.set_texture(tex.get_handle());
 
 	
 	//std::cout << c.transform3d().get_position() << '\n';
-	c.transform3d() = ply;
+	
 	//c.line(Vector3f{ 0.f, 0.f, 0.f }, Vector3f{ 1.f, 1.f, 1.f }, { 0.2f, 1.f, 0.2f, 1.f });
 	//c.line(Vector3f{ 0.f, 0.f, 0.f }, Vector3f{ 30.f, 20.f, 10.f }, { 0.2f, 1.f, 0.2f, 1.f });
 	//c.line(Vector3f{ 0.f, 0.f, 0.f }, Vector3f{ 400.f, 500.f, 600.f }, { 0.2f, 1.f, 0.2f, 1.f });
 	//c.line(Vector3f{ 0.f, 0.f, 0.f }, { m.x, m.y, 20.0f }, { 0.8f, 1.f, 0.4f, 1.f });
-	c.demo();
+	
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 
 	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0f, 0.8f, 0.1f});
@@ -183,9 +186,9 @@ void draw2d_callback(Canvas &c)
 
 int main()
 {
-	ig::wavefront::Obj o{ "v 12 44 41\nv 54 65 11\n\nvp 12" };
+	//ig::wavefront::Obj o{ "v 12 44 41\nv 54 65 11\n\nvp 12" };
 
-	std::cout << readall(current_dir + "\\main.cpp") << '\n';
+	//std::cout << readall(current_dir + "\\main.cpp") << '\n';
 
 	//std::cout << "hello there\n";
 	//auto k = ig::Image("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.png");

@@ -37,10 +37,10 @@ namespace ig
 		void circle(float radius, Vector2f center, const Colorf clr, const uint16_t vertcies_count = 32);
 		
 		void draw(Vertex2D *vert, size_t count, PrimitiveType draw_type);
-		void draw(const Vertex2DBuffer &buf);
+		void draw(const Vertex2DBuffer &buf, int from = 0, int to = 0);
 		void draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies);
 
-		void draw(const Vertex3DBuffer &buf);
+		void draw(const Vertex3DBuffer &buf, int from = 0, int to = 0);
 
 		void demo();
 
