@@ -383,7 +383,7 @@ namespace ig
 		draw(buff);
 	}
 
-	void Canvas::draw(const Vertex2DBuffer &buf, int from, int to)
+	void Canvas::draw(const Vertex2DBuffer &buf, int start, int count)
 	{
 		update_shader_uniforms();
 
@@ -397,7 +397,7 @@ namespace ig
 		glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, clr));
 		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, uv));
 
-		glDrawArrays(to_glprimitve(buf.get_primitive()), from, to < 1 ? (int)buf.get_size() : to);
+		glDrawArrays(to_glprimitve(buf.get_primitive()), start, count < 0 ? ((int)buf.get_size() - start) : count);
 		
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -434,7 +434,7 @@ namespace ig
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
 	}
 
-	void Canvas::draw(const Vertex3DBuffer &buf, int from, int to)
+	void Canvas::draw(const Vertex3DBuffer &buf, int start, int count)
 	{
 		update_shader_uniforms();
 
@@ -450,7 +450,7 @@ namespace ig
 		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex3DBuffer::vertex_type), (const void *)offsetof(Vertex3DBuffer::vertex_type, uv));
 		glVertexAttribPointer(3, 3, GL_FLOAT, 0, sizeof(Vertex3DBuffer::vertex_type), (const void *)offsetof(Vertex3DBuffer::vertex_type, normal));
 
-		glDrawArrays(to_glprimitve(buf.get_primitive()), from, to < 1 ? (int)buf.get_size() : to);
+		glDrawArrays(to_glprimitve(buf.get_primitive()), start, count < 0 ? ((int)buf.get_size() - start) : count);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -459,180 +459,6 @@ namespace ig
 
 		if (!buf._unbind_array_buffer())
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
-	}
-
-	void Canvas::demo()
-	{
-		//glEnable(GL_TEXTURE_2D);
-
-		////glClear(GL_COLOR_BUFFER_BIT);   // Clear the color buffer with current clearing color
-
-		//GLbyte tex[ 64 * 64 ];
-		//for (size_t x{}; x < 64; x++)
-		//{
-		//  for (size_t y{}; y < 64; y++)
-		//  {
-		//		tex[ x + (y * 64) ] = GLbyte(x + y);
-		//  }
-		//}
-
-		//static GLfloat pixels[] =
-		//{
-		//		1, 0, 0,
-		//		0, 1, 0,
-		//		0, 0, 1,
-		//		1, 1, 1
-		//};
-
-		//GLuint t;
-		//glGenTextures(1, &t);
-		//glBindTexture(GL_TEXTURE0, t);
-		//glTexImage2D(GL_TEXTURE0, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
-		//glTexParameteri(GL_TEXTURE0, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE0, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		//glBindTexture(GL_TEXTURE0, 0);
-
-
-		//// Define shapes enclosed within a pair of glBegin and glEnd
-		//glBindTexture(GL_TEXTURE0, t);
-
-		constexpr Colorf White = { 1.f, 1.f, 1.f, 1.f };
-		constexpr Colorf Red = { 1.f, 0.f, 0.f, 1.f };
-		{
-			Vertex2D vert[ 8 ]
-			{
-				{ Vector2f{-80.f, 80.f}, White, Vector2f{ 0.f, 0.f } },
-				{ Vector2f{-80.f, -80.f}, White, Vector2f{ 0.f, 1.f } },
-				{ Vector2f{80.f, -80.f}, White, Vector2f{ 1.f, 1.f } },
-				{ Vector2f{80.f, 80.f}, White, Vector2f{ 1.f, 0.f } },
-				{ Vector2f{80.f, 80.f}, White, Vector2f{ 0.f, 0.f } },
-				{ Vector2f{180.f, 80.f}, White, Vector2f{ 1.f, 0.f } },
-				{ Vector2f{180.f, 180.f}, White, Vector2f{ 1.f, 1.f } },
-				{ Vector2f{80.f, 180.f}, White, Vector2f{ 0.f, 1.f } },
-			};
-
-			//GLuint buffer;
-			//glGenBuffers(1, &buffer);
-			//glBindBuffer(GL_ARRAY_BUFFER, buffer);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
-
-			//
-			//glEnableVertexAttribArray(0);
-			//glEnableVertexAttribArray(1);
-			//glEnableVertexAttribArray(2);
-			//glVertexAttribPointer(0, 2, GL_FLOAT, 0, sizeof(Vertex2D), nullptr);
-			//glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)sizeof(Vector2f));
-			//glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)(sizeof(Vector2f) + sizeof(Colorf)));
-
-
-			Vertex2DBuffer buff{ 8 };
-			buff.update(vert);
-			buff.set_primitive(PrimitiveType::Quad);
-
-
-			this->draw(buff);
-
-			//glDrawArrays(GL_QUADS, 0, 8);
-
-			/*if (!buffer._unbind_array_buffer())
-				raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");*/
-			//glDeleteBuffers(1, &buffer);
-		}
-		
-		
-		{
-			Vertex3D vert[ 6 ]
-			{
-				{ Vector3f{-1.f, -1.f, -1.f}, White, Vector2f{ 0.f, 0.f } },
-				{ Vector3f{-1.f, 1.f, 1.f}, White, Vector2f{ 0.f, 1.f } },
-				{ Vector3f{1.f, -1.f, -1.f}, White, Vector2f{ 1.f, 1.f } },
-				{ Vector3f{-1.f, -1.f, -1.f}, White, Vector2f{ 1.f, 0.f } },
-				{ Vector3f{-1.f, -1.f, -1.f}, White, Vector2f{ 0.f, 0.f } },
-				{ Vector3f{-1.f, -1.f, -1.f}, White, Vector2f{ 1.f, 0.f } },
-			};
-
-			for (size_t i = 0; i < sizeof(vert) / sizeof(*vert); i++)
-			{
-				vert[ i ].pos *= 10.f;
-				vert[ i ].pos += Vector3f{20.f, 20.f, 0.f};
-			}
-
-
-
-			//GLuint buffer;
-			//glGenBuffers(1, &buffer);
-			//glBindBuffer(GL_ARRAY_BUFFER, buffer);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
-
-			//
-			//glEnableVertexAttribArray(0);
-			//glEnableVertexAttribArray(1);
-			//glEnableVertexAttribArray(2);
-			//glVertexAttribPointer(0, 2, GL_FLOAT, 0, sizeof(Vertex2D), nullptr);
-			//glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)sizeof(Vector2f));
-			//glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)(sizeof(Vector2f) + sizeof(Colorf)));
-
-
-			Vertex3DBuffer buff{ 6 };
-			buff.update(vert);
-			buff.set_primitive(PrimitiveType::Triangle);
-
-
-			this->draw(buff);
-
-			//glDrawArrays(GL_QUADS, 0, 8);
-
-			/*if (!buffer._unbind_array_buffer())
-				raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");*/
-			//glDeleteBuffers(1, &buffer);
-		}
-
-		{
-			Vertex3D vert[ 4 ]
-			{
-				{ Vector3f{-1.f, -1.f, -1.f}, White, Vector2f{ 0.f, 0.f } },
-				{ Vector3f{-1.f, 1.f, 1.f}, White, Vector2f{ 0.f, 1.f } },
-				{ Vector3f{1.f, -1.f, -1.f}, White, Vector2f{ 1.f, 0.f } },
-				{ Vector3f{-1.f, -1.f, -1.f}, White, Vector2f{ 1.f, 1.f } },
-			};
-
-			for (size_t i = 0; i < sizeof(vert) / sizeof(*vert); i++)
-			{
-				vert[ i ].pos *= 10.f;
-				vert[ i ].pos += Vector3f{ 20.f, 20.f, 0.f };
-			}
-
-
-
-			//GLuint buffer;
-			//glGenBuffers(1, &buffer);
-			//glBindBuffer(GL_ARRAY_BUFFER, buffer);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
-
-			//
-			//glEnableVertexAttribArray(0);
-			//glEnableVertexAttribArray(1);
-			//glEnableVertexAttribArray(2);
-			//glVertexAttribPointer(0, 2, GL_FLOAT, 0, sizeof(Vertex2D), nullptr);
-			//glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)sizeof(Vector2f));
-			//glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2D), (const void *)(sizeof(Vector2f) + sizeof(Colorf)));
-
-
-			Vertex3DBuffer buff{ 4 };
-			buff.update(vert);
-			buff.set_primitive(PrimitiveType::Quad);
-
-
-			this->draw(buff);
-
-			//glDrawArrays(GL_QUADS, 0, 8);
-
-			/*if (!buffer._unbind_array_buffer())
-				raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");*/
-				//glDeleteBuffers(1, &buffer);
-		}
-
-		glFlush();  // Render now
 	}
 
 	void Canvas::bind_shader(const ShaderInstance_t &shader)

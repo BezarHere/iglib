@@ -156,7 +156,8 @@ void draw2d_callback(Canvas &c)
 			{ 45, ig::byte(i  & 0xff), 188, 255 }
 		);
 	}*/
-
+	
+	c.set_texture(tex.get_handle());
 	c.demo();
 
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
