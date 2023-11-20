@@ -27,16 +27,19 @@ static TextureId_t g_BindedHdl;
 
 FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h, Channels c, std::shared_ptr<unsigned char[]> buf)
 {
+
 	std::unique_ptr<TextureInternal> tex{ new TextureInternal{} };
+
+	if (!(w * h))
+		return tex;
+
 	TextureId_t hdl = 0;
 	glGenTextures(1, &hdl);
 	tex->handle = hdl;
 
+	REPORT(tex->handle == NULL);
 	if (tex->handle == NULL)
-	{
-		glfwerror();
 		return tex;
-	}
 
 	glBindTexture(GL_TEXTURE_2D, tex->handle);
 

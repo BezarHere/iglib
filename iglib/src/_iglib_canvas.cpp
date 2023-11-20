@@ -343,7 +343,7 @@ namespace ig
 			v[ i ].pos.set(g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ]);
 			v[ i ].pos += Vector3f{ 1.0f, 1.0f, 1.0f };
 			v[ i ].pos *= 200.0f;
-			//v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 0.f, 1.f }, Pi / 2.0f);
+			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 0.f, 1.f }, Pi / 2.0f);
 			v[ i ].clr = clr;
 			v[ i ].uv.x = Uvs[ (i * 2) % 6 ];
 			v[ i ].uv.y = Uvs[ ((i * 2) + 1) % 6 ];

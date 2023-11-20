@@ -13,22 +13,22 @@ using bite::warn;
 
 FORCEINLINE DECLSPEC_NORETURN void glfwerror(bool terminate = false)
 {
-	const char *desc = nullptr;
-	int i = glfwGetError(&desc);
+	const char *__glfw_desc = nullptr;
+	int __glfw_errcode = glfwGetError(&__glfw_desc);
 
-	if (i != GLFW_NO_ERROR)
+	if (__glfw_errcode != GLFW_NO_ERROR)
 	{
 		if (terminate)
 		{
-			if (desc)
-				bite::raise("GLFW Error: [" + std::to_string(i) + "] as '" + desc + "'.");
-			bite::raise("GLFW Error: [" + std::to_string(i) + "].");
+			if (__glfw_desc)
+				bite::raise("GLFW Error: [" + std::to_string(__glfw_errcode) + "] as '" + __glfw_desc + "'.");
+			bite::raise("GLFW Error: [" + std::to_string(__glfw_errcode) + "].");
 		}
 
 		dye::put_colors({ dye::ColorCode::Red, dye::ColorCode::Black });
-		if (desc)
-			std::cerr << "GLFW Error: [" << i << "] as '" << desc << "'.\n";
-		std::cerr << "GLFW Error: [" << i << "].\n";
+		if (__glfw_desc)
+			std::cerr << "GLFW Error: [" << __glfw_errcode << "] as '" << __glfw_desc << "'.\n";
+		std::cerr << "GLFW Error: [" << __glfw_errcode << "].\n";
 		dye::clear_colors();
 	}
 }

@@ -47,6 +47,7 @@ static GLFWwindow *create_glfw_window(int width, int height, const std::string &
 		static const std::string PostProcessing_Frag =
 			"void main() {"
 				"Color = vec4(texture(uTex0, UV).rgb, 1.0);"
+				//"Color = vec4(UV, 1.0, 1.0);"
 			"}";
 
 		g_ScreenQuadBuffer.set_primitive(PrimitiveType::Quad);
@@ -404,14 +405,88 @@ namespace ig
 	}
 #pragma endregion
 
+	struct Window::WindowDrawBuffer
+	{
+		static constexpr GLuint RenderTextureType = GL_RGB;
+		static constexpr GLuint RenderDepthStencilMode = GL_DEPTH24_STENCIL8;
+
+		~WindowDrawBuffer()
+		{
+			glDeleteFramebuffers(1, &fbo);
+			glDeleteRenderbuffers(1, &rbo);
+			glDeleteTextures(1, &cto);
+		}
+
+		FORCEINLINE static std::unique_ptr<WindowDrawBuffer> generate(Vector2i size)
+		{
+			GLuint fbo = 0, rbo = 0, cto = 0;
+			
+			glGenFramebuffers(1, &fbo);
+
+			REPORT(fbo == NULL);
+			if (fbo == NULL)
+			{
+				return std::unique_ptr<WindowDrawBuffer>(nullptr);
+			}
+
+			glGenTextures(1, &cto);
+
+			REPORT(cto == NULL);
+			if (cto == NULL)
+			{
+				glDeleteFramebuffers(1, &fbo);
+				return std::unique_ptr<WindowDrawBuffer>(nullptr);
+			}
+
+			glBindTexture(GL_TEXTURE_2D, cto);
+			glTexImage2D(GL_TEXTURE_2D, 0, RenderTextureType, size.x, size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+
+			glGenRenderbuffers(1, &rbo);
+
+			REPORT(rbo == NULL);
+			if (rbo == NULL)
+			{
+				glDeleteFramebuffers(1, &fbo);
+				glDeleteTextures(1, &cto);
+				return std::unique_ptr<WindowDrawBuffer>(nullptr);
+			}
+
+
+			glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+			glRenderbufferStorage(GL_RENDERBUFFER, RenderDepthStencilMode, size.x, size.y);
+
+			
+
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cto, 0);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+			REPORT(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE); // <- BUGBUG
+
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NULL);
+			glBindRenderbuffer(GL_RENDERBUFFER, NULL);
+			glBindTexture(GL_TEXTURE_2D, NULL);
+
+			return std::unique_ptr<WindowDrawBuffer>(new WindowDrawBuffer{ fbo, rbo, cto, size });
+		}
+
+		const GLuint fbo = 0, rbo = 0, cto = 0;
+		const Vector2i ctosz{};
+	};
+
 	Window::Window() noexcept
 		: m_hdl(nullptr),
 		m_visible_state{ WindowVisibiltyState::Restored },
 		m_focused{ false },
 		m_hidden{ false },
 		m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) },
-		m_stp{ (float)glfwGetTime() }
-			//m_handle_rc{ new size_t{1} }
+		m_stp{ (float)glfwGetTime() },
+		m_drawbuffer{ nullptr }
 	{
 		refresh_rect();
 	}
@@ -422,40 +497,13 @@ namespace ig
 					g_main_window ? (GLFWwindow*)g_main_window->m_hdl : nullptr
 				),
 				title,
-				false
-			)
+				false)
 	{
 	}
 
 	Window::Window(Vector2i size) noexcept
 		: Window(size, "Window")
 	{
-	}
-
-	//Window::Window(const Window &copy)
-	//	: m_hdl(copy.m_hdl)
-	//{
-	//	if (&copy == this)
-	//		return;
-	//	m_handle_rc = copy.m_handle_rc;
-	//	(*m_handle_rc)++;
-	//	WindowCallbackEngine::link(this);
-	//}
-
-	Window::Window(Window &&move) noexcept
-		: m_hdl(move.m_hdl),
-			m_visible_state{ move.m_visible_state },
-			m_focused{ move.m_focused },
-			m_title( move.m_title ),
-			m_hidden{ move.m_hidden },
-			m_stp{ move.m_stp }
-	{
-		if (move.m_hdl == nullptr)
-			return;
-		WindowCallbackEngine::unlink(&move);
-		move.m_hdl = nullptr;
-		WindowCallbackEngine::link(this);
-		refresh_rect();
 	}
 		
 	Window::Window(void *const handle, const std::string &title, bool hidden) noexcept
@@ -465,8 +513,8 @@ namespace ig
 			m_title{ title },
 			m_hidden{ hidden },
 			m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) },
-			m_stp{ (float)glfwGetTime() }
-		//m_handle_rc{ new size_t{1} }
+			m_stp{ (float)glfwGetTime() },
+			m_drawbuffer{ nullptr }
 	{
 		if (handle == nullptr)
 		{
@@ -474,6 +522,26 @@ namespace ig
 			glfwerror(true); // <- if there is any glfw error, this will raise
 			return;
 		}
+		WindowCallbackEngine::link(this);
+		refresh_rect();
+		m_drawbuffer.reset(WindowDrawBuffer::generate(get_size()).release());
+	}
+
+
+	Window::Window(Window &&move) noexcept
+		: m_hdl(move.m_hdl),
+		m_visible_state{ move.m_visible_state },
+		m_focused{ move.m_focused },
+		m_title(move.m_title),
+		m_hidden{ move.m_hidden },
+		m_stp{ move.m_stp },
+		m_mouse_callback{ move.m_mouse_callback },
+		m_drawbuffer{ move.m_drawbuffer.release() }
+	{
+		if (move.m_hdl == nullptr)
+			return;
+		WindowCallbackEngine::unlink(&move);
+		move.m_hdl = nullptr;
 		WindowCallbackEngine::link(this);
 		refresh_rect();
 	}
@@ -491,18 +559,6 @@ namespace ig
 		//(*m_handle_rc)--;
 	}
 
-	//Window &Window::operator=(const Window &other)
-	//{
-	//	if (&other == this)
-	//		return *this;
-	//	m_handle_rc = other.m_handle_rc;
-	//	(*m_handle_rc)++;
-	//	WindowHandle_t old_hdl = (WindowHandle_t)(m_hdl);
-	//	m_hdl = other.m_hdl;
-	//	WindowCallbackEngine::remap(this, old_hdl);
-	//	return *this;
-	//}
-
 	Window &Window::operator=(Window &&other) noexcept
 	{
 		//m_handle_rc = other.m_handle_rc;
@@ -519,6 +575,7 @@ namespace ig
 		m_rect = other.m_rect;
 		m_frambeuffer_size = other.m_frambeuffer_size;
 		m_visible_state = other.m_visible_state;
+		m_mouse_callback = other.m_mouse_callback;
 
 		WindowHandle_t old_hdl = (WindowHandle_t)m_hdl;
 		m_hdl = other.m_hdl;
@@ -630,43 +687,36 @@ namespace ig
 
 	void Window::render()
 	{
+		const Vector2i sz = get_size();
+		// MINIMIZED, no drawing
+		if (sz.area() == 0)
+		{
+			return;
+		}
 		push_to_draw_pipline((WindowHandle_t)m_hdl);
 		// TODO: Invoke a query to update size, size is still updated by the resize callback but still
-		const Vector2i sz = get_size();
 
-		GLuint framebuffer;
-		glGenFramebuffers(1, &framebuffer);
-
-		GLuint texclr_buffer;
-		glGenTextures(1, &texclr_buffer);
-		glBindTexture(GL_TEXTURE_2D, texclr_buffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sz.x, sz.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // <- GL_NEAREST should be able to change to GL_LINEAR
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // <- GL_NEAREST should be able to change to GL_LINEAR
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // <- GL_NEAREST should be able to change to GL_LINEAR
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // <- GL_NEAREST should be able to change to GL_LINEAR
-	
-
-		GLuint rbo;
-		glGenRenderbuffers(1, &rbo);
-		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, sz.x, sz.y);
-
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texclr_buffer, 0);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-			glfwerror(true);
+		if (sz != m_drawbuffer->ctosz)
+		{
+			m_drawbuffer.reset(WindowDrawBuffer::generate(sz).release());
+		}
 
 
 		//glDisable(GL_DEPTH);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_SCISSOR_TEST);
 
+		glScissor(0, 0, sz.x, sz.y);
 
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		const bool postprocessing = m_drawbuffer.get() != nullptr;
+		if (postprocessing)
+		{
+			glBindRenderbuffer(GL_RENDERBUFFER, m_drawbuffer->rbo);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_drawbuffer->fbo);
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -677,24 +727,24 @@ namespace ig
 			m_draw_callback(canvas);
 
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NULL);
+		glBindRenderbuffer(GL_RENDERBUFFER, NULL);
 		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_SCISSOR_TEST);
 
-		/// left to the user
-		//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		//glClear(GL_COLOR_BUFFER_BIT);
+		if (postprocessing)
+		{
+			g_ScreenQuadVertcies[ 1 ].pos.y = (float)sz.y;
+			g_ScreenQuadVertcies[ 2 ].pos = Vector2f(sz);
+			g_ScreenQuadVertcies[ 3 ].pos.x = (float)sz.x;
+			g_ScreenQuadBuffer.update(g_ScreenQuadVertcies);
 
-		g_ScreenQuadVertcies[ 1 ].pos.y = (float)sz.y;
-		g_ScreenQuadVertcies[ 2 ].pos = Vector2f(sz);
-		g_ScreenQuadVertcies[ 3 ].pos.x = (float)sz.x;
-		g_ScreenQuadBuffer.update(g_ScreenQuadVertcies);
+			canvas.bind_shader(g_ScreenShader);
+			canvas.set_texture(m_drawbuffer->cto);
+			canvas.draw(g_ScreenQuadBuffer);
 
-		canvas.bind_shader(g_ScreenShader);
-		canvas.set_texture(texclr_buffer);
-		canvas.draw(g_ScreenQuadBuffer);
 
-		glDeleteTextures(1, &texclr_buffer);
-		glDeleteFramebuffers(1, &framebuffer);
-		glDeleteRenderbuffers(1, &rbo);
+		}
 
 		pop_draw_pipline();
 		glfwSwapBuffers((GLFWwindow *)m_hdl);

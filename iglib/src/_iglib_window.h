@@ -215,10 +215,7 @@ namespace ig
 		Window(Vector2i size, std::string title) noexcept;
 		~Window() noexcept;
 
-		Window(const Window &copy) = delete;
 		Window(Window &&move) noexcept;
-
-		Window &operator=(const Window &other) = delete;
 		Window &operator=(Window &&other) noexcept;
 
 		bool is_valid() const;
@@ -292,6 +289,10 @@ namespace ig
 		Window(void *const handle, const std::string &title, bool hidden) noexcept;
 
 		class WindowCallbackEngine;
+		struct WindowDrawBuffer;
+
+		Window &operator=(const Window &other) = delete;
+		Window(const Window &copy) = delete;
 
 	private:
 		void *m_hdl;
@@ -302,16 +303,16 @@ namespace ig
 		std::string m_title{};
 		Vector2i m_frambeuffer_size{ 1, 1 };
 		Vector2f m_content_scale{ 1.0f, 1.0f };
-		bool m_deffered_close{ false }; // did the user click close or pressed alt+f4?
-		//std::shared_ptr<size_t> m_handle_rc;
+		bool m_deffered_close{ false };
 		bool m_postprocessing = true;
 		PostprocessingEnvironment m_env;
 
 		const TimeMs_t m_creation_time;
 		const float m_stp;
 
-		DrawCallback m_draw_callback = nullptr;
+		std::unique_ptr<WindowDrawBuffer> m_drawbuffer;
 
+		DrawCallback m_draw_callback = nullptr;
 		WindowCallback_t m_callback = nullptr;
 		KeyCallback_t m_key_callback = nullptr;
 		MouseCallback_t m_mouse_callback = nullptr;

@@ -158,10 +158,11 @@ void draw2d_callback(Canvas &c)
 	}*/
 	
 	c.set_texture(tex.get_handle());
-	c.demo();
+	//c.demo();
 
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
 	c.transform3d() = ply;
+	c.cube({}, {}, { 1.0f, 0.8f, 0.6f, 1.f });
 	c.cube({}, {}, { 1.0f, 0.8f, 0.6f, 1.f });
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage2D));
 	//c.set_texture(tex.get_handle());
@@ -176,8 +177,8 @@ void draw2d_callback(Canvas &c)
 	
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 
-	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0f, 0.8f, 0.1f});
-	c.rect(c.get_window().get_size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 0.f, 1.f, 0.8f, 255 });
+	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
+	c.rect(c.get_window().get_size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
 
 	//c.bind_shader(ss);
 	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
@@ -207,7 +208,7 @@ int main()
 		ig::Window i = ig::Window({128, 128}, "Window !!!");
 
 
-		ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\test.png" };
+		ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\colors.png" };
 		tex = ig::Texture(img);
 
 
@@ -228,7 +229,7 @@ int main()
 		while (!i.should_close())
 		{
 			//std::cout << i.size() << ' ' << i.position() << '\n';
-			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 60.0)));
+			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 90.0)));
 
 			//std::cout << "mouse pos: " << i.get_mouse_position() << '\n';
 
