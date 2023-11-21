@@ -75,7 +75,7 @@
     <ClInclude Include="src\draw_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\_iglib_bitmap_font.h">
+    <ClInclude Include="src\_iglib_font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\_iglib_shader.h">
@@ -125,7 +125,7 @@
     <ClCompile Include="src\_iglib_batchdraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\_iglib_bitmap_font.cpp">
+    <ClCompile Include="src\_iglib_font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\_iglib_shader.cpp">
