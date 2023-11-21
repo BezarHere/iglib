@@ -1,21 +1,32 @@
-from typing import Callable, TextIO
+from dataclasses import dataclass
+from typing import Any, Callable, TextIO
 from bindump import *
 from PIL import Image
 import pyperclip
 from io import StringIO
 
+@dataclass(frozen=True, slots=True)
+class padded_hex:
+	size: int
+
+	def __call__(self, value: int) -> Any:
+		h = hex(value)
+		if len(h) < self.size + 2:
+			h = '0x' + ('0' * ((self.size + 2) - len(h))) + h[2:]
+		return h
+
 def _get_channels_count(img: Image.Image):
 	p = img.getpixel((0, 0))
 	return len(p) if isinstance(p, tuple) else 1
 
-def _get_image_pixel_data(img: Image.Image):
+def _get_image_pixel_data(img: Image.Image, channels: int):
 	data = bytearray()
-	for i in range(img.width):
-		for j in range(img.height):
-			p = img.getpixel((i, j))
-			if isinstance(p, tuple):
-				for n in p:
-					data.append(n)
+	for i in range(img.height):
+		for j in range(img.width):
+			p = img.getpixel((j, i))
+			if channels > 0:
+				for n in range(channels):
+					data.append(p[n])
 			else:
 				data.append(p)
 	return bytes(data)
@@ -26,13 +37,13 @@ def bindump(
 			*,
 			bytes_per_unit = 1,
 			max_row_length = 8,
+			pixel_size = -1,
 			binary: bool = False):
 	
 	img = f if isinstance(f, Image.Image) else Image.open(f)
-	channels = _get_channels_count(img)
-	dump = _get_image_pixel_data(img)
+	channels = pixel_size if pixel_size >= 0 else _get_channels_count(img)
+	dump = _get_image_pixel_data(img, channels)
 	len_d = len(dump)
-	print(channels)
 
 	strbuild = StringIO()
 
@@ -42,7 +53,7 @@ def bindump(
 		elif isinstance(dumper, (str, Path)):
 			strbuild = open(dumper, 'w')
 	
-	mapper_func = str if binary else hex
+	mapper_func = str if binary else padded_hex(bytes_per_unit * 2)
 
 	if bytes_per_unit > 1:
 		dump = batched(dump, bytes_per_unit)
@@ -63,4 +74,8 @@ def bindump(
 	elif isinstance(dumper, (str, Path)):
 		strbuild.close()
 
-bindump(input("Image: ").strip().strip('"').strip("'").strip(), Path(__file__).parent.joinpath("dump.txt"), max_row_length=64)
+if __name__ == "__main__":
+	img_path = input("Image: ").strip().strip('"').strip("'").strip()
+	img = Image.open(img_path)
+	
+	bindump(img, Path(__file__).parent.joinpath("dump.txt"), max_row_length=16, bytes_per_unit=8, pixel_size=1)

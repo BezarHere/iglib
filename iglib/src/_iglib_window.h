@@ -230,7 +230,7 @@ namespace ig
 		Vector2i get_size() const;
 
 		Vector2i get_position() const;
-		const Recti &get_rect() const;
+		const Rect2i &get_rect() const;
 
 		void set_size(Vector2i size);
 		void set_position(Vector2i size);
@@ -279,7 +279,7 @@ namespace ig
 
 		void ping() const noexcept;
 
-		Image to_image(const Recti rect) const;
+		Image to_image(const Rect2i rect) const;
 		Image to_image() const;
 
 		// will remove the window and render this object as invalid
@@ -299,7 +299,7 @@ namespace ig
 		bool m_hidden;
 		WindowVisibiltyState m_visible_state;
 		bool m_focused = true;
-		Recti m_rect;
+		Rect2i m_rect;
 		std::string m_title{};
 		Vector2i m_frambeuffer_size{ 1, 1 };
 		Vector2f m_content_scale{ 1.0f, 1.0f };

@@ -16,7 +16,7 @@ struct Texture::_TextureInternal
 	TextureId_t handle;
 	GLsizei count = 1; // <- might be a VERY buggy thing
 	uint32_t w = 0, h = 0;
-	Channels c = Channels::Invalid;
+	ColorFormat c = ColorFormat::Invalid;
 	std::shared_ptr<unsigned char[]> buffer{};
 };
 
@@ -25,7 +25,7 @@ using TextureInternal = Texture::_TextureInternal;
 static TextureId_t g_BindedHdl;
 
 
-FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h, Channels c, std::shared_ptr<unsigned char[]> buf)
+FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h, ColorFormat c, std::shared_ptr<unsigned char[]> buf)
 {
 
 	std::unique_ptr<TextureInternal> tex{ new TextureInternal{} };
@@ -72,7 +72,7 @@ FORCEINLINE std::unique_ptr<TextureInternal> duplicate_tex(const TextureInternal
 namespace ig
 {
 	Texture::Texture()
-		: m_internal{ register_tex(0, 0, Channels::Invalid, std::shared_ptr<unsigned char[]>()) }
+		: m_internal{ register_tex(0, 0, ColorFormat::Invalid, std::shared_ptr<unsigned char[]>()) }
 	{
 	}
 
@@ -142,7 +142,7 @@ namespace ig
 		return { (int)m_internal->w, (int)m_internal->h };
 	}
 
-	Channels Texture::get_channels() const noexcept
+	ColorFormat Texture::get_channels() const noexcept
 	{
 		return m_internal->c;
 	}

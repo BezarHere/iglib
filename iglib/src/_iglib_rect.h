@@ -12,29 +12,29 @@ namespace ig
 	} Quad_t;
 
 	template <typename _T>
-	struct BaseRectTemplate
+	struct BaseRect2Template
 	{
 		using value_type = _T;
-		using this_type = BaseRectTemplate<_T>;
+		using this_type = BaseRect2Template<_T>;
 		using vector_type = BaseVector2Template<_T>;
 
-		inline constexpr BaseRectTemplate(value_type x_, value_type y_, value_type w_, value_type h_) noexcept
+		inline constexpr BaseRect2Template(value_type x_, value_type y_, value_type w_, value_type h_) noexcept
 			: x{ x_ }, y{ y_ }, w{ w_ }, h{ h_ }
 		{
 		}
 
-		inline constexpr BaseRectTemplate() noexcept
+		inline constexpr BaseRect2Template() noexcept
 			: x{ value_type() }, y{ value_type() }, w{ value_type() }, h{ value_type() }
 		{
 		}
 
-		inline constexpr BaseRectTemplate(vector_type pos, vector_type sz) noexcept
+		inline constexpr BaseRect2Template(vector_type pos, vector_type sz) noexcept
 			: x{ pos.x }, y{ pos.y }, w{ sz.x }, h{ sz.y }
 		{
 		}
 
 		template <typename _E>
-		inline constexpr BaseRectTemplate(const BaseRectTemplate<_E> &other) noexcept
+		inline constexpr BaseRect2Template(const BaseRect2Template<_E> &other) noexcept
 			: x{ value_type(other.x) }, y{ value_type(other.y) }, w{ value_type(other.w) }, h{ value_type(other.h) }
 		{
 		}
@@ -89,17 +89,17 @@ namespace ig
 		value_type x, y, w, h;
 	};
 
-	using Rectf = BaseRectTemplate<float>;
-	using Rectd = BaseRectTemplate<double>;
-	using Recti = BaseRectTemplate<int>;
-	using Rectsz = BaseRectTemplate<size_t>;
+	using Rect2f = BaseRect2Template<float>;
+	using Rect2d = BaseRect2Template<double>;
+	using Rect2i = BaseRect2Template<int>;
+	using Rect2sz = BaseRect2Template<size_t>;
 
 }
 
 namespace std
 {
 	template <typename _T>
-	inline std::ostream &operator<<(std::ostream &out, const ig::BaseRectTemplate<_T> &rect)
+	inline std::ostream &operator<<(std::ostream &out, const ig::BaseRect2Template<_T> &rect)
 	{
 		return out << "Rect(" << rect.x << ", " << rect.y << ", " << rect.w << ", " << rect.h << ')';
 	}

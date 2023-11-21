@@ -623,7 +623,7 @@ namespace ig
 		return m_rect.position();
 	}
 
-	const Recti &Window::get_rect() const
+	const Rect2i &Window::get_rect() const
 	{
 		return m_rect;
 	}
@@ -839,11 +839,11 @@ namespace ig
 		glfwRequestWindowAttention((WindowHandle_t)m_hdl);
 	}
 
-	Image Window::to_image(const Recti rect) const
+	Image Window::to_image(const Rect2i rect) const
 	{
-		std::unique_ptr<byte[]> data{ new byte[ get_size().area() * Channels::RGB ] };
+		std::unique_ptr<byte[]> data{ new byte[ get_size().area() * ColorFormat::RGB ] };
 		glReadPixels(rect.x, rect.y, rect.w, rect.h, GL_RGB, GL_UNSIGNED_BYTE, data.get());
-		return { data.get(), get_size(), Channels::RGB };
+		return { data.get(), get_size(), ColorFormat::RGB };
 	}
 
 	Image Window::to_image() const

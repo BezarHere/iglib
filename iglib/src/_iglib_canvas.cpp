@@ -134,7 +134,7 @@ FORCEINLINE void generate_opengl_globals()
 			255, 255, 255, 255,
 			255, 255, 255, 255,
 		};
-		g_PlankTexture.reset(new Texture(Image(plank_white_data, {2, 2}, Channels::L)));
+		g_PlankTexture.reset(new Texture(Image(plank_white_data, {2, 2}, ColorFormat::L)));
 	}
 
 }

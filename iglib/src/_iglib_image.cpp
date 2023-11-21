@@ -12,7 +12,7 @@ FORCEINLINE byte *realloc_image_data(const byte *buf, const size_t len)
 	return (byte *)memcpy(mal, buf, len);
 }
 
-FORCEINLINE byte *load_image(const std::string &filename, Vector2i &sz, Channels &ch)
+FORCEINLINE byte *load_image(const std::string &filename, Vector2i &sz, ColorFormat &ch)
 {
 	byte *buf = SOIL_load_image(filename.c_str(), &sz.x, &sz.y, (int *)&ch, SOIL_LOAD_AUTO);
 	if (buf == nullptr || sz.area() == 0)
@@ -29,17 +29,17 @@ FORCEINLINE byte *load_image(const std::string &filename, Vector2i &sz, Channels
 namespace ig
 {
 	Image::Image()
-		: m_sz{}, m_ch{}, m_buf{}
+		: m_sz{}, m_format{}, m_buf{}
 	{
 	}
 
-	Image::Image(const byte *data, const Vector2i size, Channels channels)
-		: m_sz{ size }, m_ch{ channels }, m_buf{ realloc_image_data(data, size.area() * (int)channels) }
+	Image::Image(const byte *data, const Vector2i size, ColorFormat channels)
+		: m_sz{ size }, m_format{ channels }, m_buf{ realloc_image_data(data, size.area() * (int)channels) }
 	{
 	}
 
 	Image::Image(const std::string &filename)
-		: m_sz{}, m_ch{}, m_buf{ load_image(filename, m_sz, m_ch) }
+		: m_sz{}, m_format{}, m_buf{ load_image(filename, m_sz, m_format) }
 	{
 	}
 
@@ -50,13 +50,13 @@ namespace ig
 	}
 
 	Image::Image(const Image &copy) noexcept
-		: m_sz{ copy.m_sz }, m_ch{ copy.m_ch },
+		: m_sz{ copy.m_sz }, m_format{ copy.m_format },
 		m_buf{ realloc_image_data(copy.m_buf, copy.get_buffer_size()) }
 	{
 	}
 
 	Image::Image(Image &&move) noexcept
-		: m_sz{ move.m_sz }, m_ch{ move.m_ch }, m_buf{ move.m_buf }
+		: m_sz{ move.m_sz }, m_format{ move.m_format }, m_buf{ move.m_buf }
 	{
 		// taking control from 'move'
 		move.m_buf = nullptr;
@@ -69,7 +69,7 @@ namespace ig
 			SOIL_free_image_data(m_buf);
 
 		m_sz = move.m_sz;
-		m_ch = move.m_ch;
+		m_format = move.m_format;
 
 		// taking control from 'move'
 		m_buf = move.m_buf;
@@ -84,7 +84,7 @@ namespace ig
 			SOIL_free_image_data(m_buf);
 
 		m_sz = copy.m_sz;
-		m_ch = copy.m_ch;
+		m_format = copy.m_format;
 
 		m_buf = realloc_image_data(copy.m_buf, copy.get_buffer_size());
 		return *this;
@@ -105,9 +105,9 @@ namespace ig
 		return m_sz;
 	}
 
-	Channels Image::get_channels() const
+	ColorFormat Image::get_channels() const
 	{
-		return Channels(m_ch);
+		return ColorFormat(m_format);
 	}
 
 	bool Image::valid() const
@@ -122,7 +122,7 @@ namespace ig
 
 	size_t Image::get_buffer_size() const
 	{
-		return size_t(m_sz.area()) * (int)m_ch;
+		return size_t(m_sz.area()) * (int)m_format;
 	}
 
 	void Image::flip_v()
@@ -141,6 +141,28 @@ namespace ig
 
 	void Image::rotate_counter_clockwise()
 	{
+	}
+
+	void Image::transpose()
+	{
+		
+		byte *newbuf = (byte *)malloc( get_buffer_size() );
+		if (newbuf == nullptr)
+			throw std::bad_alloc();
+
+		for (int i = 0; i < m_sz.y; i++)
+		{
+			for (int j = 0; j < m_sz.x; j++)
+			{
+				const int index1 = ((i * m_sz.x) + j) * int(m_format);
+				const int index2 = ((j * m_sz.x) + i) * int(m_format);
+
+				for (int f = 0; f < int(m_format); f++)
+					newbuf[ index2 + f ] = m_buf[ index1 + f ];
+			}
+		}
+		SOIL_free_image_data(m_buf);
+		m_buf = newbuf;
 	}
 
 	// tga 2.0
@@ -163,91 +185,37 @@ namespace ig
 
 
 		SOIL_save_image(path.c_str(), SOIL_SAVE_TYPE_TGA, get_width(), get_height(), get_channels(), get_buffer());
-
-		return ;
-
-		//StreamWriter wr{ path, EndianOrder::Little };
-		//
-		//wr.write<byte>(0); // id field length
-		//wr.write<byte>(0); // color map
-		//wr.write<byte>(0); // type
-		//
-		//wr.write<uint16_t>(0); // first colormap entry index
-		//wr.write<uint16_t>(0); // number of colormap entries
-		//wr.write<byte>(BitPerPixel); // bits per colormap entry
-
-		//wr.write<Vector2s>({0, 0}); // origin
-		//wr.write<Vector2s>(get_size()); // size
-		//wr.write<byte>(BitPerPixel); // pixel depth
-		//wr.write<byte>(0); // descriptor
-
-		//wr.write<somethin>() // img id field
-		//wr.write<somethin>() // colormap field
-
 	}
 
-#if 0
-	void Image::save_png(const std::string &path) const
+	Image Image::subimage(Rect2i rect) const
 	{
+		rect = rect.intersection({ 0, 0, m_sz.x, m_sz.y });
 
-
-		static constexpr uint64_t PngSign = 9894494448401390090U;
-		static constexpr EndianOrder PngOrder = EndianOrder::Big;
-		bite::StreamWriter writer{ path, PngOrder };
-		bite::StreamReader reader{ path, PngOrder };
-		writer.write(PngSign);
-		writer.write<int32_t>(13);
-		writer.write('IHDR');
-		writer.write(get_width());
-		writer.write(get_height());
-		writer.write<int8_t>(8); // bit depth
-
-		std::cout << "channel: " << m_ch << '\n';
-		// color type
-		switch (m_ch)
-		{
-		case ig::L:
-			writer.write<uint8_t>(0);
-			break;
-		case ig::LA:
-			writer.write<uint8_t>(4);
-			break;
-		case ig::RGB:
-			writer.write<uint8_t>(2);
-			break;
-		case ig::RGBA:
-			writer.write<uint8_t>(6);
-			break;
-		default:
-			break;
-		}
-
-		writer.write<uint8_t>(0); // compression (always 0)
-		writer.write<uint8_t>(0); // filter (always 0)
-		writer.write<uint8_t>(0); // interlaced
-
-
-		writer.flush();
-		
-		// FIXME
-		// FIXME
-		writer.write<int32_t>(0); // crc
-
-		writer.write<uint32_t>((uint32_t)get_buffer_size() + get_height());
-		writer.write('IDAT');
-
-		for (size_t x{}; x < get_width(); x++)
-		{
-			writer.write<uint8_t>(0);
-			writer.write(m_buf + (x * get_height() * m_ch), get_height() * (size_t)m_ch);
-		}
-
-		writer.write<int32_t>(0); // crc
-
-		writer.write<int32_t>(0);
-		writer.write('IEND');
-		writer.write<int32_t>(2187346606); // crc
-
+		return Image(subbuffer(rect).get(), rect.size(), m_format);
 	}
-#endif
+
+	std::unique_ptr<byte[]> Image::subbuffer(Rect2i rect) const
+	{
+		rect = rect.intersection({ 0, 0, m_sz.x, m_sz.y });
+		const int subbuf_sz = std::abs(rect.w * rect.h) * (int)m_format;
+		byte *subbuf = new byte[ subbuf_sz ]{};
+
+		for (int y = 0; y < rect.h; y++)
+		{
+			for (int x = 0; x < rect.w; x++)
+			{
+				const int local_index = ((y * rect.w) + x) * int(m_format);
+				const int index = ((((rect.h - (y + 1)) + rect.y) * m_sz.x) + ((rect.w - (x + 1)) + rect.x)) * int(m_format);
+
+
+				for (int f = 0; f < int(m_format); f++)
+				{
+					subbuf[ local_index + f ] = m_buf[ index + f ];
+				}
+
+			}
+		}
+		return std::unique_ptr<byte[]>( subbuf );
+	}
+
 }

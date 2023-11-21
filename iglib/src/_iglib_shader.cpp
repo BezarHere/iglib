@@ -177,8 +177,8 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 		}
 
 		//ss << "Color = (texture(_tex, UV) * FragColor) - ((texture(_tex, UV) * FragColor) * UV.x) + (FragColor * UV.x);";
-		//ss << "Color = texture(uTex0, UV) * FragColor;";
-		ss << "Color = vec4(UV, 1.0, 1.0) * FragColor;";
+		ss << "Color = texture(uTex0, UV) * FragColor;";
+		//ss << "Color = vec4(UV, 1.0, 1.0) * FragColor;";
 		//ss << "Color = texture(uTex0, UV) * FragColor;";
 		//ss << "Color = vec4(1.0, 1.0, 1.0, 1.0);";
 		ss << "}";

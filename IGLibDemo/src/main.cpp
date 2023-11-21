@@ -16,6 +16,7 @@ const std::string current_dir = "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\";
 float zb = 0;
 ig::Transform2D tr{};
 ig::Texture tex;
+ig::Texture subtex;
 
 struct LARGE
 {
@@ -157,7 +158,7 @@ void draw2d_callback(Canvas &c)
 		);
 	}*/
 	
-	c.set_texture(tex.get_handle());
+	
 	//c.demo();
 
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
@@ -176,8 +177,9 @@ void draw2d_callback(Canvas &c)
 	//c.line(Vector3f{ 0.f, 0.f, 0.f }, { m.x, m.y, 20.0f }, { 0.8f, 1.f, 0.4f, 1.f });
 	
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
-
+	c.set_texture(tex.get_handle());
 	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
+	c.set_texture(subtex.get_handle());
 	c.rect(c.get_window().get_size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
 
 	//c.bind_shader(ss);
@@ -208,8 +210,11 @@ int main()
 		ig::Window i = ig::Window({128, 128}, "Window !!!");
 
 
-		ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\colors.png" };
+		ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };
 		tex = ig::Texture(img);
+		img = img.subimage({ 128, 128, 256, 256 });
+		//img.transpose();
+		subtex = ig::Texture(img);
 
 
 		ig::Window p = ig::Window({ 128, 128 }, "Other one");

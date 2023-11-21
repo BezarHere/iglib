@@ -1,10 +1,11 @@
 #pragma once
 #include "_iglib_vector.h"
+#include "_iglib_rect.h"
 #include "_iglib_color.h"
 
 namespace ig
 {
-	enum Channels
+	enum ColorFormat
 	{
 		Invalid = 0,
 		L = 1,
@@ -18,7 +19,7 @@ namespace ig
 	public:
 		Image();
 		// does not take ownership of data
-		Image(const byte *data, const Vector2i size, Channels channels);
+		Image(const byte *data, const Vector2i size, ColorFormat channels);
 		Image(const std::string &filename);
 		~Image() noexcept;
 
@@ -31,7 +32,7 @@ namespace ig
 		int get_height() const noexcept;
 		Vector2i get_size() const;
 
-		Channels get_channels() const;
+		ColorFormat get_channels() const;
 
 		bool valid() const;
 		const byte *get_buffer() const;
@@ -42,16 +43,20 @@ namespace ig
 		void flip_h();
 		void rotate_clockwise();
 		void rotate_counter_clockwise();
-
-		//void save_png(const std::string &path) const;
+		void transpose();
 		
 		// tga 2.0
 		void save_tga(const std::string &path) const;
 
+		/// \note out of bounds rect will be clipped for this image
+		Image subimage(Rect2i rect) const;
+
+		/// \note out of bounds rect will be clipped for this image
+		std::unique_ptr<byte[]> subbuffer(Rect2i rect) const;
+
 	private:
 		Vector2i m_sz;
-		Channels m_ch;
-
+		ColorFormat m_format;
 		byte *m_buf;
 	};
 }
