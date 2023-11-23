@@ -727,6 +727,7 @@ namespace ig
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_SCISSOR_TEST);
 		glEnable(GL_BLEND);
+		glEnable(GL_DEPTH_CLAMP);
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glScissor(0, 0, sz.x, sz.y);
@@ -743,7 +744,7 @@ namespace ig
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0.f, width(), height(), 0.f, 0.f, 1.f);
+		glOrtho(0.f, width(), height(), 0.f, -100.f, 100.f);
 
 		Canvas canvas{ *this };
 		if (m_draw_callback)
@@ -755,6 +756,7 @@ namespace ig
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_SCISSOR_TEST);
 		glDisable(GL_BLEND);
+		glDisable(GL_DEPTH_CLAMP);
 
 		if (postprocessing)
 		{
@@ -766,8 +768,6 @@ namespace ig
 			canvas.bind_shader(g_ScreenShader);
 			canvas.set_texture(m_drawbuffer->cto);
 			canvas.draw(g_ScreenQuadBuffer);
-
-
 		}
 
 		pop_draw_pipline();

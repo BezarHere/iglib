@@ -160,7 +160,7 @@ namespace ig
 {
 	struct Font::FontInternal
 	{
-		FORCEINLINE FontInternal(const Image &glyphs, Vector2i glyph_size, Vector2i spacing)
+		FORCEINLINE FontInternal(const Image &glyphs, const Vector2i glyph_size, const Vector2i spacing)
 			: faces{}
 		{
 			Vector2i count = glyphs.size() / glyph_size;
