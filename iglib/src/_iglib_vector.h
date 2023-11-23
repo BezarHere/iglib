@@ -771,7 +771,39 @@ namespace ig
 
 	};
 
+	template <typename _T>
+	struct BaseVector4Template
+	{
+		using this_type = BaseVector4Template<_T>;
+		using value_type = _T;
 
+		constexpr inline BaseVector4Template(value_type xx, value_type yy, value_type zz, value_type ww) noexcept
+			: x{ xx }, y{ yy }, z{ zz }, w{ ww }
+		{
+		}
+
+
+		constexpr inline BaseVector4Template() noexcept
+			: x{}, y{}, z{}, w{}
+		{
+		}
+
+		template <typename _E>
+		constexpr inline BaseVector4Template(const BaseVector4Template<_E> &copy) noexcept
+			: x{ value_type(copy.x) }, y{ value_type(copy.y) }, z{ value_type(copy.z) }, w{ value_type(copy.w) }
+		{
+		}
+
+		inline void set(value_type xx, value_type yy, value_type zz, value_type ww) noexcept
+		{
+			x = xx;
+			y = yy;
+			z = zz;
+			w = ww;
+		}
+
+		value_type x, y, z, w;
+	};
 
 	using Vector2f = RealVector2Template<float_t>;
 	using Vector2d = RealVector2Template<double_t>;
@@ -786,6 +818,11 @@ namespace ig
 	using Vector3u = IntegralVector3Template<uint32_t, float_t>;
 	using Vector3i = IntegralVector3Template<int32_t, float_t>;
 	using Vector3l = IntegralVector3Template<int64_t, double_t>;
+
+	using Vector4i = BaseVector4Template<int32_t>;
+	using Vector4u = BaseVector4Template<uint32_t>;
+	using Vector4f = BaseVector4Template<float_t>;
+	using Vector4d = BaseVector4Template<double_t>;
 
 	typedef basic_heap_view<Vector2i> vector2i_buffer_view_t;
 	typedef basic_heap_view<Vector2f> vector2f_buffer_view_t;
@@ -808,6 +845,12 @@ namespace std
 	inline std::ostream &operator<<(std::ostream &out, const ig::BaseVector3Template<_T> &vec)
 	{
 		return out << '(' << vec.x << ", " << vec.y << ", " << vec.z << ')';
+	}
+
+	template <typename _T>
+	inline std::ostream &operator<<(std::ostream &out, const ig::BaseVector4Template<_T> &vec)
+	{
+		return out << '(' << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ')';
 	}
 
 }

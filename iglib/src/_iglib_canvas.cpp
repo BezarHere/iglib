@@ -542,14 +542,14 @@ namespace ig
 		glUniform3f(location, value.x, value.y, value.z);
 	}
 
-	void Canvas::set_shader_uniform(int location, int x, int y, int z, int w)
+	void Canvas::set_shader_uniform(int location, const Vector4i &value)
 	{
-		glUniform4i(location, x, y, z, w);
+		glUniform4i(location, value.x, value.y, value.z, value.w);
 	}
 
-	void Canvas::set_shader_uniform(int location, float x, float y, float z, float w)
+	void Canvas::set_shader_uniform(int location, const Vector4f &value)
 	{
-		glUniform4f(location, x, y, z, w);
+		glUniform4f(location, value.x, value.y, value.z, value.w);
 	}
 
 	void Canvas::set_shader_uniform(int location, int count, const int *value)
@@ -582,14 +582,14 @@ namespace ig
 		glUniform3fv(location, count, (const GLfloat *)value);
 	}
 
-	void Canvas::set_shader_uniform(int location, int count, const int *value)
+	void Canvas::set_shader_uniform(int location, int count, const Vector4i *value)
 	{
-		glUniform4iv(location, count, value);
+		glUniform4iv(location, count, (const GLint *)value);
 	}
 
-	void Canvas::set_shader_uniform(int location, int count, const float *value)
+	void Canvas::set_shader_uniform(int location, int count, const Vector4f *value)
 	{
-		glUniform4fv(location, count, value);
+		glUniform4fv(location, count, (const GLfloat *)value);
 	}
 
 }
