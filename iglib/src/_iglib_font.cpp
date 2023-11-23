@@ -163,8 +163,8 @@ namespace ig
 		FORCEINLINE FontInternal(const Image &glyphs, Vector2i glyph_size, Vector2i spacing)
 			: faces{}
 		{
-			Vector2i count = glyphs.get_size() / glyph_size;
-			count = (glyphs.get_size() - ((count - Vector2i(1, 1)) * spacing)) / glyph_size;
+			Vector2i count = glyphs.size() / glyph_size;
+			count = (glyphs.size() - ((count - Vector2i(1, 1)) * spacing)) / glyph_size;
 
 
 			faces = span<GLuint>(count.area());

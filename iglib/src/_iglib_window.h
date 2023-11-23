@@ -199,7 +199,8 @@ namespace ig
 
 	typedef void(*WindowCallback_t)(Window &window, WindowCallbackReason reason);
 	typedef void(*KeyCallback_t)(Window &window, Key key, KeyAction action, KeyModFlags mods);
-	typedef void(*MouseCallback_t)(Window &window, MouseButton button, KeyAction action, KeyModFlags mods);
+	typedef void(*MouseButtonCallback_t)(Window &window, MouseButton button, KeyAction action, KeyModFlags mods);
+	typedef void(*MouseScrollCallback_t)(Window &window, double x, double y);
 
 	class PostprocessingEnvironment
 	{
@@ -225,9 +226,9 @@ namespace ig
 		Vector2i get_mouse_position() const;
 
 
-		int get_width() const;
-		int get_height() const;
-		Vector2i get_size() const;
+		int width() const;
+		int height() const;
+		Vector2i size() const;
 
 		Vector2i get_position() const;
 		const Rect2i &get_rect() const;
@@ -257,8 +258,11 @@ namespace ig
 		KeyCallback_t get_key_callback() const;
 		void set_key_callback(KeyCallback_t callback);
 
-		void set_mouse_callback(MouseCallback_t callback) noexcept;
-		MouseCallback_t get_mouse_callback() const noexcept;
+		void set_mouse_callback(MouseButtonCallback_t callback) noexcept;
+		MouseButtonCallback_t get_mouse_callback() const noexcept;
+
+		void set_mouse_scroll_callback(MouseScrollCallback_t callback) noexcept;
+		MouseScrollCallback_t get_mouse_scroll_callback() const noexcept;
 
 		void set_draw_callback(DrawCallback callback) noexcept;
 		DrawCallback get_draw_callback() const noexcept;
@@ -315,6 +319,7 @@ namespace ig
 		DrawCallback m_draw_callback = nullptr;
 		WindowCallback_t m_callback = nullptr;
 		KeyCallback_t m_key_callback = nullptr;
-		MouseCallback_t m_mouse_callback = nullptr;
+		MouseButtonCallback_t m_mouse_button_callback = nullptr;
+		MouseScrollCallback_t m_mouse_scroll_callback = nullptr;
 	};
 }

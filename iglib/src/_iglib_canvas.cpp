@@ -110,6 +110,7 @@ FORCEINLINE void generate_opengl_globals()
 	g_Quad2DBuffer.set_primitive(PrimitiveType::Quad);
 	g_Triangle2DBuffer.set_primitive(PrimitiveType::Triangle);
 	g_Line2DBuffer.set_primitive(PrimitiveType::Line);
+	DefaultCubeBuffer.set_primitive(PrimitiveType::Triangle);
 
 	g_Quad2DBuffer.create(4);
 	g_Triangle2DBuffer.create(3);
@@ -161,7 +162,7 @@ namespace ig
 
 	void Canvas::quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr)
 	{
-		const Vector2f wf = m_wnd.get_size();
+		const Vector2f wf = m_wnd.size();
 		g_Quad2DVertcies[ 0 ].pos = to_clamped_space(p0, wf);
 		g_Quad2DVertcies[ 1 ].pos = to_clamped_space(p1, wf);
 		g_Quad2DVertcies[ 2 ].pos = to_clamped_space(p2, wf);
@@ -183,9 +184,9 @@ namespace ig
 
 	void Canvas::traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorf &clr)
 	{
-		g_Triangle2DVertcies[ 0 ].pos = to_clamped_space(p0, m_wnd.get_size());
-		g_Triangle2DVertcies[ 1 ].pos = to_clamped_space(p1, m_wnd.get_size());
-		g_Triangle2DVertcies[ 2 ].pos = to_clamped_space(p2, m_wnd.get_size());
+		g_Triangle2DVertcies[ 0 ].pos = to_clamped_space(p0, m_wnd.size());
+		g_Triangle2DVertcies[ 1 ].pos = to_clamped_space(p1, m_wnd.size());
+		g_Triangle2DVertcies[ 2 ].pos = to_clamped_space(p2, m_wnd.size());
 
 		g_Triangle2DVertcies[ 0 ].clr = clr;
 		g_Triangle2DVertcies[ 1 ].clr = clr;
@@ -202,8 +203,8 @@ namespace ig
 
 	void Canvas::line(Vector2f start, Vector2f end, float_t width, const Colorb clr)
 	{
-		start = to_clamped_space(start, m_wnd.get_size());
-		end = to_clamped_space(end, m_wnd.get_size());
+		start = to_clamped_space(start, m_wnd.size());
+		end = to_clamped_space(end, m_wnd.size());
 
 		glBegin(GL_LINES);
 		glLineWidth(width);
@@ -281,7 +282,8 @@ namespace ig
 		for (size_t i = 0; i < 36; i++)
 		{
 			v[ i ].pos.set(g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ]);
-			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 0.f, 1.f }, Pi / 2.0f);
+			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 0.f, 1.f }, (Pi / 2.0f) + (float)glfwGetTime());
+			v[ i ].pos *= 100;
 			v[ i ].pos += start;
 			v[ i ].clr = clr;
 			v[ i ].uv.x = Uvs[ (i * 2) % 6 ];
@@ -336,7 +338,7 @@ namespace ig
 		glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, clr));
 		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, uv));
 
-		glDrawArrays(to_glprimitve(buf.get_primitive()), start, count < 0 ? ((int)buf.get_size() - start) : count);
+		glDrawArrays(to_glprimitve(buf.get_primitive()), start, count < 0 ? ((int)buf.size() - start) : count);
 		
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -361,7 +363,7 @@ namespace ig
 		glVertexAttribPointer(1, 4, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, clr));
 		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex2DBuffer::vertex_type), (const void *)offsetof(Vertex2DBuffer::vertex_type, uv));
 
-		glDrawElements(to_glprimitve(buf.get_primitive()), (int)buf.get_size(), GL_UNSIGNED_INT, nullptr);
+		glDrawElements(to_glprimitve(buf.get_primitive()), (int)buf.size(), GL_UNSIGNED_INT, nullptr);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -389,7 +391,7 @@ namespace ig
 		glVertexAttribPointer(2, 2, GL_FLOAT, 0, sizeof(Vertex3DBuffer::vertex_type), (const void *)offsetof(Vertex3DBuffer::vertex_type, uv));
 		glVertexAttribPointer(3, 3, GL_FLOAT, 0, sizeof(Vertex3DBuffer::vertex_type), (const void *)offsetof(Vertex3DBuffer::vertex_type, normal));
 
-		glDrawArrays(to_glprimitve(buf.get_primitive()), start, count < 0 ? ((int)buf.get_size() - start) : count);
+		glDrawArrays(to_glprimitve(buf.get_primitive()), start, count < 0 ? ((int)buf.size() - start) : count);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -449,7 +451,7 @@ namespace ig
 			glBindTexture(GL_TEXTURE_2D, hdl);
 		}
 
-		glUniform2f(glGetUniformLocation(m_shader->get_id(), "_screensize"), (float)m_wnd.get_width(), (float)m_wnd.get_height());
+		glUniform2f(glGetUniformLocation(m_shader->get_id(), "_screensize"), (float)m_wnd.width(), (float)m_wnd.height());
 
 		if (m_shader->get_usage() == ShaderUsage::Usage2D)
 		{

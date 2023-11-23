@@ -79,7 +79,7 @@ namespace ig
 	Texture::Texture(const Image &img)
 		: m_internal{
 			register_tex(
-				img.get_width(), img.get_height(), img.get_channels(),
+				img.width(), img.height(), img.get_channels(),
 				std::shared_ptr<unsigned char[]>((unsigned char *)memcpy(new unsigned char[img.get_buffer_size()] , img.get_buffer(), img.get_buffer_size()))
 			)
 		}
@@ -137,7 +137,7 @@ namespace ig
 		return g_BindedHdl == m_internal->handle;
 	}
 
-	Vector2i Texture::get_size() const noexcept
+	Vector2i Texture::size() const noexcept
 	{
 		return { (int)m_internal->w, (int)m_internal->h };
 	}

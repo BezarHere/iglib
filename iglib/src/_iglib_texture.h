@@ -31,7 +31,7 @@ namespace ig
 		void unbind() const noexcept;
 		bool is_binded() const noexcept;
 
-		Vector2i get_size() const noexcept;
+		Vector2i size() const noexcept;
 		ColorFormat get_channels() const noexcept;
 
 		TextureId_t get_handle() const noexcept;

@@ -15,7 +15,7 @@ namespace ig
 		IndexBuffer();
 		IndexBuffer(size_t size, const index_type *indcies = nullptr);
 
-		size_t get_size() const;
+		size_t size() const;
 		uint32_t get_id() const;
 
 		BufferUsage get_usage() const;

@@ -28,13 +28,14 @@ namespace ig
 		Image &operator=(Image &&move) noexcept;
 		Image &operator=(const Image &copy) noexcept;
 
-		int get_width() const noexcept;
-		int get_height() const noexcept;
-		Vector2i get_size() const;
+		int width() const noexcept;
+		int height() const noexcept;
+		Vector2i size() const;
 
 		ColorFormat get_channels() const;
 
 		bool valid() const;
+		byte *get_buffer();
 		const byte *get_buffer() const;
 		size_t get_buffer_size() const;
 

@@ -99,7 +99,7 @@ namespace ig
 
 			static void key_pressed(WindowHandle_t hdl, int key, int scancode, int action, int mods);
 			static void mouse_button(WindowHandle_t hdl, int button, int action, int mods);
-
+			static void mouse_scroll(WindowHandle_t hdl, double x, double y);
 		};
 
 
@@ -211,6 +211,7 @@ namespace ig
 
 			(void)glfwSetKeyCallback(hdl, WindowCallbacksRouter::key_pressed);
 			(void)glfwSetMouseButtonCallback(hdl, WindowCallbacksRouter::mouse_button);
+			(void)glfwSetScrollCallback(hdl, WindowCallbacksRouter::mouse_scroll);
 		}
 
 		static inline void disconnect_callbacks(WindowHandle_t hdl)
@@ -232,6 +233,7 @@ namespace ig
 
 			(void)glfwSetKeyCallback(hdl, nullptr);
 			(void)glfwSetMouseButtonCallback(hdl, nullptr);
+			(void)glfwSetScrollCallback(hdl, nullptr);
 		}
 
 		static void pop_weak(Window *window, WindowHandle_t hdl)
@@ -400,9 +402,17 @@ namespace ig
 	void Window::WindowCallbackEngine::WindowCallbacksRouter::mouse_button(WindowHandle_t hdl, int button, int action, int mods)
 	{
 		Window *window = WindowCallbackEngine::get_window(hdl);
-		if (window->m_mouse_callback)
-			window->m_mouse_callback(*window, (MouseButton)button, (KeyAction)action, (KeyModFlags)mods);
+		if (window->m_mouse_button_callback)
+			window->m_mouse_button_callback(*window, (MouseButton)button, (KeyAction)action, (KeyModFlags)mods);
 	}
+
+	void Window::WindowCallbackEngine::WindowCallbacksRouter::mouse_scroll(WindowHandle_t hdl, double x, double y)
+	{
+		Window *window = WindowCallbackEngine::get_window(hdl);
+		if (window->m_mouse_scroll_callback)
+			window->m_mouse_scroll_callback(*window, x, y);
+	}
+
 #pragma endregion
 
 	struct Window::WindowDrawBuffer
@@ -524,7 +534,7 @@ namespace ig
 		}
 		WindowCallbackEngine::link(this);
 		refresh_rect();
-		m_drawbuffer.reset(WindowDrawBuffer::generate(get_size()).release());
+		m_drawbuffer.reset(WindowDrawBuffer::generate(size()).release());
 	}
 
 
@@ -535,7 +545,7 @@ namespace ig
 		m_title(move.m_title),
 		m_hidden{ move.m_hidden },
 		m_stp{ move.m_stp },
-		m_mouse_callback{ move.m_mouse_callback },
+		m_mouse_button_callback{ move.m_mouse_button_callback },
 		m_drawbuffer{ move.m_drawbuffer.release() }
 	{
 		if (move.m_hdl == nullptr)
@@ -575,7 +585,7 @@ namespace ig
 		m_rect = other.m_rect;
 		m_frambeuffer_size = other.m_frambeuffer_size;
 		m_visible_state = other.m_visible_state;
-		m_mouse_callback = other.m_mouse_callback;
+		m_mouse_button_callback = other.m_mouse_button_callback;
 
 		WindowHandle_t old_hdl = (WindowHandle_t)m_hdl;
 		m_hdl = other.m_hdl;
@@ -603,17 +613,17 @@ namespace ig
 		return Vector2i((int)x, (int)y);
 	}
 
-	int Window::get_width() const
+	int Window::width() const
 	{
 		return m_rect.w;
 	}
 
-	int Window::get_height() const
+	int Window::height() const
 	{
 		return m_rect.h;
 	}
 
-	Vector2i Window::get_size() const
+	Vector2i Window::size() const
 	{
 		return m_rect.size();
 	}
@@ -675,19 +685,29 @@ namespace ig
 		m_key_callback = callback;
 	}
 
-	void Window::set_mouse_callback(MouseCallback_t callback) noexcept
+	void Window::set_mouse_callback(MouseButtonCallback_t callback) noexcept
 	{
-		m_mouse_callback = callback;
+		m_mouse_button_callback = callback;
 	}
 	
-	MouseCallback_t Window::get_mouse_callback() const noexcept
+	MouseButtonCallback_t Window::get_mouse_callback() const noexcept
 	{
-		return m_mouse_callback;
+		return m_mouse_button_callback;
+	}
+
+	void Window::set_mouse_scroll_callback(MouseScrollCallback_t callback) noexcept
+	{
+		m_mouse_scroll_callback = callback;
+	}
+
+	MouseScrollCallback_t Window::get_mouse_scroll_callback() const noexcept
+	{
+		return m_mouse_scroll_callback;
 	}
 
 	void Window::render()
 	{
-		const Vector2i sz = get_size();
+		const Vector2i sz = size();
 		// MINIMIZED, no drawing
 		if (sz.area() == 0)
 		{
@@ -706,8 +726,11 @@ namespace ig
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_SCISSOR_TEST);
+		glEnable(GL_BLEND);
 
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glScissor(0, 0, sz.x, sz.y);
+		//glCullFace(GL_FRONT);
 
 		const bool postprocessing = m_drawbuffer.get() != nullptr;
 		if (postprocessing)
@@ -720,7 +743,7 @@ namespace ig
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0.f, get_width(), get_height(), 0.f, 0.f, 1.f);
+		glOrtho(0.f, width(), height(), 0.f, 0.f, 1.f);
 
 		Canvas canvas{ *this };
 		if (m_draw_callback)
@@ -731,6 +754,7 @@ namespace ig
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_SCISSOR_TEST);
+		glDisable(GL_BLEND);
 
 		if (postprocessing)
 		{
@@ -841,14 +865,14 @@ namespace ig
 
 	Image Window::to_image(const Rect2i rect) const
 	{
-		std::unique_ptr<byte[]> data{ new byte[ get_size().area() * ColorFormat::RGB ] };
+		std::unique_ptr<byte[]> data{ new byte[ size().area() * ColorFormat::RGB ] };
 		glReadPixels(rect.x, rect.y, rect.w, rect.h, GL_RGB, GL_UNSIGNED_BYTE, data.get());
-		return { data.get(), get_size(), ColorFormat::RGB };
+		return { data.get(), size(), ColorFormat::RGB };
 	}
 
 	Image Window::to_image() const
 	{
-		return to_image({ 0, 0, get_width(), get_height() });
+		return to_image({ 0, 0, width(), height() });
 	}
 
 	TimeMs_t Window::get_creation_time() const noexcept

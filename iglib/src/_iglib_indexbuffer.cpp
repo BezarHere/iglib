@@ -15,7 +15,7 @@ namespace ig
     generate(size, indcies);
   }
 
-  size_t IndexBuffer::get_size() const
+  size_t IndexBuffer::size() const
   {
     return m_size;
   }

@@ -23,7 +23,7 @@ namespace ig
 	{
 	}
 
-	size_t BaseVertexBuffer::get_size() const noexcept
+	size_t BaseVertexBuffer::size() const noexcept
 	{
 		return m_size;
 	}
@@ -115,7 +115,7 @@ namespace ig
 
 	void Vertex2DBuffer::update(const vertex_type *vertcies)
 	{
-		update(vertcies, get_size(), 0);
+		update(vertcies, size(), 0);
 	}
 
 	Vertex3DBuffer::Vertex3DBuffer()
@@ -166,7 +166,7 @@ namespace ig
 
 	void Vertex3DBuffer::update(const vertex_type *vertcies)
 	{
-		update(vertcies, get_size(), 0);
+		update(vertcies, size(), 0);
 	}
 
 }

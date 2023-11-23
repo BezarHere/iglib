@@ -90,17 +90,17 @@ namespace ig
 		return *this;
 	}
 
-	int Image::get_width() const noexcept
+	int Image::width() const noexcept
 	{
 		return m_sz.x;
 	}
 
-	int Image::get_height() const noexcept
+	int Image::height() const noexcept
 	{
 		return m_sz.y;
 	}
 
-	Vector2i Image::get_size() const
+	Vector2i Image::size() const
 	{
 		return m_sz;
 	}
@@ -115,6 +115,11 @@ namespace ig
 		return m_buf != nullptr && get_buffer_size();
 	}
 
+	byte *Image::get_buffer()
+	{
+		return m_buf;
+	}
+
 	const byte *Image::get_buffer() const
 	{
 		return m_buf;
@@ -127,12 +132,12 @@ namespace ig
 
 	void Image::flip_v()
 	{
-		::flip_v(m_buf, get_width(), get_height(), get_channels());
+		::flip_v(m_buf, width(), height(), get_channels());
 	}
 
 	void Image::flip_h()
 	{
-		::flip_h(m_buf, get_width(), get_height(), get_channels());
+		::flip_h(m_buf, width(), height(), get_channels());
 	}
 
 	void Image::rotate_clockwise()
@@ -184,7 +189,7 @@ namespace ig
 
 
 
-		SOIL_save_image(path.c_str(), SOIL_SAVE_TYPE_TGA, get_width(), get_height(), get_channels(), get_buffer());
+		SOIL_save_image(path.c_str(), SOIL_SAVE_TYPE_TGA, width(), height(), get_channels(), get_buffer());
 	}
 
 	Image Image::subimage(Rect2i rect) const

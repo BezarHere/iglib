@@ -142,6 +142,11 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 
 }
 
+void scroll(ig::Window &w, double x, double y)
+{
+	std::cout << y << '\n';
+}
+
 void draw2d_callback(Canvas &c)
 {
 	const ig::Vector2f m = c.get_window().get_mouse_position();
@@ -162,9 +167,8 @@ void draw2d_callback(Canvas &c)
 	//c.demo();
 
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
-	c.transform3d() = ply;
-	c.cube({}, {}, { 1.0f, 0.8f, 0.6f, 1.f });
-	c.cube({}, {}, { 1.0f, 0.8f, 0.6f, 1.f });
+	//c.transform3d() = ply;
+	c.cube({m.x / 1.0f, m.y / 1.0f, -300.f}, {}, { 1.0f, 0.8f, 0.6f, 1.f });
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage2D));
 	//c.set_texture(tex.get_handle());
 
@@ -180,13 +184,25 @@ void draw2d_callback(Canvas &c)
 	c.set_texture(tex.get_handle());
 	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
 	c.set_texture(subtex.get_handle());
-	c.rect(c.get_window().get_size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
+	c.rect(c.get_window().size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
 
 	//c.bind_shader(ss);
 	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
 	
 }
 
+template <typename _PROC>
+void process_img(Image &img, _PROC proc)
+{
+	for (int y = 0; y < img.height(); y++)
+	{
+		for (int x = 0; x < img.width(); x++)
+		{
+			const int index = ((y * img.width()) + x) * int(img.get_channels());
+			proc(img.get_buffer() + index);
+		}
+	}
+}
 
 int main()
 {
@@ -211,9 +227,9 @@ int main()
 
 
 		ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };
+		process_img(img, [channels = int(img.get_channels())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
 		tex = ig::Texture(img);
-		img = img.subimage({ 128, 128, 256, 256 });
-		//img.transpose();
+		process_img(img, [channels = int(img.get_channels())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
 		subtex = ig::Texture(img);
 
 
@@ -226,8 +242,8 @@ int main()
 
 		i.set_callback(callback);
 		i.set_key_callback(key_callback);
+		i.set_mouse_scroll_callback(scroll);
 		i.set_draw_callback(draw2d_callback);
-		p.set_draw_callback(draw2d_callback);
 
 		std::cout << ig::get_opengl_version() << '\n';
 

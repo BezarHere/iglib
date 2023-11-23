@@ -44,7 +44,7 @@ namespace ig
 	{
 	public:
 
-		size_t get_size() const noexcept;
+		size_t size() const noexcept;
 		BufferUsage get_usage() const noexcept;
 		PrimitiveType get_primitive() const noexcept;
 
