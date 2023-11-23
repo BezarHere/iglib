@@ -42,22 +42,6 @@ namespace ig
 
 		static_assert(sizeof(unsigned) == sizeof(int), "Funky OS Error: unsigned and int aren't the same size");
 
-		NOTE("Try to avoid sending data between the cpu and the gpu");
-//#define SET_UNIFORM_DECL(type) void set_uniform(int location, type value); void set_uniform(const std::string &name, type value)
-//		SET_UNIFORM_DECL(unsigned);
-//		SET_UNIFORM_DECL(int);
-//		SET_UNIFORM_DECL(float);
-//		SET_UNIFORM_DECL(double);
-//		SET_UNIFORM_DECL(Vector2u);
-//		SET_UNIFORM_DECL(Vector2i);
-//		SET_UNIFORM_DECL(Vector2f);
-//		SET_UNIFORM_DECL(Vector2d);
-//		SET_UNIFORM_DECL(Vector3u);
-//		SET_UNIFORM_DECL(Vector3i);
-//		SET_UNIFORM_DECL(Vector3f);
-//		SET_UNIFORM_DECL(Vector3d);
-//#undef SET_UNIFORM_DECL
-
 	private:
 		Shader(ShaderId_t id, ShaderUsage usage);
 		Shader(const Shader &copy) = delete;

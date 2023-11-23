@@ -411,25 +411,4 @@ namespace ig
 	{
 		return glGetUniformLocation(get_id(), name.c_str());
 	}
-
-//#define SET_UNIFORM_DECL(type) void Shader::set_uniform(int location, type value)
-//#define SET_UNIFORM_DECLS(type) void Shader::set_uniform(const std::string &name, type value)
-//#define SET_UNIFORM_DECL1(type, gl_suffix) \
-//			SET_UNIFORM_DECL(type) { glUniform1## gl_suffix(this->get_id(), value); } \
-//			SET_UNIFORM_DECLS(type) { glUniform1## gl_suffix(, value); }
-//#define SET_UNIFORM_DECL2(type, gl_suffix) SET_UNIFORM_DECL(type) { glUniform2## gl_suffix(this->get_id(), value.x, value.y); }
-//#define SET_UNIFORM_DECL3(type, gl_suffix) SET_UNIFORM_DECL(type) { glUniform3## gl_suffix(this->get_id(), value.x, value.y, value.z); }
-//	SET_UNIFORM_DECL1(unsigned,	ui);
-//	SET_UNIFORM_DECL1(int,			i);
-//	SET_UNIFORM_DECL1(float,		f);
-//	SET_UNIFORM_DECL1(double,		d);
-//	SET_UNIFORM_DECL2(Vector2u,	ui);
-//	SET_UNIFORM_DECL2(Vector2i,	i);
-//	SET_UNIFORM_DECL2(Vector2f,	f);
-//	SET_UNIFORM_DECL2(Vector2d,	d);
-//	SET_UNIFORM_DECL3(Vector3u,	ui);
-//	SET_UNIFORM_DECL3(Vector3i,	i);
-//	SET_UNIFORM_DECL3(Vector3f,	f);
-//	SET_UNIFORM_DECL3(Vector3d,	d);
-
 }

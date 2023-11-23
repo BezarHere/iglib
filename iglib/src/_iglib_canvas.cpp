@@ -229,42 +229,42 @@ namespace ig
 	void Canvas::cube(Vector3f start, Vector3f end, const Colorf &clr)
 	{
 		static GLfloat g_vertex_buffer_data[] = {
-		-1.0f,-1.0f,-1.0f, // triangle 1 : begin
-		-1.0f,-1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f, // triangle 1 : end
-		1.0f, 1.0f,-1.0f, // triangle 2 : begin
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f, // triangle 2 : end
-		1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		1.0f,-1.0f,-1.0f,
-		1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		1.0f,-1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f,-1.0f,-1.0f,
-		1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f,-1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f,-1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		1.0f,-1.0f, 1.0f
+			-1.0f,-1.0f,-1.0f, // triangle 1 : begin
+			-1.0f,-1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f, // triangle 1 : end
+			1.0f, 1.0f,-1.0f, // triangle 2 : begin
+			-1.0f,-1.0f,-1.0f,
+			-1.0f, 1.0f,-1.0f, // triangle 2 : end
+			1.0f,-1.0f, 1.0f,
+			-1.0f,-1.0f,-1.0f,
+			1.0f,-1.0f,-1.0f,
+			1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f,-1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f, 1.0f,
+			-1.0f,-1.0f, 1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f,-1.0f, 1.0f,
+			1.0f,-1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f,-1.0f,-1.0f,
+			1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f,-1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f,-1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f,-1.0f,
+			-1.0f, 1.0f,-1.0f,
+			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f,-1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f,-1.0f, 1.0f
 		};
 
 		const float Uvs[]
@@ -281,9 +281,8 @@ namespace ig
 		for (size_t i = 0; i < 36; i++)
 		{
 			v[ i ].pos.set(g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ]);
-			v[ i ].pos += Vector3f{ 2.0f, 2.0f, 4.0f };
-			v[ i ].pos *= 200.0f;
 			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 0.f, 1.f }, Pi / 2.0f);
+			v[ i ].pos += start;
 			v[ i ].clr = clr;
 			v[ i ].uv.x = Uvs[ (i * 2) % 6 ];
 			v[ i ].uv.y = Uvs[ ((i * 2) + 1) % 6 ];
@@ -447,14 +446,8 @@ namespace ig
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
 			const auto hdl = m_textures[ i ] ? m_textures[ i ] : g_PlankTexture->get_handle();
-			//const auto hdl = g_PlankTexId;
 			glBindTexture(GL_TEXTURE_2D, hdl);
 		}
-
-		//glActiveTexture(GL_TEXTURE_2D);
-		//glBindTexture(GL_TEXTURE_2D, m_textures[ 0 ] ? m_textures[ 0 ] : g_CheckboardTexId);
-
-		glUniform1i(glGetUniformLocation(m_shader->get_id(), "uTex0"), 0);
 
 		glUniform2f(glGetUniformLocation(m_shader->get_id(), "_screensize"), (float)m_wnd.get_width(), (float)m_wnd.get_height());
 
@@ -515,6 +508,36 @@ namespace ig
 	int Canvas::get_active_textures_count() const noexcept
 	{
 		return m_active_textrues_count;
+	}
+
+	void Canvas::set_shader_uniform(int location, int value)
+	{
+		glUniform1i(location, value);
+	}
+
+	void Canvas::set_shader_uniform(int location, float value)
+	{
+		glUniform1f(location, value);
+	}
+
+	void Canvas::set_shader_uniform(int location, Vector2i value)
+	{
+		glUniform2i(location, value.x, value.y);
+	}
+
+	void Canvas::set_shader_uniform(int location, Vector2f value)
+	{
+		glUniform2f(location, value.x, value.y);
+	}
+
+	void Canvas::set_shader_uniform(int location, Vector3i value)
+	{
+		glUniform3i(location, value.x, value.y, value.z);
+	}
+
+	void Canvas::set_shader_uniform(int location, Vector3f value)
+	{
+		glUniform3f(location, value.x, value.y, value.z);
 	}
 
 }

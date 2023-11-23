@@ -67,6 +67,14 @@ namespace ig
 		void set_active_textures_count(int count);
 		int get_active_textures_count() const noexcept;
 
+		/// \note used to set samplers slots
+		void set_shader_uniform(int location, int value);
+		void set_shader_uniform(int location, float value);
+		void set_shader_uniform(int location, Vector2i value);
+		void set_shader_uniform(int location, Vector2f value);
+		void set_shader_uniform(int location, Vector3i value);
+		void set_shader_uniform(int location, Vector3f value);
+
 	private:
 		Canvas(const Window &wnd);
 		Canvas(const Canvas &) = delete;
