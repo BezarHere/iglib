@@ -57,8 +57,6 @@ namespace ig
 		inline Transform2D &transform2d() noexcept { return m_trans2d; }
 		inline const Transform2D &transform2d() const noexcept { return m_trans2d; }
 
-		inline Transform3D &transform3d() noexcept { return m_trans3d; }
-		inline const Transform3D &transform3d() const noexcept { return m_trans3d; }
 
 		// USE ONLY IF YOU WANT TO INTEGRATE OPENGL CODE WITH IGLIB OR YOU KNOW WHAT ARE YOU DOING
 		void set_texture(const TextureId_t tex, const TextureSlot slot = TextureSlot::Slot0);
@@ -89,7 +87,9 @@ namespace ig
 		TextureId_t m_textures[int(TextureSlot::_MAX)];
 		int m_active_textrues_count = 1; // will upload all textures from 0 to m_active_textrues_count - 1
 		Transform2D m_trans2d{};
-		Transform3D m_trans3d;
+		Transform3D m_projection_transform{};
+		Transform3D m_view_transform{};
+		Transform3D m_model_transform{};
 	};
 
 	typedef void(*DrawCallback)(Canvas &canvas);

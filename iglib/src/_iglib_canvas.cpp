@@ -143,7 +143,7 @@ FORCEINLINE void generate_opengl_globals()
 namespace ig
 {
 	Canvas::Canvas(const Window &wnd)
-		: m_wnd{ wnd }, m_shader{ 0 }, m_trans2d{}, m_trans3d{}
+		: m_wnd{ wnd }, m_shader{ 0 }, m_trans2d{}
 	{
 		generate_opengl_globals();
 
@@ -282,8 +282,8 @@ namespace ig
 		for (size_t i = 0; i < 36; i++)
 		{
 			v[ i ].pos.set(g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ]);
-			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 0.f, 1.f }, (Pi / 2.0f) + (float)glfwGetTime());
-			v[ i ].pos *= 100;
+			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 0.f, 1.f, 0.f }, (Pi / 2.0f) + (float)glfwGetTime());
+			v[ i ].pos *= 0.25f;
 			v[ i ].pos += start;
 			v[ i ].clr = clr;
 			v[ i ].uv.x = Uvs[ (i * 2) % 6 ];
@@ -461,7 +461,7 @@ namespace ig
 		else if (m_shader->get_usage() == ShaderUsage::Usage3D)
 		{
 			//glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_FALSE, m_trans3d.get_data().f);
-			glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), m_trans3d.get_data().origin.x, m_trans3d.get_data().origin.y, m_trans3d.get_data().origin.z);
+			glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), m_model_transform.get_data().origin.x, m_model_transform.get_data().origin.y, m_model_transform.get_data().origin.z);
 			//glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), 0.f, 0.f, 0.f);
 			constexpr float Identy[]
 			{
@@ -469,7 +469,7 @@ namespace ig
 				0.f, 1.f, 0.f,
 				0.f, 0.f, 1.f,
 			};
-			glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_TRUE, m_trans3d.get_data().f);
+			glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_TRUE, m_model_transform.get_data().f);
 		}
 
 	}
