@@ -165,7 +165,7 @@ void draw2d_callback(Canvas &c)
 	
 	
 	//c.demo();
-
+	c.set_texture(tex.get_handle());
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
 	//c.transform3d() = ply;
 	c.cube({m.x / 1.0f, m.y / 1.0f, -300.f}, {}, { 1.0f, 0.8f, 0.6f, 1.f });
@@ -181,10 +181,10 @@ void draw2d_callback(Canvas &c)
 	//c.line(Vector3f{ 0.f, 0.f, 0.f }, { m.x, m.y, 20.0f }, { 0.8f, 1.f, 0.4f, 1.f });
 	
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
-	c.set_texture(tex.get_handle());
-	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
-	c.set_texture(subtex.get_handle());
-	c.rect(c.get_window().size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
+	//
+	//c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
+	//c.set_texture(subtex.get_handle());
+	//c.rect(c.get_window().size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
 
 	//c.bind_shader(ss);
 	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});

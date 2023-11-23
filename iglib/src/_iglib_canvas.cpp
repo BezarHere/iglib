@@ -282,8 +282,8 @@ namespace ig
 		for (size_t i = 0; i < 36; i++)
 		{
 			v[ i ].pos.set(g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ]);
-			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 0.f, 1.f }, (Pi / 2.0f) + (float)glfwGetTime());
-			v[ i ].pos *= 100;
+			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 1.f, 0.f }, (Pi / 2.0f) + (float)glfwGetTime());
+			v[ i ].pos *= 0.25f;
 			v[ i ].pos += start;
 			v[ i ].clr = clr;
 			v[ i ].uv.x = Uvs[ (i * 2) % 6 ];
@@ -540,6 +540,56 @@ namespace ig
 	void Canvas::set_shader_uniform(int location, Vector3f value)
 	{
 		glUniform3f(location, value.x, value.y, value.z);
+	}
+
+	void Canvas::set_shader_uniform(int location, int x, int y, int z, int w)
+	{
+		glUniform4i(location, x, y, z, w);
+	}
+
+	void Canvas::set_shader_uniform(int location, float x, float y, float z, float w)
+	{
+		glUniform4f(location, x, y, z, w);
+	}
+
+	void Canvas::set_shader_uniform(int location, int count, const int *value)
+	{
+		glUniform1iv(location, count, value);
+	}
+
+	void Canvas::set_shader_uniform(int location, int count, const float *value)
+	{
+		glUniform1fv(location, count, value);
+	}
+
+	void Canvas::set_shader_uniform(int location, int count, const Vector2i *value)
+	{
+		glUniform2iv(location, count, (const GLint *)value);
+	}
+
+	void Canvas::set_shader_uniform(int location, int count, const Vector2f *value)
+	{
+		glUniform2fv(location, count, (const GLfloat *)value);
+	}
+
+	void Canvas::set_shader_uniform(int location, int count, const Vector3i *value)
+	{
+		glUniform3iv(location, count, (const GLint *)value);
+	}
+
+	void Canvas::set_shader_uniform(int location, int count, const Vector3f * value)
+	{
+		glUniform3fv(location, count, (const GLfloat *)value);
+	}
+
+	void Canvas::set_shader_uniform(int location, int count, const int *value)
+	{
+		glUniform4iv(location, count, value);
+	}
+
+	void Canvas::set_shader_uniform(int location, int count, const float *value)
+	{
+		glUniform4fv(location, count, value);
 	}
 
 }

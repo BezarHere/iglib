@@ -177,9 +177,9 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 		}
 
 		//ss << "Color = (texture(_tex, UV) * FragColor) - ((texture(_tex, UV) * FragColor) * UV.x) + (FragColor * UV.x);";
-		if (temp.usage == ShaderUsage::Usage3D)
-			ss << "Color = vec4(UV, 1.0, 1.0);";
-		else
+		//if (temp.usage == ShaderUsage::Usage3D)
+		//	ss << "Color = vec4(UV, 1.0, 1.0);";
+		//else
 			ss << "Color = texture(uTex0, UV) * FragColor;";
 		//ss << "Color = vec4(UV, 1.0, 1.0) * FragColor;";
 		//ss << "Color = texture(uTex0, UV) * FragColor;";
@@ -413,5 +413,12 @@ namespace ig
 	_NODISCARD int Shader::get_uniform_location(const std::string &name) const noexcept
 	{
 		return glGetUniformLocation(get_id(), name.c_str());
+	}
+
+	int Shader::max_uniform_location()
+	{
+		int result;
+		glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS, &result);
+		return result;
 	}
 }

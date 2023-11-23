@@ -38,7 +38,7 @@ namespace ig
 
 		/// @return -1 on fail, uniform location on success
 		_NODISCARD int get_uniform_location(const std::string &name) const noexcept;
-
+		_NODISCARD static int max_uniform_location();
 
 		static_assert(sizeof(unsigned) == sizeof(int), "Funky OS Error: unsigned and int aren't the same size");
 

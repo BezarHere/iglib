@@ -74,6 +74,20 @@ namespace ig
 		void set_shader_uniform(int location, Vector2f value);
 		void set_shader_uniform(int location, Vector3i value);
 		void set_shader_uniform(int location, Vector3f value);
+		void set_shader_uniform(int location, int x, int y, int z, int w);
+		void set_shader_uniform(int location, float x, float y, float z, float w);
+		
+		// array uniform setters
+		void set_shader_uniform(int location, int count, const int *value);
+		void set_shader_uniform(int location, int count, const float *value);
+		void set_shader_uniform(int location, int count, const Vector2i *value);
+		void set_shader_uniform(int location, int count, const Vector2f *value);
+		void set_shader_uniform(int location, int count, const Vector3i *value);
+		void set_shader_uniform(int location, int count, const Vector3f *value);
+		// the length of array 'value' should be 4x count
+		void set_shader_uniform(int location, int count, const int *value);
+		// the length of array 'value' should be 4x count
+		void set_shader_uniform(int location, int count, const float *value);
 
 	private:
 		Canvas(const Window &wnd);
