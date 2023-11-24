@@ -19,14 +19,16 @@ namespace ig
 	{
 		friend class Canvas;
 	public:
+
 		Font(const std::string &filepath); // <- truetype
 		Font(const Image &glyphs, Vector2i glyph_size, Vector2i spacing = {0, 0}); // <- bitmap
 		Font();// <- default bitmap font
 
 
+		struct FontInternal;
 	private:
 		FontType m_type;
-		struct FontInternal; std::shared_ptr<FontInternal> m_internal;
+		std::shared_ptr<FontInternal> m_internal;
 	};
 
 }
