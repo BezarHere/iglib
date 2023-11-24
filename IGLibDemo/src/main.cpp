@@ -200,7 +200,7 @@ void process_img(Image &img, _PROC proc)
 	{
 		for (int x = 0; x < img.width(); x++)
 		{
-			const int index = ((y * img.width()) + x) * int(img.get_channels());
+			const int index = ((y * img.width()) + x) * int(img.format());
 			proc(img.get_buffer() + index);
 		}
 	}
@@ -217,7 +217,7 @@ int main()
 	//std::cout << "hello there\n";
 	//std::cout << k.get_buffer_size() << '\n';
 	//std::cout << "hello there\n";
-	//std::cout << (int)k.get_channels() << '\n';
+	//std::cout << (int)k.format() << '\n';
 	//std::cout << "hello there\n";
 	//std::cout << k.get_size() << '\n';
 	//std::cout << "wadawdasdawdas" << '\n';
@@ -229,9 +229,9 @@ int main()
 
 
 		ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };
-		process_img(img, [channels = int(img.get_channels())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
+		process_img(img, [channels = int(img.format())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
 		tex = ig::Texture(img);
-		process_img(img, [channels = int(img.get_channels())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
+		process_img(img, [channels = int(img.format())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
 		subtex = ig::Texture(img);
 
 

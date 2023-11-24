@@ -7,3 +7,7 @@
 // For more information see https://go.microsoft.com/fwlink/?linkid=865984
 #define _EXPORT_STD
 #define NOTE(x)
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define _CONSTEXPR17

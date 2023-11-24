@@ -19,7 +19,8 @@ namespace ig
 	public:
 		Image();
 		// does not take ownership of data
-		Image(const byte *data, const Vector2i size, ColorFormat channels);
+		Image(const Vector2i size, ColorFormat format = ColorFormat::RGBA);
+		Image(const byte *data, const Vector2i size, ColorFormat format);
 		Image(const std::string &filename);
 		~Image() noexcept;
 
@@ -32,7 +33,7 @@ namespace ig
 		int height() const noexcept;
 		Vector2i size() const;
 
-		ColorFormat get_channels() const;
+		ColorFormat format() const;
 
 		bool valid() const;
 		byte *get_buffer();
@@ -45,6 +46,9 @@ namespace ig
 		void rotate_clockwise();
 		void rotate_counter_clockwise();
 		void transpose();
+
+		void blit(const Image &src, const Rect2i &src_rect, const Vector2i dst_pos);
+		void blit(const Image &src, const Vector2i dst_pos);
 		
 		// tga 2.0
 		void save_tga(const std::string &path) const;

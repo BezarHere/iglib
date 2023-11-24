@@ -216,6 +216,7 @@
     <ClInclude Include="src\iglib.h" />
     <ClInclude Include="src\internal.h" />
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\_iglib_camera.h" />
     <ClInclude Include="src\_iglib_font.h" />
     <ClInclude Include="src\_iglib_canvas.h" />
     <ClInclude Include="src\_iglib_application_config.h" />

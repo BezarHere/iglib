@@ -37,9 +37,7 @@ FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h
 	glGenTextures(1, &hdl);
 	tex->handle = hdl;
 
-	REPORT(tex->handle == NULL);
-	if (tex->handle == NULL)
-		return tex;
+	REPORT_V(tex->handle == NULL, tex);
 
 	glBindTexture(GL_TEXTURE_2D, tex->handle);
 
@@ -79,7 +77,7 @@ namespace ig
 	Texture::Texture(const Image &img)
 		: m_internal{
 			register_tex(
-				img.width(), img.height(), img.get_channels(),
+				img.width(), img.height(), img.format(),
 				std::shared_ptr<unsigned char[]>((unsigned char *)memcpy(new unsigned char[img.get_buffer_size()] , img.get_buffer(), img.get_buffer_size()))
 			)
 		}

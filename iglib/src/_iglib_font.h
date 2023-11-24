@@ -17,6 +17,7 @@ namespace ig
 
 	class Font
 	{
+		friend class Canvas;
 	public:
 		Font(const std::string &filepath); // <- truetype
 		Font(const Image &glyphs, Vector2i glyph_size, Vector2i spacing = {0, 0}); // <- bitmap

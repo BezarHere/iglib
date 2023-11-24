@@ -45,7 +45,7 @@ namespace ig
 
 
 			std::vector<Vertex> vertcies;
-			std::vector<Face> faces;
+			std::vector<Face> faces_atlas;
 			std::vector<Line> lines;
 		};
 	}

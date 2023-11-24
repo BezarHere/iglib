@@ -2,6 +2,15 @@
 #include "_iglib_image.h"
 #include "draw_internal.h"
 
+
+FORCEINLINE byte *allocate_image_data(const size_t len)
+{
+	void *mal = malloc(len);
+	if (!mal)
+		return nullptr;
+	return (byte *)mal;
+}
+
 FORCEINLINE byte *realloc_image_data(const byte *buf, const size_t len)
 {
 	if (buf == nullptr)
@@ -33,8 +42,13 @@ namespace ig
 	{
 	}
 
-	Image::Image(const byte *data, const Vector2i size, ColorFormat channels)
-		: m_sz{ size }, m_format{ channels }, m_buf{ realloc_image_data(data, size.area() * (int)channels) }
+	Image::Image(const Vector2i size, ColorFormat format)
+		: m_sz{ size }, m_format{ format }, m_buf{allocate_image_data(get_buffer_size())}
+	{
+	}
+
+	Image::Image(const byte *data, const Vector2i size, ColorFormat format)
+		: m_sz{ size }, m_format{ format }, m_buf{ realloc_image_data(data, get_buffer_size()) }
 	{
 	}
 
@@ -105,7 +119,7 @@ namespace ig
 		return m_sz;
 	}
 
-	ColorFormat Image::get_channels() const
+	ColorFormat Image::format() const
 	{
 		return ColorFormat(m_format);
 	}
@@ -132,12 +146,12 @@ namespace ig
 
 	void Image::flip_v()
 	{
-		::flip_v(m_buf, width(), height(), get_channels());
+		::flip_v(m_buf, width(), height(), format());
 	}
 
 	void Image::flip_h()
 	{
-		::flip_h(m_buf, width(), height(), get_channels());
+		::flip_h(m_buf, width(), height(), format());
 	}
 
 	void Image::rotate_clockwise()
@@ -170,6 +184,37 @@ namespace ig
 		m_buf = newbuf;
 	}
 
+	void Image::blit(const Image &src, const Rect2i &src_rect, const Vector2i dst_pos)
+	{
+		REPORT(src.format() != this->format());
+
+		const Vector2i src_range{
+			src_rect.w + src_rect.x > src.width() ? src.width() - src_rect.x : src_rect.w,
+			src_rect.h + src_rect.y > src.height() ? src.height() - src_rect.y : src_rect.h
+		};
+		const Vector2i range{
+			src_range.x + dst_pos.x > m_sz.x ? m_sz.x - dst_pos.x : src_range.x,
+			src_range.y + dst_pos.y > m_sz.y ? m_sz.y - dst_pos.y : src_range.y,
+		};
+
+		const int fs = get_colorformat_size(m_format);
+		for (int fb = 0; fb < fs; fb++)
+		{
+			for (int y = 0; y < range.y; y++)
+			{
+				for (int x = 0; x < range.x; x++)
+				{
+					m_buf[ ((y + dst_pos.y) * range.x + (x + dst_pos.x)) * fs + fb ] = src.m_buf[ ((y + src_rect.y) * range.x + (x + src_rect.x)) * fs + fb ];
+				}
+			}
+		}
+	}
+
+	void Image::blit(const Image &src, const Vector2i dst_pos)
+	{
+		blit(src, { 0, 0, src.width(), src.height() }, dst_pos);
+	}
+
 	// tga 2.0
 	void Image::save_tga(const std::string &path) const
 	{
@@ -189,7 +234,7 @@ namespace ig
 
 
 
-		SOIL_save_image(path.c_str(), SOIL_SAVE_TYPE_TGA, width(), height(), get_channels(), get_buffer());
+		SOIL_save_image(path.c_str(), SOIL_SAVE_TYPE_TGA, width(), height(), format(), get_buffer());
 	}
 
 	Image Image::subimage(Rect2i rect) const

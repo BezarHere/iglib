@@ -64,9 +64,13 @@ constexpr dye::TerminalColor PingColor{ dye::ColorCode::LightBlue, dye::ColorCod
 #define ASSERT(cond) if (!(cond)) bite::raise(bite::format("failed condition \"{}\" at \"{}\" line {}", #cond, __FILE__, __LINE__))
 #endif
 
+#ifndef WARN
+#define WARN(cond) if (!!(cond)) { bite::warn("\"" #cond  "\" is true at \"" __FILE__ "\" line " + std::to_string(__LINE__) + "\n"); }
+#endif
 #ifndef REPORT
-// reverse of ASSERT, only prints warning IF the condition is TRUE
-#define REPORT(cond) if (!!(cond)) bite::warn("\"" #cond  "\" at \"" __FILE__ "\" line " + std::to_string(__LINE__) + "\n")
+// reverse of ASSERT, only prints warning IF the condition is TRUE also returns
+#define REPORT(cond) if (!!(cond)) { bite::warn("\"" #cond  "\" is true at \"" __FILE__ "\" line " + std::to_string(__LINE__) + ", returning...\n"); return; }
+#define REPORT_V(cond, value) if (!!(cond)) { bite::warn("\"" #cond  "\" is true at \"" __FILE__ "\" line " + std::to_string(__LINE__) + ", returning: " #value "\n"); return value; }
 #endif // !REPORT
 
 

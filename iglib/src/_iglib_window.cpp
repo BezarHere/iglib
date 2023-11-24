@@ -433,19 +433,14 @@ namespace ig
 			
 			glGenFramebuffers(1, &fbo);
 
-			REPORT(fbo == NULL);
-			if (fbo == NULL)
-			{
-				return std::unique_ptr<WindowDrawBuffer>(nullptr);
-			}
+			REPORT_V(fbo == NULL, std::unique_ptr<WindowDrawBuffer>(nullptr));
 
 			glGenTextures(1, &cto);
 
-			REPORT(cto == NULL);
 			if (cto == NULL)
 			{
 				glDeleteFramebuffers(1, &fbo);
-				return std::unique_ptr<WindowDrawBuffer>(nullptr);
+				REPORT_V(cto == NULL, std::unique_ptr<WindowDrawBuffer>(nullptr));
 			}
 
 			glBindTexture(GL_TEXTURE_2D, cto);
@@ -458,12 +453,11 @@ namespace ig
 
 			glGenRenderbuffers(1, &rbo);
 
-			REPORT(rbo == NULL);
 			if (rbo == NULL)
 			{
 				glDeleteFramebuffers(1, &fbo);
 				glDeleteTextures(1, &cto);
-				return std::unique_ptr<WindowDrawBuffer>(nullptr);
+				REPORT_V(rbo == NULL, std::unique_ptr<WindowDrawBuffer>(nullptr));
 			}
 
 
@@ -476,7 +470,7 @@ namespace ig
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cto, 0);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
-			REPORT(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE); // <- BUGBUG
+			WARN(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE, std::unique_ptr<WindowDrawBuffer>(new WindowDrawBuffer{ fbo, rbo, cto, size })); // <- BUGBUG
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NULL);
 			glBindRenderbuffer(GL_RENDERBUFFER, NULL);

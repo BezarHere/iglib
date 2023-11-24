@@ -7,7 +7,7 @@
 namespace ig
 {
 
-	template <typename _T, size_t _W, size_t _H>
+	template <typename _T, size_t _W, size_t _H = _W>
 	struct BaseMatrixTemplate
 	{
 		static_assert(std::is_arithmetic_v<_T>, "class Matrix only accepts arithmetic types only as _T");
@@ -21,11 +21,11 @@ namespace ig
 		using column_matrix = BaseMatrixTemplate<_T, 1, _H>;
 		using row_matrix = BaseMatrixTemplate<_T, _W, 1>;
 
-		inline BaseMatrixTemplate(array_type arr)
+		constexpr inline BaseMatrixTemplate(array_type arr)
 			: m_elements{ std::move(arr) }
 		{}
 
-		inline BaseMatrixTemplate()
+		constexpr inline BaseMatrixTemplate()
 			: m_elements{}
 		{}
 
@@ -75,4 +75,7 @@ namespace ig
 		array_type m_elements;
 	};
 
+	using Matrix2x2 = BaseMatrixTemplate<float, 2>;
+	using Matrix3x3 = BaseMatrixTemplate<float, 3>;
+	using Matrix4x4 = BaseMatrixTemplate<float, 4>;
 }

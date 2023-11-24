@@ -4,6 +4,10 @@
 #include "_iglib_shader.h"
 #include "_iglib_image.h"
 
+constexpr int MaxTextureWidth = 1 << 14;
+constexpr int MaxTextureHeight = 1 << 14;
+constexpr int MaxTextureArea = 1 << 28;
+
 FORCEINLINE void glColor3(const Colorb clr)
 {
   glColor3ub(clr.r, clr.g, clr.b);
@@ -71,6 +75,18 @@ constexpr FORCEINLINE int to_glpixelformat(const ColorFormat type)
   }
 }
 
+FORCEINLINE constexpr int get_colorformat_size(const ColorFormat format)
+{
+	constexpr int ColorFormatSizeLookup[]
+	{
+		-1,
+		1,
+		2,
+		3,
+		4
+	};
+	return ColorFormatSizeLookup[ int(format) ];
+}
 
 constexpr FORCEINLINE int to_gldrawusage(const BufferUsage usage)
 {

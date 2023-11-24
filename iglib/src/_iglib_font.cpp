@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "_iglib_font.h"
 #include "_iglib_font.h"
+#include "draw_internal.h"
 
 // RGBA 8x8 glyphs 
 constexpr uint64_t DefaultGlyphs[]
@@ -161,29 +162,42 @@ namespace ig
 	struct Font::FontInternal
 	{
 		FORCEINLINE FontInternal(const Image &glyphs, const Vector2i glyph_size, const Vector2i spacing)
-			: faces{}
+			: faces_atlas{}
 		{
-			Vector2i count = glyphs.size() / glyph_size;
-			count = (glyphs.size() - ((count - Vector2i(1, 1)) * spacing)) / glyph_size;
+			if (glyph_size.x >= 256)
+				bite::raise("Overflow: glyph_size.x was " + std::to_string(glyph_size.x) + " wich is greater/equal to 256");
 
+			if (glyph_size.y >= 512)
+				bite::raise("Overflow: glyph_size.y was " + std::to_string(glyph_size.y) + " wich is greater/equal to 512");
 
-			faces = span<GLuint>(count.area());
-			glGenTextures(faces.size(), faces.begin());
-			for (int y = 0; y < count.y; y++)
-			{
-				for (int x = 0; x < count.x; x++)
+			const Vector2i raw_count = std::invoke([gsize = glyphs.size(), glyph_size, spacing]()
 				{
-					const int index = (y * count.x) + x;
-					glBindTexture(GL_TEXTURE_2D, faces[ index ]);
-					// subimage
-					
+					const Vector2i c = gsize / glyph_size;
+					if (!c.area()); return Vector2i(0, 0);
+					(gsize - ((c * spacing) - spacing)) / glyph_size;
+				});
 
+			const int raw_count_area = raw_count.area();
+			REPORT(raw_count_area == 0);
+			REPORT(raw_count.x * glyph_size.x >= MaxTextureWidth);
+			REPORT(raw_count.y * glyph_size.y >= MaxTextureHeight);
+
+			const int glyph_area = glyph_size.area();
+			Image strip{ raw_count * glyph_size, ColorFormat::LA };
+			for (int y = 0; y < raw_count.y; y++)
+			{
+				const int yglyph = (spacing.y + glyph_size.y) * y;
+				for (int x = 0; x < raw_count.x; x++)
+				{
+					const Vector2i glyphs_cell{ (glyph_size.x + spacing.x) * x, yglyph };
+					strip.blit(glyphs, { (glyph_size.x + spacing.x) * x, yglyph, glyph_size.x, glyph_size.y }, { x * glyph_size.x, y * glyph_size.y });
 				}
 			}
-
+			
+			faces_atlas = Texture(strip);
 		}
 
-		span<GLuint> faces;
+		Texture faces_atlas;
 	};
 
 	Font::Font(const std::string &filepath)
