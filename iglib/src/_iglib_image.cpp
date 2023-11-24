@@ -402,7 +402,7 @@ namespace ig
 			break;
 		}
 		REPORT(new_buf == nullptr);
-		SOIL_free_image_data(new_buf);
+		SOIL_free_image_data(m_buf);
 		m_buf = new_buf;
 		m_format = to_format;
 	}
