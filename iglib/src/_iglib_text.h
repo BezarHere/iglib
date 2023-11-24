@@ -10,7 +10,7 @@ namespace ig
 	public:
 		using vertex_buffer_type = _VERTBUF;
 		using string_type = _STR;
-		using vertex_type = _VERTBUF::vertex_type;
+		using vertex_type = typename _VERTBUF::vertex_type;
 		static constexpr bool Is3D = std::is_same_v<vertex_type, Vertex3D>;
 
 		BaseTextTemplate()

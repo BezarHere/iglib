@@ -8,6 +8,8 @@ constexpr int MaxTextureWidth = 1 << 14;
 constexpr int MaxTextureHeight = 1 << 14;
 constexpr int MaxTextureArea = 1 << 28;
 
+#include "default_bitmap.inl"
+
 FORCEINLINE void glColor3(const Colorb clr)
 {
   glColor3ub(clr.r, clr.g, clr.b);
@@ -86,6 +88,15 @@ FORCEINLINE constexpr int get_colorformat_size(const ColorFormat format)
 		4
 	};
 	return ColorFormatSizeLookup[ int(format) ];
+}
+
+FORCEINLINE constexpr bool is_colorformat_transparent(const ColorFormat format)
+{
+	constexpr bool ColorFormatTrLookup[]
+	{
+		false, false, true, false, true
+	};
+	return ColorFormatTrLookup[ int(format) ];
 }
 
 constexpr FORCEINLINE int to_gldrawusage(const BufferUsage usage)

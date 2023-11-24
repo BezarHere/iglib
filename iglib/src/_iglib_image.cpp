@@ -1,13 +1,12 @@
 #include "pch.h"
 #include "_iglib_image.h"
 #include "draw_internal.h"
-
+#undef RGB
 
 FORCEINLINE byte *allocate_image_data(const size_t len)
 {
 	void *mal = malloc(len);
-	if (!mal)
-		return nullptr;
+	REPORT_V(mal == NULL, NULL);
 	return (byte *)mal;
 }
 
@@ -33,6 +32,114 @@ FORCEINLINE byte *load_image(const std::string &filename, Vector2i &sz, ColorFor
 	}
 
 	return buf;
+}
+
+typedef void(*Formater_t)(const byte *from, byte *to);
+
+FORCEINLINE byte constexpr grayscale(const byte data[ 3 ])
+{
+	return (data[ 0 ] + data[ 1 ] + data[ 2 ]) / 3;
+}
+
+template <ColorFormat _FROM, ColorFormat _TO>
+FORCEINLINE static void format_color(const byte *from, byte *to)
+{
+	static_assert(_FROM != _TO, "_FROM & _TO shouldn't be equal");
+	constexpr byte MaxValue = 255;
+
+	if constexpr (_FROM == ColorFormat::L)
+	{
+		if constexpr (_TO == ColorFormat::LA)
+		{
+			to[ 0 ] = from[0];
+			to[ 1 ] = MaxValue;
+		}
+		else if constexpr (_TO == ColorFormat::RGB)
+		{
+			to[ 0 ] = to[ 1 ] = to[ 2 ] = from[ 0 ];
+		}
+		else if constexpr (_TO == ColorFormat::RGBA)
+		{
+			to[ 0 ] = to[ 1 ] = to[ 2 ] = from[ 0 ];
+			to[ 3 ] = MaxValue;
+		}
+	}
+	else if constexpr (_FROM == ColorFormat::LA)
+	{
+		if constexpr (_TO == ColorFormat::L)
+		{
+			to[ 0 ] = (from[ 0 ] * from[ 1 ]) / 255;
+		}
+		else if constexpr (_TO == ColorFormat::RGB)
+		{
+			to[ 0 ] = to[ 1 ] = to[ 2 ] = (from[ 0 ] * from[ 1 ]) / MaxValue;
+		}
+		else if constexpr (_TO == ColorFormat::RGBA)
+		{
+			to[ 0 ] = to[ 1 ] = to[ 2 ] = from[ 0 ];
+			to[ 3 ] = from[ 1 ];
+		}
+	}
+	else if constexpr (_FROM == ColorFormat::RGB)
+	{
+		if constexpr (_TO == ColorFormat::L)
+		{
+			to[ 0 ] = (from[ 0 ] + from[ 1 ] + from[ 2 ]) / 3;
+		}
+		else if constexpr (_TO == ColorFormat::LA)
+		{
+			to[ 0 ] = grayscale(from);
+			to[ 1 ] = MaxValue;
+		}
+		else if constexpr (_TO == ColorFormat::RGBA)
+		{
+			to[ 0 ] = from[ 0 ];
+			to[ 1 ] = from[ 1 ];
+			to[ 2 ] = from[ 2 ];
+			to[ 3 ] = MaxValue;
+		}
+	}
+	else if constexpr (_FROM == ColorFormat::RGBA)
+	{
+		if constexpr (_TO == ColorFormat::L)
+		{
+			to[ 0 ] = (grayscale(from) * from[ 3 ]) / MaxValue;
+		}
+		else if constexpr (_TO == ColorFormat::LA)
+		{
+			to[ 0 ] = grayscale(from);
+			to[ 1 ] = from[ 3 ];
+		}
+		else if constexpr (_TO == ColorFormat::RGB)
+		{
+			to[ 0 ] = (from[ 0 ] * from[ 3 ]) / MaxValue;
+			to[ 1 ] = (from[ 1 ] * from[ 3 ]) / MaxValue;
+			to[ 2 ] = (from[ 2 ] * from[ 3 ]) / MaxValue;
+		}
+	}
+}
+
+
+template <ColorFormat _FROM, ColorFormat _TO>
+FORCEINLINE static byte *convert_formater(const byte *data, const Vector2i sz)
+{
+	constexpr ColorFormat from = _FROM, to = _TO;
+	constexpr Formater_t formater = format_color<from, to>;
+
+	//const size_t FromSize = size_t(sz.area()) * get_colorformat_size(from);
+	const size_t ToSize = size_t(sz.area()) * get_colorformat_size(to);
+
+	byte *to_data = allocate_image_data(ToSize);
+
+	for (int y = 0; y < sz.y; y++)
+	{
+		for (int x = 0; x < sz.x; x++)
+		{
+			const int index_raw = (y * sz.x) + x;
+			formater(data + (index_raw * get_colorformat_size(from)), to_data + (index_raw * get_colorformat_size(to)));
+		}
+	}
+	return to_data;
 }
 
 namespace ig
@@ -268,4 +375,35 @@ namespace ig
 		return std::unique_ptr<byte[]>( subbuf );
 	}
 
+	void Image::convert(ColorFormat to_format)
+	{
+		REPORT(format() == to_format);
+
+		byte *new_buf = nullptr;
+
+#define TO_SW(base, a, b, c) switch (to_format) \
+{ case ColorFormat::a:{ new_buf = convert_formater<base, ColorFormat::a>(m_buf, size()); }break;case ColorFormat::b:{ new_buf = convert_formater<base, ColorFormat::b>(m_buf, size()); }break;case ColorFormat::c:{ new_buf = convert_formater<base, ColorFormat::c>(m_buf, size()); }break; default: break; }
+
+		switch (m_format)
+		{
+		case ig::L:
+			TO_SW(ColorFormat::L, LA, RGB, RGBA);
+			break;
+		case ig::LA:
+			TO_SW(ColorFormat::LA, L, RGB, RGBA);
+			break;
+		case ig::RGB:
+			TO_SW(ColorFormat::RGB, L, LA, RGBA);
+			break;
+		case ig::RGBA:
+			TO_SW(ColorFormat::RGBA, L, LA, RGB);
+			break;
+		default:
+			break;
+		}
+		REPORT(new_buf == nullptr);
+		SOIL_free_image_data(new_buf);
+		m_buf = new_buf;
+		m_format = to_format;
+	}
 }

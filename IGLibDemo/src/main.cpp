@@ -184,9 +184,9 @@ void draw2d_callback(Canvas &c)
 	
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 	//
-	/*c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
+	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
 	c.set_texture(subtex.get_handle());
-	c.rect(c.get_window().size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });*/
+	c.rect(c.get_window().size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
 
 	//c.bind_shader(ss);
 	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
@@ -226,12 +226,13 @@ int main()
 	
 	{
 		ig::Window i = ig::Window({128, 128}, "Window !!!");
-
+		ig::Font font;
 
 		ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };
-		process_img(img, [channels = int(img.format())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
+		//process_img(img, [channels = int(img.format())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
 		tex = ig::Texture(img);
 		process_img(img, [channels = int(img.format())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
+		img.convert(ig::ColorFormat::LA);
 		subtex = ig::Texture(img);
 
 

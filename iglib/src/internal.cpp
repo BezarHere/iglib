@@ -5,9 +5,11 @@ bool g_glew_init = false;
 bool glfw_init = false;
 //GLuint glew_program_pid;
 
-std::stack<WindowHandle_t> glfw_current_window_pipline_stack;
+typedef void(*Action_t)(void);
+static std::stack<WindowHandle_t> glfw_current_window_pipline_stack;
+static std::vector<MonitorHandle_t> glfw_monitors{};
+static std::vector<Action_t> openglinit_callbacks{};
 
-std::vector<MonitorHandle_t> glfw_monitors{};
 void static_init();
 
 struct __static_init_run
@@ -144,6 +146,11 @@ void init_glew()
 	}
 
 	g_glew_init = true;
+	for (const auto callback : openglinit_callbacks)
+	{
+		callback();
+	}
+	openglinit_callbacks.clear();
 
 	// callbacks
 	
@@ -195,6 +202,11 @@ void lazyload_opengl_procs()
 			glcreateporgram = (PROC)GetProcAddress(opengl32, "__glewCreateProgram");
 		}
 	}
+}
+
+void register_openglinit_callback(void(*callback)(void))
+{
+	openglinit_callbacks.push_back(callback);
 }
 
 

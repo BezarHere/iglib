@@ -19,6 +19,12 @@ namespace ig
 	{
 		friend class Canvas;
 	public:
+		struct Charecter
+		{
+			int codepoint;
+			Vector2i pivot, size;
+		};
+
 
 		Font(const std::string &filepath); // <- truetype
 		Font(const Image &glyphs, Vector2i glyph_size, Vector2i spacing = {0, 0}); // <- bitmap

@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "_iglib_base.h"
 #include "_iglib_errors.h"
+#include "_iglib_font.h"
 
 constexpr size_t LumSize = 1;
 constexpr size_t LumASize = 2;
@@ -47,3 +48,12 @@ extern WindowHandle_t top_draw_pipline();
 extern void pop_draw_pipline();
 
 extern void lazyload_opengl_procs();
+extern void register_openglinit_callback(void(*callback)(void));
+
+struct RegisterOpenglInitCallback
+{
+	RegisterOpenglInitCallback(void(*callback)(void))
+	{
+		register_openglinit_callback(callback);
+	}
+};

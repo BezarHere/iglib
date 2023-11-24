@@ -470,7 +470,7 @@ namespace ig
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cto, 0);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
-			WARN(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE, std::unique_ptr<WindowDrawBuffer>(new WindowDrawBuffer{ fbo, rbo, cto, size })); // <- BUGBUG
+			WARN(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE); // <- BUGBUG
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NULL);
 			glBindRenderbuffer(GL_RENDERBUFFER, NULL);

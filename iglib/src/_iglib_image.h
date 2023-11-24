@@ -59,6 +59,8 @@ namespace ig
 		/// \note out of bounds rect will be clipped for this image
 		std::unique_ptr<byte[]> subbuffer(Rect2i rect) const;
 
+		void convert(ColorFormat to_format);
+
 	private:
 		Vector2i m_sz;
 		ColorFormat m_format;

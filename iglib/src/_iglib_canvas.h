@@ -6,6 +6,7 @@
 #include "_iglib_texture.h"
 #include "_iglib_shader.h"
 #include "_iglib_transform.h"
+#include "_iglib_text.h"
 
 namespace ig
 {

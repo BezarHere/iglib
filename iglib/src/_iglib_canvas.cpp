@@ -138,6 +138,7 @@ FORCEINLINE void generate_opengl_globals()
 		g_PlankTexture.reset(new Texture(Image(plank_white_data, {2, 2}, ColorFormat::L)));
 	}
 
+
 }
 
 namespace ig
