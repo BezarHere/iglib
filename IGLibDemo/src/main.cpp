@@ -7,6 +7,8 @@
 #include <fstream>
 
 #include <winsock.h>
+#undef min
+#undef max
 
 using namespace ig;
 
@@ -15,8 +17,8 @@ const std::string current_dir = "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\";
 
 float zb = 0;
 ig::Transform2D tr{};
-ig::Texture tex;
-ig::Texture subtex;
+ig::Texture before_tex;
+ig::Texture after_tex;
 
 struct LARGE
 {
@@ -145,8 +147,17 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 static float cube_distance = 0.f;
 void scroll(ig::Window &w, double x, double y)
 {
-	cube_distance += y * 1.f;
+	cube_distance += y * 0.25f;
 	std::cout << "cube_distance: " << cube_distance << '\n';
+}
+
+void draw_fromto_comp(Canvas &c)
+{
+	const float lowest_axis = float(std::min(c.get_window().width(), c.get_window().height())) / 2.f;
+	c.set_texture(before_tex.get_handle());
+	c.rect({ 0.f, 0.f }, { lowest_axis, lowest_axis }, { 1.0, 1.0, 1.0 });
+	c.set_texture(after_tex.get_handle());
+	c.rect( { lowest_axis + 16.f, 0.0f }, {lowest_axis * 2 + 16.f, lowest_axis}, {1.0, 1.0, 1.0});
 }
 
 void draw2d_callback(Canvas &c)
@@ -165,15 +176,18 @@ void draw2d_callback(Canvas &c)
 		);
 	}*/
 	
-	
+	const Vector2f inverted_m{ m.x - (c.get_window().width() / 2.0f), (c.get_window().height() / 2.0f) - m.y };
 	//c.demo();
-	c.set_texture(tex.get_handle());
+	c.set_texture(before_tex.get_handle());
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
-	//c.transform3d() = ply;
-	c.cube({ m.x / 100.0f, m.y / 100.0f, cube_distance }, {}, { 1.0f, 0.8f, 0.6f, 1.f });
+	c.transform3d() = ply;
+	c.cube({ inverted_m.x / 100.0f + 2.f, inverted_m.y / 100.0f, cube_distance }, {}, { 1.0f, 0.8f, 0.6f, 1.f });
+	c.cube({ inverted_m.x / 100.0f, inverted_m.y / 100.0f, cube_distance }, {}, { 0.6f, 0.4f, 0.2f, 1.f });
+	c.cube({ inverted_m.x / 100.0f - 2.f, inverted_m.y / 100.0f, cube_distance }, {}, { 0.3f, 0.2f, 0.1f, 1.f });
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage2D));
-	//c.set_texture(tex.get_handle());
+	//c.set_texture(before_tex.get_handle());
 
+	draw_fromto_comp(c);
 	
 	//std::cout << c.transform3d().get_position() << '\n';
 	
@@ -184,9 +198,8 @@ void draw2d_callback(Canvas &c)
 	
 	//c.quad(Vector2f(32.0f, 32.0f), Vector2f(32.0f, 32.0f + (m.y * 0.2f)), m, Vector2f(32.0f + (m.y * 0.2f), 32.0f), { 255, 44, 99, 255 });
 	//
-	c.rect(mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
-	c.set_texture(subtex.get_handle());
-	c.rect(c.get_window().size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
+	
+	//c.rect(c.get_window().size() - mouse_pos_when_space, c.get_window().get_mouse_position(), { 1.0, 1.0, 1.0 });
 
 	//c.bind_shader(ss);
 	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
@@ -228,12 +241,15 @@ int main()
 		ig::Window i = ig::Window({128, 128}, "Window !!!");
 		ig::Font font;
 
-		ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };
-		//process_img(img, [channels = int(img.format())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
-		tex = ig::Texture(img);
-		process_img(img, [channels = int(img.format())](byte *buff) { buff[ channels - 1 ] = int(buff[ channels - 1 ] * 0.2f); });
-		img.convert(ig::ColorFormat::LA);
-		subtex = ig::Texture(img);
+		{
+			ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };
+			before_tex = ig::Texture(img);
+			Image img2 = img;
+			img2.convert(ColorFormat::LA);
+			img2.convert(ColorFormat::RGBA);
+			img.blit(img2, {0, 0, 256, 256}, { 200, 200 });
+			after_tex = ig::Texture(img);
+		}
 
 
 		ig::Window p = ig::Window({ 128, 128 }, "Other one");

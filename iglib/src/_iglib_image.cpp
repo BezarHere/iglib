@@ -38,7 +38,7 @@ typedef void(*Formater_t)(const byte *from, byte *to);
 
 FORCEINLINE byte constexpr grayscale(const byte data[ 3 ])
 {
-	return (data[ 0 ] + data[ 1 ] + data[ 2 ]) / 3;
+	return int(0.2126f * data[0] + 0.7152f * data[1] + 0.0722f * data[2]);
 }
 
 template <ColorFormat _FROM, ColorFormat _TO>
@@ -84,7 +84,7 @@ FORCEINLINE static void format_color(const byte *from, byte *to)
 	{
 		if constexpr (_TO == ColorFormat::L)
 		{
-			to[ 0 ] = (from[ 0 ] + from[ 1 ] + from[ 2 ]) / 3;
+			to[ 0 ] = grayscale(from);
 		}
 		else if constexpr (_TO == ColorFormat::LA)
 		{
@@ -304,17 +304,22 @@ namespace ig
 			src_range.y + dst_pos.y > m_sz.y ? m_sz.y - dst_pos.y : src_range.y,
 		};
 
+#define INDEXIFY(x, y, w) (((y) * (w)) + (x))
 		const int fs = get_colorformat_size(m_format);
-		for (int fb = 0; fb < fs; fb++)
+		for (int y = 0; y < range.y; y++)
 		{
-			for (int y = 0; y < range.y; y++)
+			
+			for (int x = 0; x < range.x; x++)
 			{
-				for (int x = 0; x < range.x; x++)
+				const int dst_index = INDEXIFY(x + dst_pos.x, y + dst_pos.y, m_sz.x) * fs;
+				const int src_index = INDEXIFY(x + src_rect.x, y + src_rect.y, src.m_sz.x) * fs;
+				for (int fb = 0; fb < fs; fb++)
 				{
-					m_buf[ ((y + dst_pos.y) * range.x + (x + dst_pos.x)) * fs + fb ] = src.m_buf[ ((y + src_rect.y) * range.x + (x + src_rect.x)) * fs + fb ];
+					m_buf[ dst_index + fb ] = src.m_buf[ src_index + fb ];
 				}
 			}
 		}
+		
 	}
 
 	void Image::blit(const Image &src, const Vector2i dst_pos)

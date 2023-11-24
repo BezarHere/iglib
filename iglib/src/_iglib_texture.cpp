@@ -4,10 +4,11 @@
 #include "internal.h"
 #include <map>
 
+
 struct Texture::_TextureInternal
 {
 
-	FORCEINLINE ~_TextureInternal()
+	~_TextureInternal()
 	{
 		if (handle)
 			glDeleteTextures(count, &handle);
@@ -25,9 +26,8 @@ using TextureInternal = Texture::_TextureInternal;
 static TextureId_t g_BindedHdl;
 
 
-FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h, ColorFormat c, std::shared_ptr<unsigned char[]> buf)
+std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h, ColorFormat c, std::shared_ptr<unsigned char[]> buf)
 {
-
 	std::unique_ptr<TextureInternal> tex{ new TextureInternal{} };
 
 	if (!(w * h))
@@ -78,7 +78,7 @@ namespace ig
 		: m_internal{
 			register_tex(
 				img.width(), img.height(), img.format(),
-				std::shared_ptr<unsigned char[]>((unsigned char *)memcpy(new unsigned char[img.get_buffer_size()] , img.get_buffer(), img.get_buffer_size()))
+				std::shared_ptr<unsigned char[]>(blockcpy(img.get_buffer(), img.get_buffer_size()))
 			)
 		}
 	{

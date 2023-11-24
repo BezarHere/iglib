@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from itertools import product, repeat
+import itertools
 from typing import Any, Callable, TextIO
 from bindump import *
 from PIL import Image
@@ -31,6 +33,15 @@ def _get_image_pixel_data(img: Image.Image, channels: int):
 				data.append(p)
 	return bytes(data)
 
+
+def demult(img):
+	"""inserts a duplicate byte of each byte after it"""
+	def pair(x):
+		for i in x:
+			yield i
+			yield i
+	return bytes(i for i in pair(img))
+
 def bindump(
 			f: Path | str | BinaryIO | Image.Image,
 			dumper: Callable | Path | str | TextIO | StringIO | None = None,
@@ -38,11 +49,14 @@ def bindump(
 			bytes_per_unit = 1,
 			max_row_length = 8,
 			pixel_size = -1,
+			dump_preprocessor: Callable | None = None,
+			postprocessor: Callable | None = None,
+			preprocessor: Callable | None = None,
 			binary: bool = False):
 	
 	img = f if isinstance(f, Image.Image) else Image.open(f)
 	channels = pixel_size if pixel_size >= 0 else _get_channels_count(img)
-	dump = _get_image_pixel_data(img, channels)
+	dump = dump_preprocessor(_get_image_pixel_data(img, channels))
 	len_d = len(dump)
 
 	strbuild = StringIO()
@@ -55,15 +69,20 @@ def bindump(
 	
 	mapper_func = str if binary else padded_hex(bytes_per_unit * 2)
 
+	if postprocessor is None:
+		postprocessor = lambda _: _
+	if preprocessor is None:
+		preprocessor = lambda _: _
+
 	if bytes_per_unit > 1:
 		dump = batched(dump, bytes_per_unit)
 		orig_mapper_func = mapper_func
 		mapper_func = lambda v: orig_mapper_func(int.from_bytes(v, signed=False))
 		for i in batched(dump, max_row_length):
-			strbuild.write(f"{', '.join(map(mapper_func, i))},\n")
+			strbuild.write(f"{', '.join(postprocessor(map(mapper_func, preprocessor(i))))},\n")
 	else:
 		for i in batched(dump, max_row_length):
-			strbuild.write(f"{', '.join(map(mapper_func, i))},\n")
+			strbuild.write(f"{', '.join(postprocessor(map(mapper_func, preprocessor(i))))},\n")
 
 	if dumper is None:
 		strbuild.seek(0)
@@ -74,8 +93,10 @@ def bindump(
 	elif isinstance(dumper, (str, Path)):
 		strbuild.close()
 
+
+
 if __name__ == "__main__":
 	img_path = input("Image: ").strip().strip('"').strip("'").strip()
 	img = Image.open(img_path)
 	
-	bindump(img, Path(__file__).parent.joinpath("dump.txt"), max_row_length=16, bytes_per_unit=8, pixel_size=1)
+	bindump(img, Path(__file__).parent.joinpath("dump.txt"), max_row_length=16, bytes_per_unit=8, pixel_size=1, dump_preprocessor=demult)

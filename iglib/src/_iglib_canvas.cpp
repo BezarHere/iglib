@@ -92,6 +92,10 @@ static Vertex2D g_Line2DVertcies[ 2 ]{};
 static const Canvas *g_CurrentCanvas;
 static std::shared_ptr<const Texture> g_PlankTexture;
 
+namespace ig { // def in _iglib_font.h
+	extern void _font_init();
+}
+
 FORCEINLINE void generate_opengl_globals()
 {
 	static bool first = true;
@@ -138,11 +142,14 @@ FORCEINLINE void generate_opengl_globals()
 		g_PlankTexture.reset(new Texture(Image(plank_white_data, {2, 2}, ColorFormat::L)));
 	}
 
-
+	ig::_font_init();
 }
 
 namespace ig
 {
+	
+
+
 	Canvas::Canvas(const Window &wnd)
 		: m_wnd{ wnd }, m_shader{ 0 }, m_transform2d{}, m_transform3d{}
 	{
@@ -153,6 +160,7 @@ namespace ig
 		g_CurrentCanvas = this;
 
 		this->unbind_shader();
+		update_camera();
 	}
 
 	Canvas::~Canvas()
@@ -180,7 +188,7 @@ namespace ig
 
 	void Canvas::rect(Vector2f start, Vector2f end, const Colorf &clr)
 	{
-		quad(start, { start.x, end.y }, end, { end.x, start.y }, clr);
+		quad(start, { end.x, start.y }, end, { start.x, end.y }, clr);
 	}
 
 	void Canvas::traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorf &clr)
@@ -283,8 +291,8 @@ namespace ig
 		for (size_t i = 0; i < 36; i++)
 		{
 			v[ i ].pos.set(g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ]);
-			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 1.f, 1.f, 0.f }, (Pi / 2.0f) + (float)glfwGetTime());
-			v[ i ].pos *= 0.25f;
+			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 0.f, 1.f, 0.f }, (Pi / 2.0f) + (float)glfwGetTime());
+			//v[ i ].pos /= 0.25f;
 			v[ i ].pos += start;
 			v[ i ].clr = clr;
 			v[ i ].uv.x = Uvs[ (i * 2) % 6 ];
@@ -461,16 +469,10 @@ namespace ig
 		}
 		else if (m_shader->get_usage() == ShaderUsage::Usage3D)
 		{
-			//glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_FALSE, m_transform3d.get_data().f);
 			glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), m_transform3d.get_data().origin.x, m_transform3d.get_data().origin.y, m_transform3d.get_data().origin.z);
-			//glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), 0.f, 0.f, 0.f);
-			constexpr float Identy[]
-			{
-				1.f, 0.f, 0.f,
-				0.f, 1.f, 0.f,
-				0.f, 0.f, 1.f,
-			};
 			glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_TRUE, m_transform3d.get_data().f);
+			glUniformMatrix4fv(glGetUniformLocation(m_shader->get_id(), "_proj"), 1, GL_TRUE, m_camera_cache.m_proj_matrix.m_elements.data());
+			glUniformMatrix4fv(glGetUniformLocation(m_shader->get_id(), "_view"), 1, GL_TRUE, m_camera.transform.get_data().f);
 		}
 
 	}
@@ -511,6 +513,21 @@ namespace ig
 	int Canvas::get_active_textures_count() const noexcept
 	{
 		return m_active_textrues_count;
+	}
+
+	Camera &Canvas::camera()
+	{
+		return m_camera;
+	}
+
+	const Camera &Canvas::camera() const
+	{
+		return m_camera;
+	}
+
+	void Canvas::update_camera()
+	{
+		m_camera_cache.m_proj_matrix = m_camera.projection();
 	}
 
 	void Canvas::set_shader_uniform(int location, int value)

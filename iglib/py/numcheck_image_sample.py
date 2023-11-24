@@ -51,5 +51,5 @@ if __name__ == "__main__":
 	squares_count = to_vec2i(input('Squares count: '))
 	img_size = nc.square_size[0] * squares_count[0], nc.square_size[1] * squares_count[1]
 
-	gradient_filter(nc.generate(tuple(img_size))).save(Path(__file__).parent.joinpath("checkers.png"))
+	nc.generate(tuple(img_size)).save(Path(__file__).parent.joinpath("checkers.png"))
 

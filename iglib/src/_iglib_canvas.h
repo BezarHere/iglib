@@ -7,6 +7,7 @@
 #include "_iglib_shader.h"
 #include "_iglib_transform.h"
 #include "_iglib_text.h"
+#include "_iglib_camera.h"
 
 namespace ig
 {
@@ -68,6 +69,10 @@ namespace ig
 		void set_active_textures_count(int count);
 		int get_active_textures_count() const noexcept;
 
+		Camera &camera();
+		const Camera &camera() const;
+		void update_camera();
+
 		/// \note used to set samplers slots
 		void set_shader_uniform(int location, int value);
 		void set_shader_uniform(int location, float value);
@@ -97,14 +102,21 @@ namespace ig
 
 	private:
 		const Window &m_wnd;
+
 		std::shared_ptr<const Shader> m_shader;
 		ShaderUsage m_shading_usage = ShaderUsage::Usage2D;
+		
 		TextureId_t m_textures[int(TextureSlot::_MAX)];
 		int m_active_textrues_count = 1; // will upload all textures from 0 to m_active_textrues_count - 1
+		
 		Transform2D m_transform2d{};
 		Transform3D m_transform3d;
-		Transform3D m_view_transform;
-		Transform3D m_proj_transform;
+
+		Camera m_camera;
+		struct CameraCache
+		{
+			Matrix4x4 m_proj_matrix;
+		} m_camera_cache;
 	};
 
 	typedef void(*DrawCallback)(Canvas &canvas);

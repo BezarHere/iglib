@@ -48,12 +48,10 @@ extern WindowHandle_t top_draw_pipline();
 extern void pop_draw_pipline();
 
 extern void lazyload_opengl_procs();
-extern void register_openglinit_callback(void(*callback)(void));
+extern int register_openglinit_callback(void(*callback)(void)); // always returns 0
 
-struct RegisterOpenglInitCallback
+template <typename _T>
+FORCEINLINE _T *blockcpy(const _T *src, const size_t size)
 {
-	RegisterOpenglInitCallback(void(*callback)(void))
-	{
-		register_openglinit_callback(callback);
-	}
-};
+	return (_T *)memcpy(new _T[size], src, size);
+}

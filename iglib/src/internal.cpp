@@ -204,9 +204,10 @@ void lazyload_opengl_procs()
 	}
 }
 
-void register_openglinit_callback(void(*callback)(void))
+int register_openglinit_callback(void(*callback)(void))
 {
 	openglinit_callbacks.push_back(callback);
+	return 0;
 }
 
 
