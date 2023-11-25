@@ -1,4 +1,3 @@
-#include <iglib.h>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -6,6 +5,7 @@
 #include <istream>
 #include <fstream>
 
+#include <iglib.h>
 #include <winsock.h>
 #undef min
 #undef max
@@ -111,35 +111,31 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 		tr.set_scale(tr.get_scale() - Vector2f{ 0.1f, 0.1f });
 	}*/
 
-
-	switch (key)
+	if (action != ig::KeyAction::Released)
 	{
-	case ig::Key_A:
-		ply.set_position(ply.get_position() + Vector3f{ 10.0f, 0.0f, 0.0f });
-		break;
-	case ig::Key_D:
-		ply.set_position(ply.get_position() - Vector3f{ 10.0f, 0.0f, 0.0f });
-		break;
-	case ig::Key_S:
-		ply.set_position(ply.get_position() + Vector3f{ 0.0f, 0.0f, 10.0f });
-		break;
-	case ig::Key_W:
-		ply.set_position(ply.get_position() - Vector3f{ 0.0f, 0.0f, 10.0f });
-		break;
-	case ig::Key_Q:
-		ply.set_position(ply.get_position() + Vector3f{ 0.0f, 10.0f, 0.0f });
-		break;
-	case ig::Key_E:
-		ply.set_position(ply.get_position() - Vector3f{ 0.0f, 10.0f, 0.0f });
-		break;
-	case ig::Key_Z:
-		ply.set_scale(ply.get_scale() * 1.1f);
-		break;
-	case ig::Key_X:
-		ply.set_scale(ply.get_scale() / 1.1f);
-		break;
-	default:
-		break;
+		switch (key)
+		{
+		case ig::Key_W:
+			ply.set_position(ply.get_position() - ply.get_back_dir());
+			break;
+		case ig::Key_S:
+			ply.set_position(ply.get_position() + ply.get_back_dir());
+			break;
+		case ig::Key_D:
+			ply.set_position(ply.get_position() - ply.get_left_dir());
+			break;
+		case ig::Key_A:
+			ply.set_position(ply.get_position() + ply.get_left_dir());
+			break;
+		case ig::Key_Q:
+			ply.set_position(ply.get_position() - ply.get_down_dir());
+			break;
+		case ig::Key_E:
+			ply.set_position(ply.get_position() + ply.get_down_dir());
+			break;
+		default:
+			break;
+		}
 	}
 
 }
@@ -162,32 +158,35 @@ void draw_fromto_comp(Canvas &c)
 
 void draw2d_callback(Canvas &c)
 {
+	static Vector2f last_m{};
+	static bool first_call = true;
 	const ig::Vector2f m = c.get_window().get_mouse_position();
-	/*constexpr size_t iters = 100000;
-	for (size_t i{}; i < iters; i++)
+	const bool m_inside_window = c.get_window().width() > m.x && c.get_window().height() > m.y && m.x > 0.f && m.y > 0.f;
+	if (first_call)
 	{
-		const float fi(i + 1);
-		c.quad(
-			Vector2f(),
-			Vector2f(0.0f, iters - i),
-			Vector2f(iters - i, iters - i),
-			Vector2f(iters - i, 0.0f),
-			{ 45, ig::byte(i  & 0xff), 188, 255 }
-		);
-	}*/
-	
-	const Vector2f inverted_m{ m.x - (c.get_window().width() / 2.0f), (c.get_window().height() / 2.0f) - m.y };
+		last_m = m;
+		first_call = false;
+	}
+
+	if (m_inside_window)
+	{
+		const auto headrot = Vector3f((m.y - last_m.y) / 20.f, (m.x - last_m.x) / 20.f, 0.f);
+		ply.get_basis().set_angle(ply.get_basis().get_rotation() + Vector3f(0.f, Pi / 4.f, 0.f));
+	}
+
+	//const Vector2f inverted_m{ m.x - (c.get_window().width() / 2.0f), (c.get_window().height() / 2.0f) - m.y };
+	const Vector2f inverted_m{ 0.f, 0.f };
 	//c.demo();
 	c.set_texture(before_tex.get_handle());
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
-	c.transform3d() = ply;
+	c.camera().transform = ply;
 	c.cube({ inverted_m.x / 100.0f + 2.f, inverted_m.y / 100.0f, cube_distance }, {}, { 1.0f, 0.8f, 0.6f, 1.f });
 	c.cube({ inverted_m.x / 100.0f, inverted_m.y / 100.0f, cube_distance }, {}, { 0.6f, 0.4f, 0.2f, 1.f });
 	c.cube({ inverted_m.x / 100.0f - 2.f, inverted_m.y / 100.0f, cube_distance }, {}, { 0.3f, 0.2f, 0.1f, 1.f });
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage2D));
 	//c.set_texture(before_tex.get_handle());
 
-	draw_fromto_comp(c);
+	//draw_fromto_comp(c);
 	
 	//std::cout << c.transform3d().get_position() << '\n';
 	
@@ -204,6 +203,7 @@ void draw2d_callback(Canvas &c)
 	//c.bind_shader(ss);
 	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
 	
+	last_m = m;
 }
 
 template <typename _PROC>
@@ -238,7 +238,7 @@ int main()
 	//a(LARGE{}, LARGE{}, LARGE{}, LARGE{});
 	
 	{
-		ig::Window i = ig::Window({128, 128}, "Window !!!");
+		ig::Window i = ig::Window({512, 512}, "Window !!!");
 		ig::Font font;
 
 		{
@@ -252,7 +252,7 @@ int main()
 		}
 
 
-		ig::Window p = ig::Window({ 128, 128 }, "Other one");
+		ig::Window p = ig::Window({ 512, 512 }, "Other one");
 		
 		// NOTICE: Hiding window for later fixes
 		p.hide();
@@ -269,7 +269,7 @@ int main()
 		while (!i.should_close())
 		{
 			//std::cout << i.size() << ' ' << i.position() << '\n';
-			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 90.0)));
+			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 50.0)));
 
 			//std::cout << "mouse pos: " << i.get_mouse_position() << '\n';
 

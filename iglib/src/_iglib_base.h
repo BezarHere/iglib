@@ -23,6 +23,9 @@ namespace ig
 	constexpr double dTau = dPi * 2.0;
 	constexpr double dE = 2.718281828459045;
 
+	constexpr float Epsilon = 1e-4f;
+	constexpr double dEpsilon = 1e-7f;
+
 	typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::microseconds> TimeMs_t;
 	typedef uint8_t byte;
 	typedef void(*Action_t)();

@@ -86,6 +86,17 @@ namespace ig
 				x <= other.x + other.w && y <= other.y + other.h && x + w >= other.x && y + h >= other.y;
 		}
 
+		inline constexpr bool contains(BaseVector2Template<value_type> point) const
+		{
+			return x < point.x && y < point.y && x + w > point.x && y + h > point.y;
+		}
+
+		template <typename _U>
+		inline constexpr bool contains(BaseVector2Template<_U> point) const
+		{
+			return contains(BaseVector2Template<value_type>(point));
+		}
+
 		value_type x, y, w, h;
 	};
 

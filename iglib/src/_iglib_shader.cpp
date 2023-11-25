@@ -84,7 +84,8 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 			ss << "uniform mat3 _trans;";
 			ss << "uniform vec3 _offset;";
 			ss << "uniform mat4 _proj;";
-			ss << "uniform mat4 _view;";
+			ss << "uniform mat3 _view_transform;";
+			ss << "uniform vec3 _view_position;";
 		}
 		else if (temp.usage == ShaderUsage::Usage2D)
 		{
@@ -117,7 +118,7 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 			if (temp.usage == ShaderUsage::Usage3D)
 			{
 
-				ss << "gl_Position = _proj * vec4((pos * _trans) + _offset, 1.0);";
+				ss << "gl_Position = _proj * vec4((pos * _trans + _offset + _view_position) * inverse(_view_transform), 1.0);";
 				/*ss << "vec2 tpos = ";
 				ss << "pos;";
 				ss << "gl_Position = vec4(vec2(tpos.x / _screensize.x, 1.0 - (tpos.y / _screensize.y)) * 2.0 - vec2(1.0), 0.0, 1.0);";*/

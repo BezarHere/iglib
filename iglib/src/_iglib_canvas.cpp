@@ -472,7 +472,8 @@ namespace ig
 			glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), m_transform3d.get_data().origin.x, m_transform3d.get_data().origin.y, m_transform3d.get_data().origin.z);
 			glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_TRUE, m_transform3d.get_data().f);
 			glUniformMatrix4fv(glGetUniformLocation(m_shader->get_id(), "_proj"), 1, GL_TRUE, m_camera_cache.m_proj_matrix.m_elements.data());
-			glUniformMatrix4fv(glGetUniformLocation(m_shader->get_id(), "_view"), 1, GL_TRUE, m_camera.transform.get_data().f);
+			glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_view_transform"), 1, GL_TRUE, m_camera.transform.get_data().f);
+			glUniform3fv(glGetUniformLocation(m_shader->get_id(), "_view_position"), 1, m_camera.transform.get_data().f + 9);
 		}
 
 	}

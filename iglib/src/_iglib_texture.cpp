@@ -8,7 +8,7 @@
 struct Texture::_TextureInternal
 {
 
-	~_TextureInternal()
+	FORCEINLINE ~_TextureInternal()
 	{
 		if (handle)
 			glDeleteTextures(count, &handle);
@@ -26,7 +26,7 @@ using TextureInternal = Texture::_TextureInternal;
 static TextureId_t g_BindedHdl;
 
 
-std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h, ColorFormat c, std::shared_ptr<unsigned char[]> buf)
+FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h, ColorFormat c, std::shared_ptr<unsigned char[]> buf)
 {
 	std::unique_ptr<TextureInternal> tex{ new TextureInternal{} };
 
