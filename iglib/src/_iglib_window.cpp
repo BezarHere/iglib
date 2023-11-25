@@ -717,14 +717,9 @@ namespace ig
 
 
 		//glDisable(GL_DEPTH);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
 		glEnable(GL_SCISSOR_TEST);
 		glEnable(GL_BLEND);
 		glEnable(GL_DEPTH_CLAMP);
-
-		glFrontFace(GL_CCW);
-		glCullFace(GL_FRONT);
 
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glScissor(0, 0, sz.x, sz.y);

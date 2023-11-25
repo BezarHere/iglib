@@ -164,8 +164,8 @@ namespace ig
 		}
 
 		inline constexpr Basis(const float xx, const float xy, const float xz,
-					       const float yx, const float yy, const float yz,
-					       const float zx, const float zy, const float zz )
+					                 const float yx, const float yy, const float yz,
+					                 const float zx, const float zy, const float zz )
 			: xdir{ xx, xy, xz }, ydir{ yx, yy, yz }, zdir{ zx, zy, zz }
 		{
 		}
@@ -212,16 +212,21 @@ namespace ig
 
 			if (m12 < (1 - Epsilon)) {
 				if (m12 > -(1 - Epsilon)) {
+					// 1 > m12 > -1 (e.g. not looking directly up or down)
+
 					// is this a pure X rotation?
 					if (ydir.x == 0 && xdir.y == 0 && xdir.z == 0 && ydir.x == 0 && xdir.x == 1) {
 						// return the simplest form (human friendlier in editor and scripts)
+						
 						euler.x = atan2(-m12, ydir.y);
 						euler.y = 0;
 						euler.z = 0;
 					}
 					else {
+						std::cout << "zdir.x/zdir.z: " << zdir.x << ' ' << zdir.z << '\n';
 						euler.x = asin(-m12);
-						euler.y = atan2(xdir.z, ydir.z);
+						//euler.y = atan2(xdir.z, ydir.z);
+						euler.y = atan2(zdir.x, zdir.z);
 						euler.z = atan2(ydir.x, ydir.y);
 					}
 				}
@@ -260,6 +265,7 @@ namespace ig
 
 			//optimizer will optimize away all this anyway
 			*this = ymat * xmat * zmat;
+			std::cout << get_rotation() << '\n';
 		}
 
 		inline void set_rotation(Vector3f axis, float angle)

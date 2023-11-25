@@ -161,12 +161,52 @@ namespace ig
 
 		this->unbind_shader();
 		update_camera();
+		set_draw_type( m_draw_type );
 	}
 
 	Canvas::~Canvas()
 	{
 		glUseProgram(0);
 		g_CurrentCanvas = nullptr;
+	}
+
+	void Canvas::set_draw_type( const DrawType type )
+	{
+		m_draw_type = type;
+
+		switch (type)
+		{
+		case DrawType::Drawing2D:
+			m_shading_usage = ShaderUsage::Usage2D;
+
+			glDisable( GL_DEPTH_TEST );
+			glDisable( GL_CULL_FACE );
+
+			break;
+		case DrawType::Drawing3D:
+			m_shading_usage = ShaderUsage::Usage3D;
+			glEnable( GL_DEPTH_TEST );
+			glEnable( GL_CULL_FACE );
+
+			glFrontFace( GL_CCW );
+			glCullFace( GL_FRONT );
+
+			break;
+		case DrawType::DirectDrawing:
+			m_shading_usage = ShaderUsage::ScreenSpace;
+
+			glDisable( GL_DEPTH_TEST );
+			glDisable( GL_CULL_FACE );
+			break;
+		case DrawType::Raw:
+			m_shading_usage = ShaderUsage::ScreenSpace;
+
+			glDisable( GL_DEPTH_TEST );
+			glDisable( GL_CULL_FACE );
+			break;
+		default:
+			break;
+		}
 	}
 
 	void Canvas::quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr)
@@ -432,15 +472,15 @@ namespace ig
 		m_shader = DefaultShaders[ (int)m_shading_usage ];
 	}
 
-	void Canvas::set_shading_usage(const ShaderUsage usage)
-	{
-		if (usage == ShaderUsage::_Max)
-		{
-			bite::warn("the shading usage ShaderUsage::_Max is not valid!");
-			return;
-		}
-		m_shading_usage = usage;
-	}
+	//void Canvas::set_shading_usage(const ShaderUsage usage)
+	//{
+	//	if (usage == ShaderUsage::_Max)
+	//	{
+	//		bite::warn("the shading usage ShaderUsage::_Max is not valid!");
+	//		return;
+	//	}
+	//	m_shading_usage = usage;
+	//}
 
 	ShaderId_t Canvas::get_shader_id() const noexcept
 	{

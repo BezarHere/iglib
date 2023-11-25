@@ -18,6 +18,14 @@ namespace ig
 		_MAX
 	};
 
+	enum class DrawType
+	{
+		Drawing2D,
+		Drawing3D,
+		DirectDrawing,
+		Raw,
+	};
+
 	class Window;
 
 	class Canvas
@@ -25,6 +33,9 @@ namespace ig
 		friend Window;
 	public:
 		~Canvas();
+		
+		// what will the canvas expect to draw in later calls? and what default shader will it resort to?
+		void set_draw_type( const DrawType type );
 
 		void quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr);
 		void rect(Vector2f start, Vector2f end, const Colorf &clr);
@@ -46,8 +57,6 @@ namespace ig
 
 		void bind_shader(const ShaderInstance_t &shader);
 		void unbind_shader();
-		// what will the canvas expect to draw in later calls? and what default shader will it resort to?
-		void set_shading_usage(const ShaderUsage usage);
 
 		ShaderId_t get_shader_id() const noexcept;
 
@@ -104,6 +113,7 @@ namespace ig
 		const Window &m_wnd;
 
 		std::shared_ptr<const Shader> m_shader;
+		DrawType m_draw_type = DrawType::Drawing2D;
 		ShaderUsage m_shading_usage = ShaderUsage::Usage2D;
 		
 		TextureId_t m_textures[int(TextureSlot::_MAX)];

@@ -76,6 +76,16 @@ std::string readall(const std::string &fs)
 }
 
 
+
+static float cube_distance = 0.f;
+static float factor = 1.f;
+static int rot_switch = 0;
+void scroll(ig::Window &w, double x, double y)
+{
+	factor += y * 0.25f;
+	std::cout << "factor: " << factor << '\n';
+}
+
 static ig::Transform3D ply{};
 Vector2f mouse_pos_when_space = { 0.f, 0.f };
 void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::KeyModFlags mods)
@@ -111,6 +121,7 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 		tr.set_scale(tr.get_scale() - Vector2f{ 0.1f, 0.1f });
 	}*/
 
+	const auto v = ply.get_basis().get_rotation();
 	if (action != ig::KeyAction::Released)
 	{
 		switch (key)
@@ -133,18 +144,35 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 		case ig::Key_E:
 			ply.set_position(ply.get_position() + ply.get_down_dir());
 			break;
+		case ig::Key_Z:
+			ply.get_basis().set_angle(Vector3f(0.f, Pi * factor / 2.f, 0.f) + v);
+			rot_switch = 1;
+			break;
+		case ig::Key_X:
+			ply.get_basis().set_angle(-Vector3f(0.f, Pi * factor / 2.f, 0.f) + v);
+			rot_switch = 2;
+			break;
+		case ig::Key_C:
+			ply.get_basis().set_angle(Vector3f(Pi * factor / 2.f, 0.f, 0.f) + v);
+			rot_switch = 3;
+			break;
+		case ig::Key_V:
+			ply.get_basis().set_angle(-Vector3f(Pi * factor / 2.f, 0.f, 0.f) + v);
+			rot_switch = 4;
+			break;
+		case ig::Key_B:
+			ply.get_basis().set_angle(Vector3f(0.f, 0.f, Pi * factor / 2.f) + v);
+			rot_switch = 5;
+			break;
+		case ig::Key_N:
+			ply.get_basis().set_angle(-Vector3f(0.f, 0.f, Pi * factor / 2.f) + v);
+			rot_switch = 6;
+			break;
 		default:
 			break;
 		}
 	}
 
-}
-
-static float cube_distance = 0.f;
-void scroll(ig::Window &w, double x, double y)
-{
-	cube_distance += y * 0.25f;
-	std::cout << "cube_distance: " << cube_distance << '\n';
 }
 
 void draw_fromto_comp(Canvas &c)
@@ -168,11 +196,37 @@ void draw2d_callback(Canvas &c)
 		first_call = false;
 	}
 
-	if (m_inside_window)
-	{
-		const auto headrot = Vector3f((m.y - last_m.y) / 20.f, (m.x - last_m.x) / 20.f, 0.f);
-		ply.get_basis().set_angle(ply.get_basis().get_rotation() + Vector3f(0.f, Pi / 4.f, 0.f));
-	}
+	const float t = c.get_window().get_shader_time();
+	//switch (rot_switch)
+	//{
+	//case 1:
+	//	ply.get_basis().set_angle(Vector3f(Pi * factor * t / 2.f, 0.f, 0.f));
+	//	break;
+	//case 2:
+	//	ply.get_basis().set_angle(-Vector3f(Pi * factor * t / 2.f, 0.f, 0.f));
+	//	break;
+	//case 3:
+	//	ply.get_basis().set_angle(Vector3f(0.f, Pi * factor * t / 2.f, 0.f));
+	//	break;
+	//case 4:
+	//	ply.get_basis().set_angle(-Vector3f(0.f, Pi * factor * t / 2.f, 0.f));
+	//	break;
+	//case 5:
+	//	ply.get_basis().set_angle(Vector3f(0.f, 0.f, Pi * factor * t / 2.f));
+	//	break;
+	//case 6:
+	//	ply.get_basis().set_angle(-Vector3f(0.f, 0.f, Pi * factor * t / 2.f));
+	//	break;
+	//default:
+	//	break;
+	//}
+
+	//if (m_inside_window)
+	//{
+	//	const auto headrot = Vector3f((m.y - last_m.y) / 20.f, (m.x - last_m.x) / 20.f, 0.f);
+	//	ply.get_basis().set_angle(ply.get_basis().get_rotation() + Vector3f(0.f, Pi / 4.f, 0.f));
+	//	std::cout << ply.get_basis().xdir << ' ' << ply.get_basis().ydir << ' ' << ply.get_basis().zdir << '\n';
+	//}
 
 	//const Vector2f inverted_m{ m.x - (c.get_window().width() / 2.0f), (c.get_window().height() / 2.0f) - m.y };
 	const Vector2f inverted_m{ 0.f, 0.f };
@@ -269,7 +323,7 @@ int main()
 		while (!i.should_close())
 		{
 			//std::cout << i.size() << ' ' << i.position() << '\n';
-			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 50.0)));
+			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 20.0)));
 
 			//std::cout << "mouse pos: " << i.get_mouse_position() << '\n';
 
