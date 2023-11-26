@@ -82,10 +82,12 @@ static IndexBuffer DefaultCubeIndexBuffer{};
 static Vertex3DBuffer DefaultLineBuffer{};
 
 static Vertex2DBuffer g_Quad2DBuffer;
+static Vertex3DBuffer g_Quad3DBuffer;
 static Vertex2DBuffer g_Triangle2DBuffer;
 static Vertex2DBuffer g_Line2DBuffer;
 
 static Vertex2D g_Quad2DVertcies[ 4 ]{};
+static Vertex3D g_Quad3DVertcies[ 4 ]{};
 static Vertex2D g_Triangle2DVertcies[ 3 ]{};
 static Vertex2D g_Line2DVertcies[ 2 ]{};
 
@@ -112,11 +114,13 @@ FORCEINLINE void generate_opengl_globals()
 	DefaultCubeBuffer.create(36u);
 
 	g_Quad2DBuffer.set_primitive(PrimitiveType::Quad);
+	g_Quad3DBuffer.set_primitive(PrimitiveType::Quad);
 	g_Triangle2DBuffer.set_primitive(PrimitiveType::Triangle);
 	g_Line2DBuffer.set_primitive(PrimitiveType::Line);
 	DefaultCubeBuffer.set_primitive(PrimitiveType::Triangle);
 
 	g_Quad2DBuffer.create(4);
+	g_Quad3DBuffer.create(4);
 	g_Triangle2DBuffer.create(3);
 	g_Line2DBuffer.create(2);
 
@@ -226,6 +230,38 @@ namespace ig
 		draw(g_Quad2DBuffer);
 	}
 
+	void Canvas::quad( Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, const Colorf &clr )
+	{
+		g_Quad3DVertcies[ 0 ].pos = p0;
+		g_Quad3DVertcies[ 1 ].pos = p1;
+		g_Quad3DVertcies[ 2 ].pos = p2;
+		g_Quad3DVertcies[ 3 ].pos = p3;
+
+		g_Quad3DVertcies[ 0 ].clr = clr;
+		g_Quad3DVertcies[ 1 ].clr = clr;
+		g_Quad3DVertcies[ 2 ].clr = clr;
+		g_Quad3DVertcies[ 3 ].clr = clr;
+
+		g_Quad3DBuffer.update( g_Quad3DVertcies );
+		draw( g_Quad3DBuffer );
+	}
+
+	void Canvas::quad( const Vector3f p[], const Colorf &clr )
+	{
+		g_Quad3DVertcies[ 0 ].pos = p[0];
+		g_Quad3DVertcies[ 1 ].pos = p[1];
+		g_Quad3DVertcies[ 2 ].pos = p[2];
+		g_Quad3DVertcies[ 3 ].pos = p[3];
+
+		g_Quad3DVertcies[ 0 ].clr = clr;
+		g_Quad3DVertcies[ 1 ].clr = clr;
+		g_Quad3DVertcies[ 2 ].clr = clr;
+		g_Quad3DVertcies[ 3 ].clr = clr;
+
+		g_Quad3DBuffer.update( g_Quad3DVertcies );
+		draw( g_Quad3DBuffer );
+	}
+
 	void Canvas::rect(Vector2f start, Vector2f end, const Colorf &clr)
 	{
 		quad(start, { end.x, start.y }, end, { start.x, end.y }, clr);
@@ -243,6 +279,15 @@ namespace ig
 
 		g_Triangle2DBuffer.update(g_Triangle2DVertcies);
 		draw(g_Triangle2DBuffer);
+	}
+
+	void Canvas::plane( Vector3f center, Vector2f extent, const Colorf &clr )
+	{
+		quad({ center.x + extent.x, center.y + extent.y, center.z },
+			   { center.x + extent.x, center.y - extent.y, center.z },
+			   { center.x - extent.x, center.y - extent.y, center.z },
+			   { center.x - extent.x, center.y + extent.y, center.z },
+				 clr );
 	}
 
 	void Canvas::line(Vector2f start, Vector2f end, const Colorb clr)
@@ -276,7 +321,7 @@ namespace ig
 		draw(DefaultLineBuffer);
 	}
 
-	void Canvas::cube(Vector3f start, Vector3f end, const Colorf &clr)
+	void Canvas::cube(Vector3f center, Vector3f extent, const Colorf &clr)
 	{
 		static GLfloat g_vertex_buffer_data[] = {
 			-1.0f,-1.0f,-1.0f, // triangle 1 : begin
@@ -331,19 +376,16 @@ namespace ig
 		for (size_t i = 0; i < 36; i++)
 		{
 			v[ i ].pos.set(g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ]);
-			v[ i ].pos = v[ i ].pos.rotated(Vector3f{ 0.f, 1.f, 0.f }, (Pi / 2.0f) + (float)glfwGetTime());
-			//v[ i ].pos /= 0.25f;
-			v[ i ].pos += start;
+			v[ i ].pos *= extent;
+			v[ i ].pos += center;
 			v[ i ].clr = clr;
-			v[ i ].uv.x = Uvs[ (i * 2) % 6 ];
-			v[ i ].uv.y = Uvs[ ((i * 2) + 1) % 6 ];
+			v[ i ].uv.x = Uvs[ (i * 2) % 12 ];
+			v[ i ].uv.y = Uvs[ ((i * 2) + 1) % 12 ];
 		}
 		DefaultCubeBuffer.update(v);
 
 		draw(DefaultCubeBuffer);
 
-		(void)end;
-		(void)start;
 	}
 
 	void Canvas::draw(Vertex2D *vert, size_t count, PrimitiveType draw_type)
@@ -472,6 +514,26 @@ namespace ig
 		m_shader = DefaultShaders[ (int)m_shading_usage ];
 	}
 
+	void Canvas::set_cullwinding( CullWinding winding )
+	{
+		glFrontFace( int( winding ) );
+	}
+
+	void Canvas::set_cullface( CullFace face )
+	{
+		glCullFace( int( face ) );
+	}
+
+	void Canvas::enable_feature( Feature feature )
+	{
+		glEnable( int( feature ) );
+	}
+
+	void Canvas::disable_feature( Feature feature )
+	{
+		glDisable( int( feature ) );
+	}
+
 	//void Canvas::set_shading_usage(const ShaderUsage usage)
 	//{
 	//	if (usage == ShaderUsage::_Max)
@@ -568,7 +630,7 @@ namespace ig
 
 	void Canvas::update_camera()
 	{
-		m_camera_cache.m_proj_matrix = m_camera.projection();
+		m_camera_cache.m_proj_matrix = m_camera.projection(m_wnd.width() / m_wnd.height());
 	}
 
 	void Canvas::set_shader_uniform(int location, int value)

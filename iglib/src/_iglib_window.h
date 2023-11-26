@@ -202,9 +202,11 @@ namespace ig
 	typedef void(*MouseButtonCallback_t)(Window &window, MouseButton button, KeyAction action, KeyModFlags mods);
 	typedef void(*MouseScrollCallback_t)(Window &window, double x, double y);
 
-	class PostprocessingEnvironment
-	{
 
+	struct Enviorment
+	{
+		Colorf ambient_light = { 1.f, 1.f, 1.f };
+		bool hdr = true;
 	};
 
 	class Window final
@@ -309,7 +311,7 @@ namespace ig
 		Vector2f m_content_scale{ 1.0f, 1.0f };
 		bool m_deffered_close{ false };
 		bool m_postprocessing = true;
-		PostprocessingEnvironment m_env;
+		Enviorment m_env;
 
 		const TimeMs_t m_creation_time;
 		const float m_stp;

@@ -26,7 +26,30 @@ namespace ig
 		Raw,
 	};
 
+	// VALUES COPIED FROM GL.H
+	enum class CullWinding
+	{
+		CW = 0x900,
+		CCW = 0x901
+	};
+
+	// VALUES COPIED FROM GL.H
+	enum class CullFace
+	{
+		Front = 0x404,
+		Back = 0x405,
+		FrontAndBack = 0x408
+	};
+
+	// VALUES COPIED FROM GL.H
+	enum class Feature
+	{
+		DepthTest = 0xb71,
+		Culling = 0xb44
+	};
+
 	class Window;
+
 
 	class Canvas
 	{
@@ -38,14 +61,19 @@ namespace ig
 		void set_draw_type( const DrawType type );
 
 		void quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr);
+		void quad(Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, const Colorf &clr); // <- should be counter clockwise winded
+		void quad(const Vector3f p[], const Colorf &clr); // <- should be counter clockwise winded
+
 		void rect(Vector2f start, Vector2f end, const Colorf &clr);
 		void traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorf &clr);
+
+		void plane(Vector3f center, Vector2f extent, const Colorf &clr);
 
 		void line(Vector2f start, Vector2f end, const Colorb clr);
 		void line(Vector2f start, Vector2f end, float_t width, const Colorb clr);
 		void line(Vector3f start, Vector3f end, const Colorf &clr);
 
-		void cube(Vector3f start, Vector3f end, const Colorf &clr);
+		void cube(Vector3f center, Vector3f extent, const Colorf &clr);
 		
 		void circle(float radius, Vector2f center, const Colorf clr, const uint16_t vertcies_count = 32);
 		
@@ -57,6 +85,12 @@ namespace ig
 
 		void bind_shader(const ShaderInstance_t &shader);
 		void unbind_shader();
+
+		void set_cullwinding( CullWinding winding );
+		void set_cullface( CullFace face );
+
+		void enable_feature(Feature feature);
+		void disable_feature(Feature feature);
 
 		ShaderId_t get_shader_id() const noexcept;
 

@@ -418,6 +418,7 @@ namespace ig
 	struct Window::WindowDrawBuffer
 	{
 		static constexpr GLuint RenderTextureType = GL_RGB;
+		static constexpr GLuint RenderTextureTypeHDR = GL_RGB16F;
 		static constexpr GLuint RenderDepthStencilMode = GL_DEPTH24_STENCIL8;
 
 		~WindowDrawBuffer()
@@ -427,7 +428,7 @@ namespace ig
 			glDeleteTextures(1, &cto);
 		}
 
-		FORCEINLINE static std::unique_ptr<WindowDrawBuffer> generate(Vector2i size)
+		FORCEINLINE static std::unique_ptr<WindowDrawBuffer> generate(Vector2i size, const Enviorment &env)
 		{
 			GLuint fbo = 0, rbo = 0, cto = 0;
 			
@@ -444,7 +445,7 @@ namespace ig
 			}
 
 			glBindTexture(GL_TEXTURE_2D, cto);
-			glTexImage2D(GL_TEXTURE_2D, 0, RenderTextureType, size.x, size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+			glTexImage2D(GL_TEXTURE_2D, 0, env.hdr ? RenderTextureTypeHDR : RenderTextureType, size.x, size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -528,7 +529,7 @@ namespace ig
 		}
 		WindowCallbackEngine::link(this);
 		refresh_rect();
-		m_drawbuffer.reset(WindowDrawBuffer::generate(size()).release());
+		m_drawbuffer.reset(WindowDrawBuffer::generate(size(), m_env).release());
 	}
 
 
@@ -710,9 +711,9 @@ namespace ig
 		push_to_draw_pipline((WindowHandle_t)m_hdl);
 		// TODO: Invoke a query to update size, size is still updated by the resize callback but still
 
-		if (sz != m_drawbuffer->ctosz)
+		if (m_postprocessing && sz != m_drawbuffer->ctosz)
 		{
-			m_drawbuffer.reset(WindowDrawBuffer::generate(sz).release());
+			m_drawbuffer.reset(WindowDrawBuffer::generate(sz, m_env).release());
 		}
 
 
@@ -725,7 +726,7 @@ namespace ig
 		glScissor(0, 0, sz.x, sz.y);
 		//glCullFace(GL_FRONT);
 
-		const bool postprocessing = m_drawbuffer.get() != nullptr;
+		const bool postprocessing = m_postprocessing && m_drawbuffer.get() != nullptr;
 		if (postprocessing)
 		{
 			glBindRenderbuffer(GL_RENDERBUFFER, m_drawbuffer->rbo);
@@ -733,10 +734,6 @@ namespace ig
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
-
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0.f, width(), height(), 0.f, -100.f, 100.f);
 
 		Canvas canvas{ *this };
 		if (m_draw_callback)
