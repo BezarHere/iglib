@@ -221,18 +221,24 @@ void draw2d_callback(Canvas &c)
 	//	break;
 	//}
 
-	//if (m_inside_window)
-	//{
-	//	const auto headrot = Vector3f((m.y - last_m.y) / 20.f, (m.x - last_m.x) / 20.f, 0.f);
-	//	ply.get_basis().set_angle(ply.get_basis().get_rotation() + Vector3f(0.f, Pi / 4.f, 0.f));
-	//	std::cout << ply.get_basis().xdir << ' ' << ply.get_basis().ydir << ' ' << ply.get_basis().zdir << '\n';
-	//}
+	if (m_inside_window)
+	{
+		static Vector3f rot = {};
+		const auto headrot = Vector3f((m.y - last_m.y) / 60.f, (m.x - last_m.x) / 60.f, 0.f);
+		rot += headrot;
+		//std::cout << rot << '\n';
+		Basis a{ { rot.x, 0.f, 0.f } };
+		Basis b{ { 0.f, rot.y, 0.f } };
+		ply.get_basis() = a * b;
+		//std::cout << ply.get_basis().xdir << ' ' << ply.get_basis().ydir << ' ' << ply.get_basis().zdir << '\n';
+	}
 
 	//const Vector2f inverted_m{ m.x - (c.get_window().width() / 2.0f), (c.get_window().height() / 2.0f) - m.y };
 	const Vector2f inverted_m{ 0.f, 0.f };
 	//c.demo();
 	c.set_texture(before_tex.get_handle());
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
+	c.set_draw_type( DrawType::Drawing3D );
 	c.camera().transform = ply;
 	c.cube({ inverted_m.x / 100.0f + 2.f, inverted_m.y / 100.0f, cube_distance }, {}, { 1.0f, 0.8f, 0.6f, 1.f });
 	c.cube({ inverted_m.x / 100.0f, inverted_m.y / 100.0f, cube_distance }, {}, { 0.6f, 0.4f, 0.2f, 1.f });

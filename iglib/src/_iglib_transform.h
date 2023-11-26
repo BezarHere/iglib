@@ -204,6 +204,7 @@ namespace ig
 			return determinant() == 1 && is_orthogonal();
 		}
 
+		/// !MAJOR FAULTY!
 		inline Vector3f get_rotation() const
 		{
 			Vector3f euler;
@@ -223,7 +224,6 @@ namespace ig
 						euler.z = 0;
 					}
 					else {
-						std::cout << "zdir.x/zdir.z: " << zdir.x << ' ' << zdir.z << '\n';
 						euler.x = asin(-m12);
 						//euler.y = atan2(xdir.z, ydir.z);
 						euler.y = atan2(zdir.x, zdir.z);
@@ -242,7 +242,6 @@ namespace ig
 				euler.z = 0;
 			}
 
-			std::cout << euler << '\n';
 
 			return euler;
 		}
@@ -265,7 +264,7 @@ namespace ig
 
 			//optimizer will optimize away all this anyway
 			*this = ymat * xmat * zmat;
-			std::cout << get_rotation() << '\n';
+			//std::cout << get_rotation() << '\n';
 		}
 
 		inline void set_rotation(Vector3f axis, float angle)
