@@ -630,7 +630,7 @@ namespace ig
 
 	void Canvas::update_camera()
 	{
-		m_camera_cache.m_proj_matrix = m_camera.projection(m_wnd.width() / m_wnd.height());
+		m_camera_cache.m_proj_matrix = m_camera.projection(m_wnd.width() / float(m_wnd.height()));
 	}
 
 	void Canvas::set_shader_uniform(int location, int value)
