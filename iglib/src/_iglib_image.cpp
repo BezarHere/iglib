@@ -14,10 +14,10 @@ FORCEINLINE byte *realloc_image_data(const byte *buf, const size_t len)
 {
 	if (buf == nullptr)
 		return nullptr;
-	void *mal = malloc(len);
+	byte *mal = (byte *)malloc(len);
 	if (!mal)
 		return nullptr;
-	return (byte *)memcpy(mal, buf, len);
+	return (byte *)memcpy(mal , buf, len);
 }
 
 FORCEINLINE byte *load_image(const std::string &filename, Vector2i &sz, ColorFormat &ch)
@@ -271,7 +271,8 @@ namespace ig
 
 	void Image::transpose()
 	{
-		
+		REPORT( width() != height() );
+
 		byte *newbuf = (byte *)malloc( get_buffer_size() );
 		if (newbuf == nullptr)
 			throw std::bad_alloc();
@@ -289,6 +290,25 @@ namespace ig
 		}
 		SOIL_free_image_data(m_buf);
 		m_buf = newbuf;
+	}
+
+	void Image::transpose_bytes()
+	{
+		REPORT( width() != height() );
+
+		const Vector2i sizebytes = m_sz * get_colorformat_size( m_format );
+		int tmp;
+		for (int i = 0; i < sizebytes.y; i++)
+		{
+			for (int j = 0; j < sizebytes.x; j++)
+			{
+				const int index1 = ((i * sizebytes.x) + j);
+				const int index2 = ((j * sizebytes.x) + i);
+				tmp = m_buf[ index2 ];
+				m_buf[ index2  ] = m_buf[ index1 ];
+				m_buf[ index1 ] = tmp;
+			}
+		}
 	}
 
 	void Image::blit(const Image &src, const Rect2i &src_rect, const Vector2i dst_pos)

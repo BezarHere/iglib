@@ -15,6 +15,20 @@ namespace ig
 		TrueType
 	};
 
+	// definintion to allow utf-8/16/32 in bitmap fonts
+	// 
+	//   if codepoints is a nullptr
+	//       the codepoint for generated charecters will be increments of start_codepoint
+	//   if there is codepoints defined but their count is not enough
+	//       the codepoints for generated charecters will be increments of the last codepoint
+	struct BitmapFontDef
+	{
+		int start_codepoint = 0;
+		int codepoints_count = 0;
+		std::shared_ptr<int[]> codepoints = { nullptr };
+		bool transposed = false;
+	};
+
 	class Font
 	{
 		friend class Canvas;
@@ -22,18 +36,33 @@ namespace ig
 		struct Charecter
 		{
 			int codepoint;
-			Vector2i pivot, size;
+			Vector2i offset, size;
+			Vector2i atlas_coord;
 		};
 
 
 		Font(const std::string &filepath); // <- truetype
-		Font(const Image &glyphs, Vector2i glyph_size, Vector2i spacing = {0, 0}); // <- bitmap
+		Font( const Image &glyphs, Vector2i glyph_size, Vector2i spacing = { 0, 0 }, BitmapFontDef def = {} ); // <- bitmap
 		Font();// <- default bitmap font
 
+		TextureId_t get_atlas() const;
+		Charecter *get_chars();
+		const Charecter *get_chars() const;
+		const int get_chars_count() const;
+
+		const Vector2f get_texcoord_step() const;
+
+		void set_char_spacing(int value);
+		int get_char_spacing() const;
+
+		void set_line_spacing( int value );
+		int get_line_spacing() const;
 
 		struct FontInternal;
 	private:
 		FontType m_type;
+		int m_char_spacing = 0;
+		int m_line_spacing = 0;
 		std::shared_ptr<FontInternal> m_internal;
 	};
 

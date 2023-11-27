@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from itertools import product, repeat
 import itertools
-from typing import Any, Callable, TextIO
+from typing import Any, Callable, Iterable, TextIO
 from bindump import *
 from PIL import Image
 import pyperclip
@@ -21,16 +21,26 @@ def _get_channels_count(img: Image.Image):
 	p = img.getpixel((0, 0))
 	return len(p) if isinstance(p, tuple) else 1
 
-def _get_image_pixel_data(img: Image.Image, channels: int):
+def _get_image_pixel_data(img: Image.Image, channels: int, tr: bool = False):
 	data = bytearray()
-	for i in range(img.height):
+	if tr:
 		for j in range(img.width):
-			p = img.getpixel((j, i))
-			if channels > 0:
-				for n in range(channels):
-					data.append(p[n])
-			else:
-				data.append(p)
+			for i in range(img.height):
+				p = img.getpixel((j, i))
+				if channels > 0:
+					for n in range(channels):
+						data.append(p[n])
+				else:
+					data.append(p)
+	else:
+		for i in range(img.height):
+			for j in range(img.width):
+				p = img.getpixel((j, i))
+				if channels > 0:
+					for n in range(channels):
+						data.append(p[n])
+				else:
+					data.append(p)
 	return bytes(data)
 
 
@@ -49,14 +59,16 @@ def bindump(
 			bytes_per_unit = 1,
 			max_row_length = 8,
 			pixel_size = -1,
+			transposed: bool = False,
 			dump_preprocessor: Callable | None = None,
 			postprocessor: Callable | None = None,
 			preprocessor: Callable | None = None,
+			big_endian: bool = False,
 			binary: bool = False):
 	
 	img = f if isinstance(f, Image.Image) else Image.open(f)
 	channels = pixel_size if pixel_size >= 0 else _get_channels_count(img)
-	dump = dump_preprocessor(_get_image_pixel_data(img, channels))
+	dump = dump_preprocessor(_get_image_pixel_data(img, channels, transposed))
 	len_d = len(dump)
 
 	strbuild = StringIO()
@@ -77,7 +89,7 @@ def bindump(
 	if bytes_per_unit > 1:
 		dump = batched(dump, bytes_per_unit)
 		orig_mapper_func = mapper_func
-		mapper_func = lambda v: orig_mapper_func(int.from_bytes(v, signed=False))
+		mapper_func = lambda v: orig_mapper_func(int.from_bytes(v, signed=False, byteorder='big' if big_endian else 'little'))
 		for i in batched(dump, max_row_length):
 			strbuild.write(f"{', '.join(postprocessor(map(mapper_func, preprocessor(i))))},\n")
 	else:
@@ -86,17 +98,35 @@ def bindump(
 
 	if dumper is None:
 		strbuild.seek(0)
-		pyperclip.copy(strbuild.read())
+		return strbuild.read()
 	elif isinstance(dumper, Callable):
 		strbuild.seek(0)
 		dumper(strbuild.read())
 	elif isinstance(dumper, (str, Path)):
 		strbuild.close()
 
+def read_dump(dump: str):
+	lambda s: int(s.strip()[2:], 16)
+	data = tuple( (lambda s: int(s.strip()[2:], 16))(i) for i in itertools.takewhile(lambda s: bool(s), dump.replace('\n', '').split(',')) )
+
+	def to_bytes(d: Iterable[int]):
+		for i in d:
+			for j in i.to_bytes(8, signed=False):
+				yield j
+
+	bdata = bytes(to_bytes(data))
+	
+	img = Image.new("LA", (128, 128))
+	for y in range(128):
+		for x in range(128):
+			i = (y * 128 + x) * 2
+			img.putpixel((x, y), (bdata[i], bdata[i + 1]))
+	return img
 
 
 if __name__ == "__main__":
 	img_path = input("Image: ").strip().strip('"').strip("'").strip()
 	img = Image.open(img_path)
 	
-	bindump(img, Path(__file__).parent.joinpath("dump.txt"), max_row_length=16, bytes_per_unit=8, pixel_size=1, dump_preprocessor=demult)
+	ss = bindump(img, Path(__file__).parent.joinpath("dump.txt"), max_row_length=16, bytes_per_unit=8, pixel_size=1, dump_preprocessor=demult, big_endian=False, transposed=True)
+	# read_dump(ss).save(Path(__file__).parent.joinpath("dumpimg.png"))

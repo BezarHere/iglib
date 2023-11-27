@@ -175,13 +175,20 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 
 }
 
+static ig::Font *font;
+static ig::Text2D *text;
 void draw_fromto_comp(Canvas &c)
 {
+	if (text->is_dirty())
+		text->rebuild();
+	c.set_texture( text->get_font().get_atlas() );
+	c.transform2d().rotate( c.get_window().get_shader_time() );
+	c.draw( text->get_buffer() );
 	const float lowest_axis = float(std::min(c.get_window().width(), c.get_window().height())) / 2.f;
-	c.set_texture(before_tex.get_handle());
-	c.rect({ 0.f, 0.f }, { lowest_axis, lowest_axis }, { 1.0, 1.0, 1.0 });
-	c.set_texture(after_tex.get_handle());
-	c.rect( { lowest_axis + 16.f, 0.0f }, {lowest_axis * 2 + 16.f, lowest_axis}, {1.0, 1.0, 1.0});
+	//c.set_texture(NULL);
+	//c.rect({ 0.f, 0.f }, { lowest_axis, lowest_axis }, { 1.0, 1.0, 1.0 });
+	//c.set_texture(font->get_atlas());
+	//c.rect( { lowest_axis + 16.f, 0.0f }, {lowest_axis * 2 + 16.f, lowest_axis}, {1.0, 1.0, 1.0});
 }
 
 void draw2d_callback(Canvas &c)
@@ -240,13 +247,12 @@ void draw2d_callback(Canvas &c)
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
 	c.set_draw_type( DrawType::Drawing3D );
 	c.camera().transform = ply;
-	c.cube({ inverted_m.x / 100.0f + 2.f, inverted_m.y / 100.0f, cube_distance }, {}, { 1.0f, 0.8f, 0.6f, 1.f });
-	c.cube({ inverted_m.x / 100.0f, inverted_m.y / 100.0f, cube_distance }, {}, { 0.6f, 0.4f, 0.2f, 1.f });
-	c.cube({ inverted_m.x / 100.0f - 2.f, inverted_m.y / 100.0f, cube_distance }, {}, { 0.3f, 0.2f, 0.1f, 1.f });
+	c.cube({ inverted_m.x / 100.0f + 2.f, inverted_m.y / 100.0f, cube_distance }, { 1.f, 1.f, 1.f }, { 1.0f, 0.8f, 0.6f, 1.f });
+	c.cube({ inverted_m.x / 100.0f, inverted_m.y / 100.0f, cube_distance }, { 1.f, 1.f, 1.f }, { 0.6f, 0.4f, 0.2f, 1.f });
+	c.cube({ inverted_m.x / 100.0f - 2.f, inverted_m.y / 100.0f, cube_distance }, { 1.f, 1.f, 1.f }, { 0.3f, 0.2f, 0.1f, 1.f });
 	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage2D));
-	//c.set_texture(before_tex.get_handle());
-
-	//draw_fromto_comp(c);
+	c.disable_feature( Feature::DepthTest );
+	draw_fromto_comp(c);
 	
 	//std::cout << c.transform3d().get_position() << '\n';
 	
@@ -299,7 +305,10 @@ int main()
 	
 	{
 		ig::Window i = ig::Window({512, 512}, "Window !!!");
-		ig::Font font;
+		font = new Font();
+		font->set_char_spacing( -2 );
+		text = new Text2D( "Hello! there my guy!\nwellcome to this new text presented by opengl, produced by zaher", *font );
+		
 
 		{
 			ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };
@@ -325,7 +334,6 @@ int main()
 		i.set_draw_callback(draw2d_callback);
 
 		std::cout << ig::get_opengl_version() << '\n';
-
 		while (!i.should_close())
 		{
 			//std::cout << i.size() << ' ' << i.position() << '\n';

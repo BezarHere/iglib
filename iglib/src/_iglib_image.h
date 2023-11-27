@@ -45,7 +45,8 @@ namespace ig
 		void flip_h();
 		void rotate_clockwise();
 		void rotate_counter_clockwise();
-		void transpose();
+		void transpose(); // <- transposes pixels
+		void transpose_bytes(); // <- transposes bytes
 
 		void blit(const Image &src, const Rect2i &src_rect, const Vector2i dst_pos);
 		void blit(const Image &src, const Vector2i dst_pos);

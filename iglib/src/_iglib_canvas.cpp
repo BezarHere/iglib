@@ -94,9 +94,6 @@ static Vertex2D g_Line2DVertcies[ 2 ]{};
 static const Canvas *g_CurrentCanvas;
 static std::shared_ptr<const Texture> g_PlankTexture;
 
-namespace ig { // def in _iglib_font.h
-	extern void _font_init();
-}
 
 FORCEINLINE void generate_opengl_globals()
 {
@@ -145,8 +142,6 @@ FORCEINLINE void generate_opengl_globals()
 		};
 		g_PlankTexture.reset(new Texture(Image(plank_white_data, {2, 2}, ColorFormat::L)));
 	}
-
-	ig::_font_init();
 }
 
 namespace ig
