@@ -366,3 +366,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /iglib/py/mc_glyphs.png
+/iglib/py/signed_distance_field_img2.py

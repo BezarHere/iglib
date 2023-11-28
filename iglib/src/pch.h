@@ -65,7 +65,7 @@ constexpr dye::TerminalColor PingColor{ dye::ColorCode::LightBlue, dye::ColorCod
 #endif
 
 #ifndef WARN
-#define WARN(cond) if (!!(cond)) { bite::warn("\"" #cond  "\" is true at \"" __FILE__ "\" line " + std::to_string(__LINE__) + "\n"); }
+#define WARN(cond) if (!!(cond)) { bite::warn("Warning: \"" #cond  "\" is true at \"" __FILE__ "\" line " + std::to_string(__LINE__) + "\n"); }
 #endif
 #ifndef REPORT
 // reverse of ASSERT, only prints warning IF the condition is TRUE also returns

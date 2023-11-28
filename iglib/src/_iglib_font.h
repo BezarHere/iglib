@@ -8,6 +8,7 @@
 
 namespace ig
 {
+	typedef int codepoint_t;
 	
 	enum class FontType
 	{
@@ -15,17 +16,18 @@ namespace ig
 		TrueType
 	};
 
+
 	// definintion to allow utf-8/16/32 in bitmap fonts
 	// 
 	//   if codepoints is a nullptr
-	//       the codepoint for generated charecters will be increments of start_codepoint
+	//       the codepoint for generated glyphs will be increments of start_codepoint
 	//   if there is codepoints defined but their count is not enough
-	//       the codepoints for generated charecters will be increments of the last codepoint
+	//       the codepoints for generated glyphs will be increments of the last codepoint
 	struct BitmapFontDef
 	{
-		int start_codepoint = 0;
+		codepoint_t start_codepoint = 0;
 		int codepoints_count = 0;
-		std::shared_ptr<int[]> codepoints = { nullptr };
+		std::shared_ptr<codepoint_t[]> codepoints = { nullptr };
 		bool transposed = false;
 	};
 
@@ -33,9 +35,11 @@ namespace ig
 	{
 		friend class Canvas;
 	public:
-		struct Charecter
+		static constexpr size_t NPos = static_cast<size_t>(-1);
+		
+		struct Glyph
 		{
-			int codepoint;
+			codepoint_t codepoint;
 			Vector2i offset, size;
 			Vector2i atlas_coord;
 		};
@@ -46,9 +50,14 @@ namespace ig
 		Font();// <- default bitmap font
 
 		TextureId_t get_atlas() const;
-		Charecter *get_chars();
-		const Charecter *get_chars() const;
-		const int get_chars_count() const;
+
+		Glyph *get_glyphs();
+		const Glyph *get_glyphs() const;
+
+		const int get_glyphs_count() const;
+
+		// might return NPos if no glyph has the codepoint
+		const size_t get_glyph_index(const codepoint_t codepoint) const;
 
 		const Vector2f get_texcoord_step() const;
 

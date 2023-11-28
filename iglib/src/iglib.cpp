@@ -2,7 +2,7 @@
 #include "iglib.h"
 #include "internal.h"
 
-constexpr Version CurrentVersion{ 1, 3, 0 };
+constexpr Version CurrentVersion{ 1, 3, 1 };
 
 namespace ig
 {

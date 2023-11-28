@@ -62,6 +62,26 @@ namespace ig
 			return m_dirty;
 		}
 
+		inline Colorf get_color() const
+		{
+			return m_clr;
+		}
+
+		inline void set_color(const Colorf &clr)
+		{
+			m_clr = clr;
+		}
+
+		inline Colorf get_scale() const
+		{
+			return m_scale;
+		}
+
+		inline void set_scale(const Vector2f &scale)
+		{
+			m_scale = scale;
+		}
+
 		// TODO: make this able to rebuild a specifiy part of the str
 		inline void rebuild()
 		{
@@ -85,10 +105,12 @@ namespace ig
 					continue;
 				}
 
+				const size_t gly_index = m_font.get_glyph_index( m_str[ i ] );
+
 				const int j = (i - notdraw_count) * 4;
-				const Font::Charecter &c = m_font.get_chars()[ m_str[ i ] ];
-				const Vector2f hs = Vector2f( c.size ) * m_scale;
-				const Vector2f uvs = Vector2f( c.atlas_coord ) * uvstep;
+				const Font::Glyph &gly = m_font.get_glyphs()[ gly_index ];
+				const Vector2f hs = Vector2f( gly.size ) * m_scale;
+				const Vector2f uvs = Vector2f( gly.atlas_coord ) * uvstep;
 				const Vector2f uvt = uvs + uvstep;
 
 				vertcies[ j + 0 ].pos = { pos.x + hs.x,  pos.y + hs.y };
@@ -123,7 +145,7 @@ namespace ig
 		string_type m_str = {};
 		Font m_font = {};
 		Colorf m_clr = { 1.f, 1.f, 1.f };
-		Vector2f m_scale = { 3.f, 3.f };
+		Vector2f m_scale = { 1.f, 1.f };
 		bool m_dirty = true;
 	};
 

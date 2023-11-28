@@ -223,6 +223,7 @@
     <ClInclude Include="src\_iglib_base.h" />
     <ClInclude Include="src\_iglib_errors.h" />
     <ClInclude Include="src\_iglib_indexbuffer.h" />
+    <ClInclude Include="src\_iglib_nativedialog.h" />
     <ClInclude Include="src\_iglib_text.h" />
     <ClInclude Include="src\_iglib_rect.h" />
     <ClInclude Include="src\_iglib_refcounter.h" />
