@@ -307,8 +307,8 @@ int main()
 		ig::Window i = ig::Window({512, 512}, "Window !!!");
 		font = new Font();
 		font->set_char_spacing( -2 );
-		text = new Text2D( readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" ), *font );
-		
+		text = new Text2D( readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" ) + readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" ), *font );
+		text->set_scale( { 1./2.f, 1./2.f } );
 
 		{
 			ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };

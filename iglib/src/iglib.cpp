@@ -2,7 +2,7 @@
 #include "iglib.h"
 #include "internal.h"
 
-constexpr Version CurrentVersion{ 1, 3, 1 };
+constexpr Version CurrentVersion{ 1, 3, 2 };
 
 namespace ig
 {
@@ -77,7 +77,7 @@ namespace ig
 		// glew not init
 		if (!c)
 		{
-			warn("start ig::Application to get the opengl version\n");
+			warn("Create an ig::Window to get the current OpenGL Version\n");
 			return std::string();
 		}
 

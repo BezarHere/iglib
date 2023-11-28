@@ -18,24 +18,24 @@ namespace ig
 			m_buffer.set_primitive( PrimitiveType::Quad );
 		}
 
-		inline BaseTextTemplate( const std::string &str )
+		inline BaseTextTemplate( const string_type &str )
 			: m_str{ str }
 		{
 			m_buffer.set_primitive( PrimitiveType::Quad );
 		}
 
-		inline BaseTextTemplate( const std::string &str, const Font &font )
+		inline BaseTextTemplate( const string_type &str, const Font &font )
 			: m_str{ str }, m_font{ font }
 		{
 			m_buffer.set_primitive( PrimitiveType::Quad );
 		}
 
-		inline const std::string &get_string() const
+		inline const string_type &get_string() const
 		{
 			return m_str;
 		}
 
-		inline void set_string( const std::string &str )
+		inline void set_string( const string_type &str )
 		{
 			m_str = str;
 			m_dirty = true;
@@ -67,17 +67,17 @@ namespace ig
 			return m_clr;
 		}
 
-		inline void set_color(const Colorf &clr)
+		inline void set_color( const Colorf &clr )
 		{
 			m_clr = clr;
 		}
 
-		inline Colorf get_scale() const
+		inline Vector2f get_scale() const
 		{
 			return m_scale;
 		}
 
-		inline void set_scale(const Vector2f &scale)
+		inline void set_scale( const Vector2f &scale )
 		{
 			m_scale = scale;
 		}
@@ -104,6 +104,12 @@ namespace ig
 					notdraw_count++;
 					continue;
 				}
+				else if (m_str[ i ] == '\t')
+				{
+					pos.x += m_tab_size * m_scale.x;
+					notdraw_count++;
+					continue;
+				}
 
 				const size_t gly_index = m_font.get_glyph_index( m_str[ i ] );
 
@@ -113,20 +119,21 @@ namespace ig
 				const Vector2f uvs = Vector2f( gly.atlas_coord ) * uvstep;
 				const Vector2f uvt = uvs + uvstep;
 
-				vertcies[ j + 0 ].pos = { pos.x + hs.x,  pos.y + hs.y };
+#define SET_VERT_POS(jk, x, y, z) if constexpr (Is3D) vertcies[ j + jk ].pos = { x, y, z }; else vertcies[ j + jk ].pos = { x, y }
+				SET_VERT_POS( 0, pos.x + hs.x, pos.y + hs.y, 0.f );
 				vertcies[ j + 0 ].uv = { uvt.x, uvt.y };
 				vertcies[ j + 0 ].clr = m_clr;
-				vertcies[ j + 1 ].pos = { pos.x,  pos.y + hs.y };
+				SET_VERT_POS( 1, pos.x, pos.y + hs.y, 0.f );
 				vertcies[ j + 1 ].uv = { uvt.x, uvs.y };
 				vertcies[ j + 1 ].clr = m_clr;
-				vertcies[ j + 2 ].pos = { pos.x, pos.y };
+				SET_VERT_POS( 2, pos.x, pos.y, 0.f );
 				vertcies[ j + 2 ].uv = { uvs.x, uvs.y };
 				vertcies[ j + 2 ].clr = m_clr;
-				vertcies[ j + 3 ].pos = { pos.x + hs.x, pos.y };
+				SET_VERT_POS( 3, pos.x + hs.x, pos.y, 0.f );
 				vertcies[ j + 3 ].uv = { uvs.x, uvt.y };
 				vertcies[ j + 3 ].clr = m_clr;
 
-				pos.x += hs.x + float(m_font.get_char_spacing() * m_scale.x);
+				pos.x += hs.x + float( m_font.get_char_spacing() * m_scale.x );
 				if (hs.y > line_height)
 					line_height = hs.y;
 			}
@@ -146,6 +153,7 @@ namespace ig
 		Font m_font = {};
 		Colorf m_clr = { 1.f, 1.f, 1.f };
 		Vector2f m_scale = { 1.f, 1.f };
+		float m_tab_size = 16.f;
 		bool m_dirty = true;
 	};
 
