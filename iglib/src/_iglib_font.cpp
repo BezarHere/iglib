@@ -4,8 +4,207 @@
 #include "draw_internal.h"
 #include "internal.h"
 
-#define FT_CHECKED_CALL(code) { const FT_Error _ft_err = (code); if (_ft_err) { bite::warn("FreeType Error: \"" #code "\" Failed and returned " + std::to_string(_ft_err) + " in \"" __FILE__ "\" line " + std::to_string(__LINE__)); return; } }
-#define FT_CHECKED_CALL_V(code, ret) { const FT_Error _ft_err = (code); if (_ft_err) { bite::warn("FreeType Error: \"" #code "\" Failed and returned " + std::to_string(_ft_err) + " in \"" __FILE__ "\" line " + std::to_string(__LINE__) + ", returning " #ret); return ret; } }
+inline std::string FT_Error_Get_String( FT_Error error )
+{
+	const std::string FTErrorMessages[]
+	{
+		"No error",
+		"Cannot open resource",
+		"Unknown file format",
+		"Broken file",
+		"Invalid freetype version",
+		"Module version is too low",
+		"Invalid argument",
+		"Unimplemented feature",
+		"Broken table",
+		"Broken offset within table",
+		"Array allocation size too large",
+		"Missing module",
+		"Missing property",
+		"UNNAMED_ERROR_ID_0XD",
+		"UNNAMED_ERROR_ID_0XE",
+		"UNNAMED_ERROR_ID_0XF",
+		"Invalid glyph index",
+		"Invalid character code",
+		"Unsupported glyph image format",
+		"Cannot render this glyph format",
+		"Invalid outline",
+		"Invalid composite glyph",
+		"Too many hints",
+		"Invalid pixel size",
+		"Invalid svg document",
+		"UNNAMED_ERROR_ID_0X19",
+		"UNNAMED_ERROR_ID_0X1A",
+		"UNNAMED_ERROR_ID_0X1B",
+		"UNNAMED_ERROR_ID_0X1C",
+		"UNNAMED_ERROR_ID_0X1D",
+		"UNNAMED_ERROR_ID_0X1E",
+		"UNNAMED_ERROR_ID_0X1F",
+		"Invalid object handle",
+		"Invalid library handle",
+		"Invalid module handle",
+		"Invalid face handle",
+		"Invalid size handle",
+		"Invalid glyph slot handle",
+		"Invalid charmap handle",
+		"Invalid cache manager handle",
+		"Invalid stream handle",
+		"UNNAMED_ERROR_ID_0X29",
+		"UNNAMED_ERROR_ID_0X2A",
+		"UNNAMED_ERROR_ID_0X2B",
+		"UNNAMED_ERROR_ID_0X2C",
+		"UNNAMED_ERROR_ID_0X2D",
+		"UNNAMED_ERROR_ID_0X2E",
+		"UNNAMED_ERROR_ID_0X2F",
+		"Too many modules",
+		"Too many extensions",
+		"UNNAMED_ERROR_ID_0X32",
+		"UNNAMED_ERROR_ID_0X33",
+		"UNNAMED_ERROR_ID_0X34",
+		"UNNAMED_ERROR_ID_0X35",
+		"UNNAMED_ERROR_ID_0X36",
+		"UNNAMED_ERROR_ID_0X37",
+		"UNNAMED_ERROR_ID_0X38",
+		"UNNAMED_ERROR_ID_0X39",
+		"UNNAMED_ERROR_ID_0X3A",
+		"UNNAMED_ERROR_ID_0X3B",
+		"UNNAMED_ERROR_ID_0X3C",
+		"UNNAMED_ERROR_ID_0X3D",
+		"UNNAMED_ERROR_ID_0X3E",
+		"UNNAMED_ERROR_ID_0X3F",
+		"Out of memory",
+		"Unlisted object",
+		"UNNAMED_ERROR_ID_0X42",
+		"UNNAMED_ERROR_ID_0X43",
+		"UNNAMED_ERROR_ID_0X44",
+		"UNNAMED_ERROR_ID_0X45",
+		"UNNAMED_ERROR_ID_0X46",
+		"UNNAMED_ERROR_ID_0X47",
+		"UNNAMED_ERROR_ID_0X48",
+		"UNNAMED_ERROR_ID_0X49",
+		"UNNAMED_ERROR_ID_0X4A",
+		"UNNAMED_ERROR_ID_0X4B",
+		"UNNAMED_ERROR_ID_0X4C",
+		"UNNAMED_ERROR_ID_0X4D",
+		"UNNAMED_ERROR_ID_0X4E",
+		"UNNAMED_ERROR_ID_0X4F",
+		"UNNAMED_ERROR_ID_0X50",
+		"Cannot open stream",
+		"Invalid stream seek",
+		"Invalid stream skip",
+		"Invalid stream read",
+		"Invalid stream operation",
+		"Invalid frame operation",
+		"Nested frame access",
+		"Invalid frame read",
+		"UNNAMED_ERROR_ID_0X59",
+		"UNNAMED_ERROR_ID_0X5A",
+		"UNNAMED_ERROR_ID_0X5B",
+		"UNNAMED_ERROR_ID_0X5C",
+		"UNNAMED_ERROR_ID_0X5D",
+		"UNNAMED_ERROR_ID_0X5E",
+		"UNNAMED_ERROR_ID_0X5F",
+		"Raster uninitialized",
+		"Raster corrupted",
+		"Raster overflow",
+		"Negative height while rastering",
+		"UNNAMED_ERROR_ID_0X64",
+		"UNNAMED_ERROR_ID_0X65",
+		"UNNAMED_ERROR_ID_0X66",
+		"UNNAMED_ERROR_ID_0X67",
+		"UNNAMED_ERROR_ID_0X68",
+		"UNNAMED_ERROR_ID_0X69",
+		"UNNAMED_ERROR_ID_0X6A",
+		"UNNAMED_ERROR_ID_0X6B",
+		"UNNAMED_ERROR_ID_0X6C",
+		"UNNAMED_ERROR_ID_0X6D",
+		"UNNAMED_ERROR_ID_0X6E",
+		"UNNAMED_ERROR_ID_0X6F",
+		"Too many registered caches",
+		"UNNAMED_ERROR_ID_0X71",
+		"UNNAMED_ERROR_ID_0X72",
+		"UNNAMED_ERROR_ID_0X73",
+		"UNNAMED_ERROR_ID_0X74",
+		"UNNAMED_ERROR_ID_0X75",
+		"UNNAMED_ERROR_ID_0X76",
+		"UNNAMED_ERROR_ID_0X77",
+		"UNNAMED_ERROR_ID_0X78",
+		"UNNAMED_ERROR_ID_0X79",
+		"UNNAMED_ERROR_ID_0X7A",
+		"UNNAMED_ERROR_ID_0X7B",
+		"UNNAMED_ERROR_ID_0X7C",
+		"UNNAMED_ERROR_ID_0X7D",
+		"UNNAMED_ERROR_ID_0X7E",
+		"UNNAMED_ERROR_ID_0X7F",
+		"Invalid opcode",
+		"Too few arguments",
+		"Stack overflow",
+		"Code overflow",
+		"Bad argument",
+		"Division by zero",
+		"Invalid reference",
+		"Found debug opcode",
+		"Found endf opcode in execution stream",
+		"Nested defs",
+		"Invalid code range",
+		"Execution context too long",
+		"Too many function definitions",
+		"Too many instruction definitions",
+		"Sfnt font table missing",
+		"Horizontal header (hhea) table missing",
+		"Locations (loca) table missing",
+		"Name table missing",
+		"Character map (cmap) table missing",
+		"Horizontal metrics (hmtx) table missing",
+		"Postscript (post) table missing",
+		"Invalid horizontal metrics",
+		"Invalid character map (cmap) format",
+		"Invalid ppem value",
+		"Invalid vertical metrics",
+		"Could not find context",
+		"Invalid postscript (post) table format",
+		"Invalid postscript (post) table",
+		"Found fdef or idef opcode in glyf bytecode",
+		"Missing bitmap in strike",
+		"Svg hooks have not been set",
+		"UNNAMED_ERROR_ID_0X9F",
+		"Opcode syntax error",
+		"Argument stack underflow",
+		"Ignore",
+		"No unicode glyph name found",
+		"Glyph too big for hinting",
+		"UNNAMED_ERROR_ID_0XA5",
+		"UNNAMED_ERROR_ID_0XA6",
+		"UNNAMED_ERROR_ID_0XA7",
+		"UNNAMED_ERROR_ID_0XA8",
+		"UNNAMED_ERROR_ID_0XA9",
+		"UNNAMED_ERROR_ID_0XAA",
+		"UNNAMED_ERROR_ID_0XAB",
+		"UNNAMED_ERROR_ID_0XAC",
+		"UNNAMED_ERROR_ID_0XAD",
+		"UNNAMED_ERROR_ID_0XAE",
+		"UNNAMED_ERROR_ID_0XAF",
+		"`startfont' field missing",
+		"`font' field missing",
+		"`size' field missing",
+		"`fontboundingbox' field missing",
+		"`chars' field missing",
+		"`startchar' field missing",
+		"`encoding' field missing",
+		"`bbx' field missing",
+		"`bbx' too big",
+		"Font header corrupted or missing fields",
+		"Font glyphs corrupted or missing fields"
+	};
+
+	static const size_t FTErrorMessagesSize = ARRAYSIZE( FTErrorMessages );
+	if (error >= FTErrorMessagesSize)
+		return "UNKOWN_ERROR_" + std::to_string( error );
+	return FTErrorMessages[ error ];
+}
+
+#define FT_CHECKED_CALL(code) { const FT_Error _ft_err = (code); if (_ft_err) { bite::warn("FreeType Error: \"" #code "\" Failed and returned \"" + FT_Error_Get_String(_ft_err) + "\" in \"" __FILE__ "\" line " + std::to_string(__LINE__)); return; } }
+#define FT_CHECKED_CALL_V(code, ret) { const FT_Error _ft_err = (code); if (_ft_err) { bite::warn("FreeType Error: \"" #code "\" Failed and returned \"" + FT_Error_Get_String(_ft_err) + "\" in \"" __FILE__ "\" line " + std::to_string(__LINE__) + ", returning " #ret); return ret; } }
 
 constexpr byte UTF8LenTable[ 256 ]
 {
@@ -41,7 +240,7 @@ struct CodepoinIndex
 	size_t index;
 };
 
-
+// TODO: Test
 FORCEINLINE Image pack_font_atlas(const Image &source, const Vector2i raw_count, const Vector2i glyph_size, const Vector2i spacing)
 {
 	// already packed
@@ -90,49 +289,6 @@ FORCEINLINE Image pack_font_atlas(const Image &source, const Vector2i raw_count,
 	return strip;
 }
 
-// TODO: complete this or delete it
-// sort from smallest to biggest codepoint value
-FORCEINLINE void sort( CodepoinIndex *ptr, const uint32_t n )
-{
-	struct subarray_range
-	{
-		FORCEINLINE subarray_range( uint32_t f, uint32_t t )
-			: from{ f }, to{ t }
-		{
-
-		}
-
-		FORCEINLINE uint32_t length() const noexcept { return to - from; }
-
-		uint32_t from;
-		uint32_t to;
-	};
-	
-	if (n < 2)
-		return;
-	
-	std::stack<subarray_range, std::vector<subarray_range>> partition_stack{};
-	
-	partition_stack.emplace( 0, n );
-	
-	while (!partition_stack.empty())
-	{
-		const subarray_range subarr = partition_stack.top();
-		partition_stack.pop();
-		if (subarr.length() > 2)
-		{
-			uint32_t half = subarr.length() >> 1;
-			partition_stack.emplace( subarr.from, subarr.from + half );
-			partition_stack.emplace( subarr.from + half, subarr.to );
-		}
-
-		CodepoinIndex pivot = ptr[ subarr.from + (subarr.length() >> 1) ];
-
-
-	}
-
-}
-
 FORCEINLINE static int __cdecl codepoint_index_qsort_comp( void const *a, void const *b )
 {
 	return ((CodepoinIndex *)a)->codepoint > ((CodepoinIndex *)b)->codepoint;
@@ -148,7 +304,7 @@ FORCEINLINE static void init_freetype()
 	FT_CHECKED_CALL( FT_Init_FreeType( &freetype_lib ) );
 }
 
-static FT_Face load_freetype_face(const std::string &path, FT_UInt width, FT_Long face_index = 0)
+FORCEINLINE static FT_Face load_freetype_face(const std::string &path, FT_UInt width, FT_Long face_index = 0)
 {
 	FT_Face face;
 	FT_CHECKED_CALL_V( FT_New_Face( freetype_lib, path.c_str(), face_index, &face ), nullptr );
@@ -198,9 +354,15 @@ namespace ig
 
 	struct Font::FontInternal
 	{
+		// TODO: SDFs!
 		// TODO: OPTIMIZE!!
-		FORCEINLINE FontInternal( const std::string &source, FT_UInt width )
+		FORCEINLINE FontInternal( const std::string &source, FT_UInt width, ValidGlyphsPredicate_t glyphs_predicate )
 		{
+			struct AlwaysTrue
+			{
+				static bool func( codepoint_t ) { return true; }
+			};
+
 			init_freetype();
 			FT_Face face = load_freetype_face( source, width );
 			FT_UInt gindex;
@@ -210,10 +372,18 @@ namespace ig
 
 			gbitmaps.reserve( 256 );
 
+			if (!glyphs_predicate)
+			{
+				glyphs_predicate = AlwaysTrue::func;
+			}
+
 			for ( FT_ULong gchar = FT_Get_First_Char( face, &gindex );
 						gchar = FT_Get_Next_Char( face, gchar, &gindex );
 						gindex )
 			{
+				if (!glyphs_predicate( codepoint_t( gchar ) ))
+					continue;
+
 				if (FT_Load_Char( face, gchar, FT_LOAD_RENDER ))
 				{
 					bite::warn( "FreeType Error: could not load char with codepoint " + std::to_string( gchar ) );
@@ -329,6 +499,7 @@ namespace ig
 			// isn't freetype already giving char codepoint in order?
 			std::qsort( m_codepoint_indexes.data(), m_codepoint_indexes.size(), sizeof( m_codepoint_indexes[ 0 ] ), codepoint_index_qsort_comp );
 
+			std::cout << img.size() << '\n';
 
 			glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 			faces_atlas = Texture( img );
@@ -405,7 +576,7 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 		size_t get_glyph_index( const codepoint_t cp ) const noexcept
 		{
 			const size_t sz = m_codepoint_indexes.size();
-			WARN( sz < 4 );
+			REPORT_V( sz < 4, NPos );
 			size_t i = sz / 2;
 			size_t step = sz / 2;
 			for (int limit = 2; limit < sz; limit++)
@@ -452,8 +623,8 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 		return DefaultBitmapFont;
 	}
 
-	Font::Font( const std::string &filepath, FT_UInt width )
-		: m_type{ FontType::TrueType }, m_space_width{ width }, m_internal{ new FontInternal( filepath, width ) }
+	Font::Font( const std::string &filepath, FT_UInt width, ValidGlyphsPredicate_t glyphs_predicate )
+		: m_type{ FontType::TrueType }, m_space_width{ width }, m_internal{ new FontInternal( filepath, width, glyphs_predicate ) }
 	{
 	}
 
@@ -522,6 +693,11 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 	uint32_t Font::get_space_width() const
 	{
 		return m_space_width;
+	}
+
+	bool Font::valid() const
+	{
+		return m_internal && !m_internal->glyphs.empty();
 	}
 
 }

@@ -182,6 +182,7 @@ void draw_fromto_comp(Canvas &c)
 	if (text->is_dirty())
 		text->rebuild();
 	c.set_texture( text->get_font().get_atlas() );
+	//c.set_texture( 0 );
 	//c.transform2d().rotate( c.get_window().get_shader_time() );
 	c.draw( text->get_buffer() );
 	const float lowest_axis = float(std::min(c.get_window().width(), c.get_window().height())) / 2.f;
@@ -305,10 +306,14 @@ int main()
 	
 	{
 		ig::Window i = ig::Window({512, 512}, "Window !!!");
-		font = new Font();
-		font->set_char_spacing( -2 );
-		text = new Text2D( readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" ) + readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" ), *font );
-		text->set_scale( { 1./2.f, 1./2.f } );
+		font = new Font( "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\font.ttf", 64, []( codepoint_t cp ){ return cp < 128; } );
+		//delete font;
+		//font = new Font();
+		//font->set_char_spacing( -2 );
+		const std::string garbage = readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" ) + readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" );
+		text = new Text2D( "hello?! dat not good q", *font);
+		text->set_scale( {1.f, 1.f } );
+
 
 		{
 			ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };
@@ -320,14 +325,6 @@ int main()
 			after_tex = ig::Texture(img);
 		}
 
-
-		ig::Window p = ig::Window({ 512, 512 }, "Other one");
-		
-		// NOTICE: Hiding window for later fixes
-		p.hide();
-
-		p.set_callback(callback);
-
 		i.set_callback(callback);
 		i.set_key_callback(key_callback);
 		i.set_mouse_scroll_callback(scroll);
@@ -336,19 +333,12 @@ int main()
 		std::cout << ig::get_opengl_version() << '\n';
 		while (!i.should_close())
 		{
-			//std::cout << i.size() << ' ' << i.position() << '\n';
 			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 20.0)));
-
-			//std::cout << "mouse pos: " << i.get_mouse_position() << '\n';
 
 			i.clear();
 			i.render();
 			i.poll();
-		
 
-			//p.clear();
-			//p.render();
-			//p.poll();
 		}
 
 	}

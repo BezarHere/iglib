@@ -9,7 +9,7 @@
 namespace ig
 {
 	typedef int codepoint_t;
-	
+
 	enum class FontType
 	{
 		Bitmap,
@@ -31,12 +31,15 @@ namespace ig
 		bool transposed = false;
 	};
 
+	// should the glyph with codepoint 'codepoint' be loaded to the font?
+	typedef bool (*ValidGlyphsPredicate_t)(codepoint_t codepoint);
+
 	class Font
 	{
 		friend class Canvas;
 	public:
 		static constexpr size_t NPos = static_cast<size_t>(-1);
-		
+
 		struct UVBox
 		{
 			Vector2f origin;
@@ -53,7 +56,7 @@ namespace ig
 		};
 
 
-		Font( const std::string &filepath, uint32_t width = 14u ); // <- truetype
+		Font( const std::string &filepath, uint32_t width = 14u, ValidGlyphsPredicate_t glyphs_predicate = nullptr ); // <- truetype
 		Font( const Image &glyphs, Vector2i glyph_size, Vector2i spacing = { 0, 0 }, BitmapFontDef def = {} ); // <- bitmap
 		Font();// <- default bitmap font
 
@@ -65,9 +68,9 @@ namespace ig
 		const size_t get_glyphs_count() const;
 
 		// might return NPos if no glyph has the codepoint
-		const size_t get_glyph_index(const codepoint_t codepoint) const;
+		const size_t get_glyph_index( const codepoint_t codepoint ) const;
 
-		void set_char_spacing(int value);
+		void set_char_spacing( int value );
 		int get_char_spacing() const;
 
 		void set_line_spacing( int value );
@@ -76,6 +79,8 @@ namespace ig
 		// the default space width is set automaticly per font
 		void set_space_width( uint32_t width );
 		uint32_t get_space_width() const;
+
+		bool valid() const;
 
 		struct FontInternal;
 	private:

@@ -116,6 +116,9 @@ namespace ig
 		// TODO: make this able to rebuild a specifiy part of the str
 		inline void rebuild()
 		{
+			if (!m_font.valid())
+				return;
+
 			const size_t str_sz = m_str.size();
 			const size_t bufsz = str_sz * 4ull;
 			vertex_type *vertcies = new vertex_type[ bufsz ];
