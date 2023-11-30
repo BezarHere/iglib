@@ -636,8 +636,17 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 	}
 
 	ig::Font::Font()
-		: m_type{ FontType::Bitmap }, m_space_width{ 8u }, m_internal{get_default_font()}
+		: m_type{ FontType::Bitmap }, m_space_width{ 8u }, m_internal{ nullptr }
 	{
+	}
+
+	Font Font::get_default()
+	{
+		Font f;
+		f.m_type = FontType::Bitmap;
+		f.m_space_width = 8;
+		f.m_internal = get_default_font();
+		return f;
 	}
 
 	TextureId_t Font::get_atlas() const

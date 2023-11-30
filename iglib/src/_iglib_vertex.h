@@ -43,6 +43,10 @@ namespace ig
 	class BaseVertexBuffer
 	{
 	public:
+		BaseVertexBuffer( const BaseVertexBuffer &copy );
+		BaseVertexBuffer( BaseVertexBuffer &&move ) noexcept;
+		BaseVertexBuffer &operator =( const BaseVertexBuffer &copy );
+		BaseVertexBuffer &operator =( BaseVertexBuffer &&move ) noexcept;
 
 		size_t size() const noexcept;
 		BufferUsage get_usage() const noexcept;
@@ -62,13 +66,6 @@ namespace ig
 
 	protected:
 		BaseVertexBuffer(VertexBufferId_t id, size_t size = 0, BufferUsage usage = BufferUsage::Static, PrimitiveType type = PrimitiveType::TriangleStrip);
-
-
-	private:
-		BaseVertexBuffer(const BaseVertexBuffer &copy) = delete;
-		BaseVertexBuffer(BaseVertexBuffer &&move) = delete;
-		BaseVertexBuffer &operator =(const BaseVertexBuffer &copy) = delete;
-		BaseVertexBuffer &operator =(BaseVertexBuffer &&move) = delete;
 
 	protected:
 		VertexBufferId_t m_id;

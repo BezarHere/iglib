@@ -55,10 +55,13 @@ namespace ig
 			float advance;
 		};
 
+		// Creates & returns the a copy of the default font
+		static Font get_default();
 
 		Font( const std::string &filepath, uint32_t width = 14u, ValidGlyphsPredicate_t glyphs_predicate = nullptr ); // <- truetype
 		Font( const Image &glyphs, Vector2i glyph_size, Vector2i spacing = { 0, 0 }, BitmapFontDef def = {} ); // <- bitmap
-		Font();// <- default bitmap font
+		Font();
+
 
 		TextureId_t get_atlas() const;
 

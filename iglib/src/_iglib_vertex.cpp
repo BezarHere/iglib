@@ -15,12 +15,63 @@ FORCEINLINE void free_buffer( VertexBufferId_t &id)
 	id = 0;
 }
 
+FORCEINLINE VertexBufferId_t duplicate_buffer( const VertexBufferId_t copy, const int usage )
+{
+	if (!copy)
+		return NULL;
+	glBindBuffer( GL_ARRAY_BUFFER, copy );
+	int bsize;
+	glGetBufferParameteriv( GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &bsize );
+	uint8_t *buffer = new uint8_t[ bsize ];
+	glGetBufferSubData( GL_ARRAY_BUFFER, 0, bsize, buffer );
+	glBindBuffer( GL_ARRAY_BUFFER, NULL );
+
+	VertexBufferId_t new_id = create_buffer();
+	glBindBuffer( GL_ARRAY_BUFFER, new_id );
+	glBufferData( GL_ARRAY_BUFFER, bsize, buffer, usage );
+	glBindBuffer( GL_ARRAY_BUFFER, NULL );
+
+	delete[] buffer;
+	return new_id;
+}
+
 namespace ig
 {
 
 	BaseVertexBuffer::BaseVertexBuffer(VertexBufferId_t id, size_t size, BufferUsage usage, PrimitiveType type)
 		: m_id{ id }, m_size{ size }, m_usage{ usage }, m_type{ type }
 	{
+	}
+
+	BaseVertexBuffer::BaseVertexBuffer( const BaseVertexBuffer &copy )
+		: m_id{ duplicate_buffer( copy.m_id, to_gldrawusage( copy.m_usage ) ) }, m_size{ copy.m_size }, m_usage{ copy.m_usage }, m_type{ copy.m_type }
+	{
+		
+	}
+
+	BaseVertexBuffer::BaseVertexBuffer( BaseVertexBuffer &&move ) noexcept
+		: m_id{ move.m_id }, m_size{ move.m_size }, m_usage{ move.m_usage }, m_type{ move.m_type }
+	{
+		move.m_id = NULL;
+	}
+
+	BaseVertexBuffer &BaseVertexBuffer::operator=( const BaseVertexBuffer &copy )
+	{
+		m_id = duplicate_buffer( copy.m_id, to_gldrawusage( copy.m_usage ) );
+		m_size = copy.m_size;
+		m_type = copy.m_type;
+		m_usage = copy.m_usage;
+		return *this;
+	}
+
+	BaseVertexBuffer &BaseVertexBuffer::operator=( BaseVertexBuffer &&move ) noexcept
+	{
+		m_id = move.m_id;
+		m_size = move.m_size;
+		m_type = move.m_type;
+		m_usage = move.m_usage;
+		move.m_id = NULL;
+		return *this;
 	}
 
 	size_t BaseVertexBuffer::size() const noexcept
