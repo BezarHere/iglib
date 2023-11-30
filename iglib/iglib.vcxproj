@@ -72,24 +72,24 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\Win32;F:\Assets\CppLibs\Bite\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)deps\freetype\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\Win32;F:\Assets\CppLibs\Bite\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)deps\freetype\include;F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\Win32;F:\Assets\CppLibs\Bite\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)deps\freetype\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\Win32;F:\Assets\CppLibs\Bite\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)deps\freetype\include;F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>F:\Assets\CppLibs\freetype\release static\vs2015-2022;F:\Assets\CppLibs\soil\lib;F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\freetype\include;F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)deps\freetype\lib;F:\Assets\CppLibs\soil\lib;F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)deps\freetype\include;F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>F:\Assets\CppLibs\freetype\release static\vs2015-2022;F:\Assets\CppLibs\soil\lib;F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
-    <IncludePath>F:\Assets\CppLibs\freetype\include;F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)deps\freetype\lib;F:\Assets\CppLibs\freetype\release static\vs2015-2022;F:\Assets\CppLibs\soil\lib;F:\Assets\CppLibs\Bite\lib;F:\Assets\CppLibs\glfw\lib-vc2022;F:\Assets\CppLibs\glew\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)deps\freetype\include;F:\Assets\CppLibs\freetype\include;F:\Assets\CppLibs\soil\include;F:\Assets\CppLibs\Bite\include;F:\Assets\CppLibs\glfw\include;F:\Assets\CppLibs\glew\include;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -112,7 +112,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;freetype32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -140,7 +140,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;freetype32.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -172,7 +172,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64-d.lib;SOIL_x64-d.lib;freetype64.lib;</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64-d.lib;SOIL_x64-d.lib;freetype64.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -207,7 +207,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64.lib;SOIL_x64.lib;freetype64.lib;</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glew32s.lib;glfw3.lib;bite64.lib;SOIL_x64.lib;freetype64.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

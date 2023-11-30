@@ -7,6 +7,25 @@ namespace ig
 	template <typename _VERTBUF, typename _STR = std::string>
 	class BaseTextTemplate
 	{
+	private:
+		template <bool _IN_3D>
+		struct DummyVectorSetterZ0;
+
+		template <> struct DummyVectorSetterZ0<true>
+		{
+			static inline Vector3f Set( float x, float y )
+			{
+				return { x, y, 0.f };
+			}
+		};
+
+		template <> struct DummyVectorSetterZ0<false>
+		{
+			static inline Vector2f Set( float x, float y )
+			{
+				return { x, y };
+			}
+		};
 	public:
 		using vertex_buffer_type = _VERTBUF;
 		using string_type = _STR;
@@ -41,9 +60,21 @@ namespace ig
 			m_dirty = true;
 		}
 
+		// call 'rebuild' after editing the buffer
+		inline vertex_buffer_type &get_buffer()
+		{
+			return m_buffer;
+		}
+
 		inline const vertex_buffer_type &get_buffer() const
 		{
 			return m_buffer;
+		}
+
+		// call 'rebuild' after editing the font
+		inline Font &get_font()
+		{
+			return m_font;
 		}
 
 		inline const Font &get_font() const
@@ -90,12 +121,13 @@ namespace ig
 			vertex_type *vertcies = new vertex_type[ bufsz ];
 			Vector2f pos = { 0.f, 0.f };
 			float line_height = 0.0f;
-			const Vector2f uvstep = m_font.get_texcoord_step();
 			size_t notdraw_count = 0;
 
 			// TODO: 3D and things
-			for (int i = 0; i < str_sz; i++)
+			for (size_t i = 0; i < str_sz; i++)
 			{
+				const size_t gly_index = m_font.get_glyph_index( m_str[ i ] );
+
 				if (m_str[ i ] == '\n')
 				{
 					pos.x = 0.f;
@@ -106,34 +138,36 @@ namespace ig
 				}
 				else if (m_str[ i ] == '\t')
 				{
-					pos.x += m_tab_size * m_scale.x;
+					pos.x += (m_tab_size * m_font.get_space_width()) * m_scale.x;
+					notdraw_count++;
+					continue;
+				}
+				else if (m_str[ i ] == ' ')
+				{
+					pos.x += m_font.get_space_width() * m_scale.x;
 					notdraw_count++;
 					continue;
 				}
 
-				const size_t gly_index = m_font.get_glyph_index( m_str[ i ] );
-
-				const int j = (i - notdraw_count) * 4;
-				const Font::Glyph &gly = m_font.get_glyphs()[ gly_index ];
+				const size_t j = (i - notdraw_count) * 4;
+				const Font::Glyph &gly = m_font.get_glyphs()[ gly_index != Font::NPos ? gly_index : 0 ];
 				const Vector2f hs = Vector2f( gly.size ) * m_scale;
-				const Vector2f uvs = Vector2f( gly.atlas_coord ) * uvstep;
-				const Vector2f uvt = uvs + uvstep;
+				const Vector2f offsetss = Vector2f( gly.offset ) * m_scale;
 
-#define SET_VERT_POS(jk, x, y, z) if constexpr (Is3D) vertcies[ j + jk ].pos = { x, y, z }; else vertcies[ j + jk ].pos = { x, y }
-				SET_VERT_POS( 0, pos.x + hs.x, pos.y + hs.y, 0.f );
-				vertcies[ j + 0 ].uv = { uvt.x, uvt.y };
+				vertcies[ j + 0 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + hs.x + offsetss.x, pos.y + hs.y + offsetss.y );
+				vertcies[ j + 0 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.left + gly.atlas_uvbox.bottom;
 				vertcies[ j + 0 ].clr = m_clr;
-				SET_VERT_POS( 1, pos.x, pos.y + hs.y, 0.f );
-				vertcies[ j + 1 ].uv = { uvt.x, uvs.y };
+				vertcies[ j + 1 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + offsetss.x, pos.y + hs.y + offsetss.y );
+				vertcies[ j + 1 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.left;
 				vertcies[ j + 1 ].clr = m_clr;
-				SET_VERT_POS( 2, pos.x, pos.y, 0.f );
-				vertcies[ j + 2 ].uv = { uvs.x, uvs.y };
+				vertcies[ j + 2 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + offsetss.x, pos.y + offsetss.y );
+				vertcies[ j + 2 ].uv = gly.atlas_uvbox.origin;
 				vertcies[ j + 2 ].clr = m_clr;
-				SET_VERT_POS( 3, pos.x + hs.x, pos.y, 0.f );
-				vertcies[ j + 3 ].uv = { uvs.x, uvt.y };
+				vertcies[ j + 3 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + hs.x + offsetss.x, pos.y + offsetss.y );
+				vertcies[ j + 3 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.bottom;
 				vertcies[ j + 3 ].clr = m_clr;
 
-				pos.x += hs.x + float( m_font.get_char_spacing() * m_scale.x );
+				pos.x += hs.x + float( m_font.get_char_spacing() * m_scale.x ) + gly.advance;
 				if (hs.y > line_height)
 					line_height = hs.y;
 			}
@@ -153,7 +187,7 @@ namespace ig
 		Font m_font = {};
 		Colorf m_clr = { 1.f, 1.f, 1.f };
 		Vector2f m_scale = { 1.f, 1.f };
-		float m_tab_size = 16.f;
+		uint32_t m_tab_size = 4;
 		bool m_dirty = true;
 	};
 

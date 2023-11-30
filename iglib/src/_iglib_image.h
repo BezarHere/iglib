@@ -48,6 +48,9 @@ namespace ig
 		void transpose(); // <- transposes pixels
 		void transpose_bytes(); // <- transposes bytes
 
+		void clear( Colorb color );
+		void clear( Colorf color );
+
 		void blit(const Image &src, const Rect2i &src_rect, const Vector2i dst_pos);
 		void blit(const Image &src, const Vector2i dst_pos);
 		

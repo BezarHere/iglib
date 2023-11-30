@@ -38,7 +38,7 @@ typedef void(*Formater_t)(const byte *from, byte *to);
 
 FORCEINLINE byte constexpr grayscale(const byte data[ 3 ])
 {
-	return int(0.2126f * data[0] + 0.7152f * data[1] + 0.0722f * data[2]);
+	return byte(0.2126f * data[0] + 0.7152f * data[1] + 0.0722f * data[2]);
 }
 
 template <ColorFormat _FROM, ColorFormat _TO>
@@ -200,14 +200,13 @@ namespace ig
 
 	Image &Image::operator=(const Image &copy) noexcept
 	{
-		// remove the current image buffer
-		if (valid())
-			SOIL_free_image_data(m_buf);
-
 		m_sz = copy.m_sz;
 		m_format = copy.m_format;
 
-		m_buf = realloc_image_data(copy.m_buf, copy.get_buffer_size());
+		auto *new_buf = realloc_image_data(copy.m_buf, copy.get_buffer_size());
+		if (valid())
+			SOIL_free_image_data( m_buf );
+		m_buf = new_buf;
 		return *this;
 	}
 
@@ -263,33 +262,85 @@ namespace ig
 
 	void Image::rotate_clockwise()
 	{
+		byte *cw_rotated_buf = (byte *)malloc( get_buffer_size() );
+		ASSERT( cw_rotated_buf != nullptr );
+
+		for (int y = 0; y < m_sz.y; y++)
+		{
+			for (int x = 0; x < m_sz.x; x++)
+			{
+				const int index_from = ((y * m_sz.x) + x) * int( m_format );
+				const int index_to = ((x * m_sz.y) + (m_sz.y - (y + 1))) * int( m_format );
+
+#ifdef _PARANOID
+				ASSERT( index_from + int( m_format ) <= get_buffer_size() );
+				ASSERT( index_to + int( m_format ) <= get_buffer_size() );
+#endif // _PARANOID
+
+
+				for (int f = 0; f < int( m_format ); f++)
+					cw_rotated_buf[ index_to + f ] = m_buf[ index_from + f ];
+			}
+		}
+
+		SOIL_free_image_data( m_buf );
+		m_buf = cw_rotated_buf;
+		m_sz = { m_sz.y, m_sz.x };
 	}
 
 	void Image::rotate_counter_clockwise()
 	{
+		byte *ccw_rotated_buf = (byte *)malloc( get_buffer_size() );
+		ASSERT( ccw_rotated_buf != nullptr );
+
+		for (int y = 0; y < m_sz.y; y++)
+		{
+			for (int x = 0; x < m_sz.x; x++)
+			{
+				const int index_from = ((y * m_sz.x) + x) * int( m_format );
+				const int index_to = (((m_sz.x - (x + 1)) * m_sz.y) + y) * int( m_format );
+
+#ifdef _PARANOID
+				ASSERT( index_from + int( m_format ) <= get_buffer_size() );
+				ASSERT( index_to + int( m_format ) <= get_buffer_size() );
+#endif // _PARANOID
+
+				for (int f = 0; f < int( m_format ); f++)
+					ccw_rotated_buf[ index_to + f ] = m_buf[ index_from + f ];
+			}
+		}
+
+		SOIL_free_image_data( m_buf );
+		m_buf = ccw_rotated_buf;
+		m_sz = { m_sz.y, m_sz.x };
 	}
 
 	void Image::transpose()
 	{
 		REPORT( width() != height() );
 
-		byte *newbuf = (byte *)malloc( get_buffer_size() );
-		if (newbuf == nullptr)
-			throw std::bad_alloc();
+		byte *transposed_buf = (byte *)malloc( get_buffer_size() );
+		ASSERT( transposed_buf != nullptr );
 
 		for (int i = 0; i < m_sz.y; i++)
 		{
 			for (int j = 0; j < m_sz.x; j++)
 			{
-				const int index1 = ((i * m_sz.x) + j) * int(m_format);
-				const int index2 = ((j * m_sz.x) + i) * int(m_format);
+				const int index_from = ((i * m_sz.x) + j) * int(m_format);
+				const int index_to = ((j * m_sz.x) + i) * int(m_format);
+
+#ifdef _PARANOID
+				ASSERT( index_from + int( m_format ) <= get_buffer_size() );
+				ASSERT( index_to + int( m_format ) <= get_buffer_size() );
+#endif // _PARANOID
 
 				for (int f = 0; f < int(m_format); f++)
-					newbuf[ index2 + f ] = m_buf[ index1 + f ];
+					transposed_buf[ index_to + f ] = m_buf[ index_from + f ];
 			}
 		}
+
 		SOIL_free_image_data(m_buf);
-		m_buf = newbuf;
+		m_buf = transposed_buf;
 	}
 
 	void Image::transpose_bytes()
@@ -297,7 +348,7 @@ namespace ig
 		REPORT( width() != height() );
 
 		const Vector2i sizebytes = m_sz * get_colorformat_size( m_format );
-		int tmp;
+		byte tmp;
 		for (int i = 0; i < sizebytes.y; i++)
 		{
 			for (int j = 0; j < sizebytes.x; j++)
@@ -309,6 +360,54 @@ namespace ig
 				m_buf[ index1 ] = tmp;
 			}
 		}
+	}
+
+	void Image::clear( Colorb color )
+	{
+
+		// allah akber
+
+#define SET_CLR_LOOSE_1 const int index = (y * m_sz.x + x); m_buf[ index ] = color.r;
+#define SET_CLR_LOOSE_2 const int index = (y * m_sz.x + x) * 2; m_buf[ index ] = color.r; m_buf[ index + 1 ] = color.g;
+
+#define SET_CLR_LOOSE_3 \
+const int index = (y * m_sz.x + x) * 3; m_buf[ index ] = color.r; m_buf[ index + 1 ] = color.g; m_buf[ index + 2 ] = color.b;
+
+#define SET_CLR_LOOSE_4 \
+const int index = (y * m_sz.x + x) * 4; m_buf[ index ] = color.r; m_buf[ index + 1 ] = color.g; \
+m_buf[ index + 2 ] = color.b; m_buf[ index + 3 ] = color.a;
+
+#define SET_CLR_LOOSE_BLOCK(n) {\
+for (int y = 0; y < m_sz.y; y++) \
+{ for (int x = 0; x < m_sz.x; x++) \
+{ SET_CLR_LOOSE_## n; } } }
+
+		// unreadble
+
+		switch (get_colorformat_size( m_format ))
+		{
+		case 1:
+			SET_CLR_LOOSE_BLOCK( 1 );
+			break;
+		case 2:
+			SET_CLR_LOOSE_BLOCK( 2 );
+			break;
+		case 3:
+			SET_CLR_LOOSE_BLOCK( 3 );
+			break;
+		case 4:
+			SET_CLR_LOOSE_BLOCK( 4 );
+			break;
+		default:
+			const int format_size_bytes = get_colorformat_size( m_format );
+			REPORT( format_size_bytes < 1 || format_size_bytes > 4 );
+		}
+
+	}
+
+	void Image::clear( Colorf color )
+	{
+		return clear( Colorb( byte(color.r * 255), byte( color.g * 255 ), byte( color.b * 255 ), byte( color.a * 255 ) ) );
 	}
 
 	void Image::blit(const Image &src, const Rect2i &src_rect, const Vector2i dst_pos)

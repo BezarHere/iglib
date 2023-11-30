@@ -55,3 +55,15 @@ FORCEINLINE _T *blockcpy(const _T *src, const size_t size)
 {
 	return (_T *)memcpy(new _T[size], src, size);
 }
+
+// return the expo of the rounded down value to the closest power of 2 
+template <typename _T>
+FORCEINLINE _T closest_pow2( const _T value )
+{
+	for (_T i = (sizeof( _T ) * 8u) - 1; i >= 0; i--)
+	{
+		if (value >> i)
+			return i;
+	}
+	return 0;
+}

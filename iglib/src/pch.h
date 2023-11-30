@@ -20,19 +20,32 @@
 
 #include <SOIL/SOIL.h>
 
-#include <ft2build.h>
-
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 
 #define PEEK(p) std::cout << #p << ": " << (p) << '\n'
 
 #define NOTNULL(exp) ASSERT(exp != nullptr)
 #define ISNULL(exp) ASSERT(exp == nullptr)
-#define FORCEINLINE __forceinline
+
+
+//#define _PERF_DEBUG
+
+// revision needed!
+#ifdef FORCEINLINE
+#undef FORCEINLINE
+#endif // FORCEINLINE
+
+#if defined(_DEBUG) || defined(_PARANOID) || defined(_PERF_DEBUG)
+	#define FORCEINLINE inline
+#else
+	#define FORCEINLINE __forceinline
+#endif // _DEBUG
 
 typedef GLFWwindow *WindowHandle_t;
 typedef GLFWmonitor *MonitorHandle_t;
@@ -72,6 +85,5 @@ constexpr dye::TerminalColor PingColor{ dye::ColorCode::LightBlue, dye::ColorCod
 #define REPORT(cond) if (!!(cond)) { bite::warn("\"" #cond  "\" is true at \"" __FILE__ "\" line " + std::to_string(__LINE__) + ", returning...\n"); return; }
 #define REPORT_V(cond, value) if (!!(cond)) { bite::warn("\"" #cond  "\" is true at \"" __FILE__ "\" line " + std::to_string(__LINE__) + ", returning: " #value "\n"); return value; }
 #endif // !REPORT
-
 
 #endif

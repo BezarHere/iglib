@@ -8,10 +8,15 @@
 #include <stdint.h>
 
 #ifdef NOTE
-#error 'NOTE' is used macro and should not be defined before the 'iglib.h' header
+#error 'NOTE' is used macro and should NOT be defined before the 'iglib.h' header
 #endif
 #define NOTE(x)
 
+#if _HAS_CXX17
+#define IF_CONSTEXPR if constexpr
+#else
+#define IF_CONSTEXPR
+#endif
 
 namespace ig
 {
