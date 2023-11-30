@@ -329,9 +329,6 @@ namespace ig
 			// isn't freetype already giving char codepoint in order?
 			std::qsort( m_codepoint_indexes.data(), m_codepoint_indexes.size(), sizeof( m_codepoint_indexes[ 0 ] ), codepoint_index_qsort_comp );
 
-			// idk why but the image is always fucked up, this mostly fixes it
-
-			img.save_tga( "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\fontttf.tga" );
 
 			glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 			faces_atlas = Texture( img );
