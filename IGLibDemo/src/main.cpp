@@ -177,34 +177,37 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 
 static ig::Font *font;
 static ig::Text2D *text;
-void draw_fromto_comp(Canvas &c)
+void draw_fromto_comp(Canvas &c, Renderer &rend)
 {
 	if (text->is_dirty())
 		text->rebuild();
-	c.set_texture( text->get_font().get_atlas() );
+	rend.bind_texture( text->get_font().get_atlas() );
 	//c.set_texture( 0 );
 	//c.transform2d().rotate( c.get_window().get_shader_time() );
+	
 	c.draw( text->get_buffer() );
-	const float lowest_axis = float(std::min(c.get_window().width(), c.get_window().height())) / 2.f;
+	const float lowest_axis = float(std::min(c.get_renderer().get_window().width(), c.get_renderer().get_window().height())) / 2.f;
 	//c.set_texture(NULL);
 	//c.rect({ 0.f, 0.f }, { lowest_axis, lowest_axis }, { 1.0, 1.0, 1.0 });
 	//c.set_texture(font->get_atlas());
 	//c.rect( { lowest_axis + 16.f, 0.0f }, {lowest_axis * 2 + 16.f, lowest_axis}, {1.0, 1.0, 1.0});
 }
 
-void draw2d_callback(Canvas &c)
+void draw2d_callback(ig::Renderer &rend)
 {
+	Canvas &c = rend.get_canvas();
+
 	static Vector2f last_m{};
 	static bool first_call = true;
-	const ig::Vector2f m = c.get_window().get_mouse_position();
-	const bool m_inside_window = c.get_window().width() > m.x && c.get_window().height() > m.y && m.x > 0.f && m.y > 0.f;
+	const ig::Vector2f m = c.get_renderer().get_window().get_mouse_position();
+	const bool m_inside_window = c.get_renderer().get_window().width() > m.x && c.get_renderer().get_window().height() > m.y && m.x > 0.f && m.y > 0.f;
 	if (first_call)
 	{
 		last_m = m;
 		first_call = false;
 	}
 
-	const float t = c.get_window().get_shader_time();
+	const float t = c.get_renderer().get_window().get_shader_time();
 	//switch (rot_switch)
 	//{
 	//case 1:
@@ -244,16 +247,18 @@ void draw2d_callback(Canvas &c)
 	//const Vector2f inverted_m{ m.x - (c.get_window().width() / 2.0f), (c.get_window().height() / 2.0f) - m.y };
 	const Vector2f inverted_m{ 0.f, 0.f };
 	//c.demo();
-	c.set_texture(before_tex.get_handle());
-	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage3D));
-	c.set_draw_type( DrawType::Drawing3D );
+	rend.bind_texture(before_tex.get_handle());
+	rend.bind_default_shader(ShaderUsage::Usage3D);
+	rend.set_draw_type( DrawType::Drawing3D );
 	c.camera().transform = ply;
+	c.update_camera();
+	rend.try_update_shader_state();
 	c.cube({ inverted_m.x / 100.0f + 2.f, inverted_m.y / 100.0f, cube_distance }, { 1.f, 1.f, 1.f }, { 1.0f, 0.8f, 0.6f, 1.f });
 	c.cube({ inverted_m.x / 100.0f, inverted_m.y / 100.0f, cube_distance }, { 1.f, 1.f, 1.f }, { 0.6f, 0.4f, 0.2f, 1.f });
 	c.cube({ inverted_m.x / 100.0f - 2.f, inverted_m.y / 100.0f, cube_distance }, { 1.f, 1.f, 1.f }, { 0.3f, 0.2f, 0.1f, 1.f });
-	c.bind_shader(Shader::get_default(ig::ShaderUsage::Usage2D));
-	c.disable_feature( Feature::DepthTest );
-	draw_fromto_comp(c);
+	rend.bind_default_shader( ShaderUsage::Usage2D );
+	rend.disable_feature( Feature::DepthTest );
+	draw_fromto_comp(c, rend);
 	
 	//std::cout << c.transform3d().get_position() << '\n';
 	
@@ -304,6 +309,7 @@ int main()
 
 	//a(LARGE{}, LARGE{}, LARGE{}, LARGE{});
 	
+	
 	{
 		ig::Window i = ig::Window({512, 512}, "Window !!!");
 		font = new Font( "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\font.ttf", 64, []( codepoint_t cp ){ return cp < 128; } );
@@ -328,15 +334,19 @@ int main()
 		i.set_callback(callback);
 		i.set_key_callback(key_callback);
 		i.set_mouse_scroll_callback(scroll);
-		i.set_draw_callback(draw2d_callback);
+
+		ig::Renderer renderer{ i, draw2d_callback };
+		ig::RenderEnviorment ebv = renderer.get_enviorment();
+		ebv.enabled_postprocessing = false;
+		renderer.set_enviorment( ebv );
 
 		std::cout << ig::get_opengl_version() << '\n';
 		while (!i.should_close())
 		{
 			std::this_thread::sleep_for(std::chrono::microseconds(long long(1000.0 / 20.0)));
 
-			i.clear();
-			i.render();
+			renderer.clear();
+			renderer.draw();
 			i.poll();
 
 		}

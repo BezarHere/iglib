@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "_iglib_window.h"
+#include "_iglib_renderer.h"
 #include "_iglib_canvas.h"
 #include "internal.h"
 #include "intrinsics.h"
@@ -46,7 +46,6 @@ FORCEINLINE const Vector2fSpan_t &get_circle_frame(uint16_t res)
 		s_CircleFrames[res] = _generate_circle_frame(res);
 	return s_CircleFrames.at(res);
 }
-static ShaderInstance_t DefaultShaders[(int)ShaderUsage::_Max]{};
 
 // a cube consists of two quads each one consisting of two tringles
 static Vertex3DBuffer DefaultCubeBuffer{};
@@ -92,19 +91,13 @@ static Vertex2D g_Triangle2DVertcies[ 3 ]{};
 static Vertex2D g_Line2DVertcies[ 2 ]{};
 
 static const Canvas *g_CurrentCanvas;
-static std::shared_ptr<const Texture> g_PlankTexture;
 
 
-FORCEINLINE void generate_opengl_globals()
+FORCEINLINE void try_generate_opengl_globals()
 {
 	static bool first = true;
 	if (first) first = false;
 	else return;
-
-	for (int i = 0; i < (int)ShaderUsage::_Max; i++)
-	{
-		DefaultShaders[i] = Shader::get_default(ShaderUsage(i));
-	}
 
 	DefaultCubeIndexBuffer.generate(sizeof(DefaultCubeIndexBuffer_Values) / sizeof(*DefaultCubeIndexBuffer_Values), DefaultCubeIndexBuffer_Values);
 	DefaultLineBuffer.create(2u);
@@ -130,18 +123,6 @@ FORCEINLINE void generate_opengl_globals()
 		g_Quad2DVertcies[ 3 ].uv = { 1.f, 0.f };
 	}
 
-
-	// generating plank texutre
-	{
-		constexpr byte plank_white_data[ 2 * 2 * 4 ]
-		{
-			255, 255, 255, 255,
-			255, 255, 255, 255,
-			255, 255, 255, 255,
-			255, 255, 255, 255,
-		};
-		g_PlankTexture.reset(new Texture(Image(plank_white_data, {2, 2}, ColorFormat::L)));
-	}
 }
 
 namespace ig
@@ -149,68 +130,25 @@ namespace ig
 	
 
 
-	Canvas::Canvas(const Window &wnd)
-		: m_wnd{ wnd }, m_shader{ 0 }, m_transform2d{}, m_transform3d{}
+	Canvas::Canvas(const Renderer &renderer)
+		: m_renderer{ renderer }, m_transform2d{}, m_transform3d{}
 	{
-		generate_opengl_globals();
-
-		if (g_CurrentCanvas)
-			bite::warn("More then on instances of ig::Canvas exists! you can't render on window/canvas while a canvas is alive!");
-		g_CurrentCanvas = this;
-
-		this->unbind_shader();
+		try_generate_opengl_globals();
 		update_camera();
-		set_draw_type( m_draw_type );
+	}
+
+	Canvas::Canvas( Canvas &&move ) noexcept
+		: m_renderer{ move.m_renderer }, m_transform2d{ move.m_transform2d }, m_transform3d{ move.m_transform3d }, m_camera{ move.m_camera }
+	{
+		update_camera();
 	}
 
 	Canvas::~Canvas()
 	{
-		glUseProgram(0);
-		g_CurrentCanvas = nullptr;
-	}
-
-	void Canvas::set_draw_type( const DrawType type )
-	{
-		m_draw_type = type;
-
-		switch (type)
-		{
-		case DrawType::Drawing2D:
-			m_shading_usage = ShaderUsage::Usage2D;
-
-			glDisable( GL_DEPTH_TEST );
-			glDisable( GL_CULL_FACE );
-
-			break;
-		case DrawType::Drawing3D:
-			m_shading_usage = ShaderUsage::Usage3D;
-			glEnable( GL_DEPTH_TEST );
-			glEnable( GL_CULL_FACE );
-
-			glFrontFace( GL_CCW );
-			glCullFace( GL_FRONT );
-
-			break;
-		case DrawType::DirectDrawing:
-			m_shading_usage = ShaderUsage::ScreenSpace;
-
-			glDisable( GL_DEPTH_TEST );
-			glDisable( GL_CULL_FACE );
-			break;
-		case DrawType::Raw:
-			m_shading_usage = ShaderUsage::ScreenSpace;
-
-			glDisable( GL_DEPTH_TEST );
-			glDisable( GL_CULL_FACE );
-			break;
-		default:
-			break;
-		}
 	}
 
 	void Canvas::quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr)
 	{
-		const Vector2f wf = m_wnd.size();
 		g_Quad2DVertcies[ 0 ].pos = to_clamped_space(p0, wf);
 		g_Quad2DVertcies[ 1 ].pos = to_clamped_space(p1, wf);
 		g_Quad2DVertcies[ 2 ].pos = to_clamped_space(p2, wf);
@@ -412,8 +350,6 @@ namespace ig
 
 	void Canvas::draw(const Vertex2DBuffer &buf, int start, int count)
 	{
-		update_shader_uniforms();
-
 		buf._bind_array_buffer();
 
 		glEnableVertexAttribArray(0);
@@ -436,8 +372,6 @@ namespace ig
 
 	void Canvas::draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies)
 	{
-		update_shader_uniforms();
-
 		buf._bind_array_buffer();
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indcies.get_id());
 
@@ -463,8 +397,6 @@ namespace ig
 
 	void Canvas::draw(const Vertex3DBuffer &buf, int start, int count)
 	{
-		update_shader_uniforms();
-
 		buf._bind_array_buffer();
 
 		glEnableVertexAttribArray(0);
@@ -488,129 +420,9 @@ namespace ig
 			raise("draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process");
 	}
 
-	void Canvas::bind_shader(const ShaderInstance_t &shader)
+	const Renderer &Canvas::get_renderer() const
 	{
-		if (m_shader.get() == shader.get())
-			return;
-
-		if (!shader)
-		{
-			bite::warn("trying to bind a NULL shader to canvas!");
-			return;
-		}
-
-		glUseProgram(shader->get_id());
-		m_shader = shader;
-	}
-
-	void Canvas::unbind_shader()
-	{
-		glUseProgram(DefaultShaders[ (int)m_shading_usage ]->get_id());
-		m_shader = DefaultShaders[ (int)m_shading_usage ];
-	}
-
-	void Canvas::set_cullwinding( CullWinding winding )
-	{
-		glFrontFace( int( winding ) );
-	}
-
-	void Canvas::set_cullface( CullFace face )
-	{
-		glCullFace( int( face ) );
-	}
-
-	void Canvas::enable_feature( Feature feature )
-	{
-		glEnable( int( feature ) );
-	}
-
-	void Canvas::disable_feature( Feature feature )
-	{
-		glDisable( int( feature ) );
-	}
-
-	//void Canvas::set_shading_usage(const ShaderUsage usage)
-	//{
-	//	if (usage == ShaderUsage::_Max)
-	//	{
-	//		bite::warn("the shading usage ShaderUsage::_Max is not valid!");
-	//		return;
-	//	}
-	//	m_shading_usage = usage;
-	//}
-
-	ShaderId_t Canvas::get_shader_id() const noexcept
-	{
-		return m_shader->get_id();
-	}
-
-	void Canvas::update_shader_uniforms()
-	{
-		if (!m_shader)
-			return;
-
-		const int atc = m_active_textrues_count;
-		for (int i = 0; i < atc; i++)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			const auto hdl = m_textures[ i ] ? m_textures[ i ] : g_PlankTexture->get_handle();
-			glBindTexture(GL_TEXTURE_2D, hdl);
-		}
-
-		glUniform2f(glGetUniformLocation(m_shader->get_id(), "_screensize"), (float)m_wnd.width(), (float)m_wnd.height());
-
-		if (m_shader->get_usage() == ShaderUsage::Usage2D)
-		{
-			glUniformMatrix2fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_FALSE, m_transform2d.get_data().f);
-			glUniform2f(glGetUniformLocation(m_shader->get_id(), "_offset"), m_transform2d.get_data().origin.x, m_transform2d.get_data().origin.y);
-		}
-		else if (m_shader->get_usage() == ShaderUsage::Usage3D)
-		{
-			glUniform3f(glGetUniformLocation(m_shader->get_id(), "_offset"), m_transform3d.get_data().origin.x, m_transform3d.get_data().origin.y, m_transform3d.get_data().origin.z);
-			glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_trans"), 1, GL_TRUE, m_transform3d.get_data().f);
-			glUniformMatrix4fv(glGetUniformLocation(m_shader->get_id(), "_proj"), 1, GL_TRUE, m_camera_cache.m_proj_matrix.m_elements.data());
-			glUniformMatrix3fv(glGetUniformLocation(m_shader->get_id(), "_view_transform"), 1, GL_TRUE, m_camera.transform.get_data().f);
-			glUniform3fv(glGetUniformLocation(m_shader->get_id(), "_view_position"), 1, m_camera.transform.get_data().f + 9);
-		}
-
-	}
-
-	const Window &Canvas::get_window() const
-	{
-		return m_wnd;
-	}
-
-
-	void Canvas::set_texture(const TextureId_t tex, const TextureSlot slot)
-	{
-		m_textures[ int(slot) ] = tex;
-	}
-
-	TextureId_t ig::Canvas::get_texture(const TextureSlot slot) const noexcept
-	{
-		return m_textures[ int(slot) ];
-	}
-
-	void Canvas::set_active_textures_count(int count)
-	{
-		if (count < 0)
-		{
-			bite::warn("can't set the active textures count to less then zero");
-			return;
-		}
-
-		if (count >= int(TextureSlot::_MAX))
-		{
-			bite::warn("can't set the active textures count to greater or equal to zero");
-			return;
-		}
-
-		m_active_textrues_count = count;
-	}
-
-	int Canvas::get_active_textures_count() const noexcept
-	{
-		return m_active_textrues_count;
+		return m_renderer;
 	}
 
 	Camera &Canvas::camera()
@@ -625,87 +437,7 @@ namespace ig
 
 	void Canvas::update_camera()
 	{
-		m_camera_cache.m_proj_matrix = m_camera.projection(m_wnd.width() / float(m_wnd.height()));
-	}
-
-	void Canvas::set_shader_uniform(int location, int value)
-	{
-		glUniform1i(location, value);
-	}
-
-	void Canvas::set_shader_uniform(int location, float value)
-	{
-		glUniform1f(location, value);
-	}
-
-	void Canvas::set_shader_uniform(int location, Vector2i value)
-	{
-		glUniform2i(location, value.x, value.y);
-	}
-
-	void Canvas::set_shader_uniform(int location, Vector2f value)
-	{
-		glUniform2f(location, value.x, value.y);
-	}
-
-	void Canvas::set_shader_uniform(int location, Vector3i value)
-	{
-		glUniform3i(location, value.x, value.y, value.z);
-	}
-
-	void Canvas::set_shader_uniform(int location, Vector3f value)
-	{
-		glUniform3f(location, value.x, value.y, value.z);
-	}
-
-	void Canvas::set_shader_uniform(int location, const Vector4i &value)
-	{
-		glUniform4i(location, value.x, value.y, value.z, value.w);
-	}
-
-	void Canvas::set_shader_uniform(int location, const Vector4f &value)
-	{
-		glUniform4f(location, value.x, value.y, value.z, value.w);
-	}
-
-	void Canvas::set_shader_uniform(int location, int count, const int *value)
-	{
-		glUniform1iv(location, count, value);
-	}
-
-	void Canvas::set_shader_uniform(int location, int count, const float *value)
-	{
-		glUniform1fv(location, count, value);
-	}
-
-	void Canvas::set_shader_uniform(int location, int count, const Vector2i *value)
-	{
-		glUniform2iv(location, count, (const GLint *)value);
-	}
-
-	void Canvas::set_shader_uniform(int location, int count, const Vector2f *value)
-	{
-		glUniform2fv(location, count, (const GLfloat *)value);
-	}
-
-	void Canvas::set_shader_uniform(int location, int count, const Vector3i *value)
-	{
-		glUniform3iv(location, count, (const GLint *)value);
-	}
-
-	void Canvas::set_shader_uniform(int location, int count, const Vector3f * value)
-	{
-		glUniform3fv(location, count, (const GLfloat *)value);
-	}
-
-	void Canvas::set_shader_uniform(int location, int count, const Vector4i *value)
-	{
-		glUniform4iv(location, count, (const GLint *)value);
-	}
-
-	void Canvas::set_shader_uniform(int location, int count, const Vector4f *value)
-	{
-		glUniform4fv(location, count, (const GLfloat *)value);
+		m_cam_cache = m_camera.projection(m_renderer.get_window().width() / float( m_renderer.get_window().height()));
 	}
 
 }

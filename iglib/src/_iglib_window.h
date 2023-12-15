@@ -6,8 +6,7 @@
 
 namespace ig
 {
-	typedef void(*UpdateCallback_t)();
-	typedef void(*DrawCallback_t)();
+	
 
 
 	enum class WindowCallbackReason
@@ -197,21 +196,17 @@ namespace ig
 
 	class Window;
 
+	typedef void(*UpdateCallback_t)();
 	typedef void(*WindowCallback_t)(Window &window, WindowCallbackReason reason);
 	typedef void(*KeyCallback_t)(Window &window, Key key, KeyAction action, KeyModFlags mods);
 	typedef void(*MouseButtonCallback_t)(Window &window, MouseButton button, KeyAction action, KeyModFlags mods);
 	typedef void(*MouseScrollCallback_t)(Window &window, double x, double y);
 
 
-	struct Enviorment
-	{
-		Colorf ambient_light = { 1.f, 1.f, 1.f };
-		bool hdr = true;
-	};
 
 	class Window final
 	{
-		friend class Application;
+		friend class Renderer;
 	public:
 		Window() noexcept;
 		Window(Vector2i size) noexcept;
@@ -266,9 +261,6 @@ namespace ig
 		void set_mouse_scroll_callback(MouseScrollCallback_t callback) noexcept;
 		MouseScrollCallback_t get_mouse_scroll_callback() const noexcept;
 
-		void set_draw_callback(DrawCallback callback) noexcept;
-		DrawCallback get_draw_callback() const noexcept;
-
 		TimeMs_t get_creation_time() const noexcept;
 		float get_shader_time() const noexcept;
 
@@ -278,10 +270,9 @@ namespace ig
 		// won't always return the value at m_visible_state
 		WindowVisibiltyState get_visiblity_state() const;
 
-		void render();
 
 		void poll();
-		void clear();
+		
 
 		void ping() const noexcept;
 
@@ -295,7 +286,6 @@ namespace ig
 		Window(void *const handle, const std::string &title, bool hidden) noexcept;
 
 		class WindowCallbackEngine;
-		struct WindowDrawBuffer;
 
 		Window &operator=(const Window &other) = delete;
 		Window(const Window &copy) = delete;
@@ -307,18 +297,12 @@ namespace ig
 		bool m_focused = true;
 		Rect2i m_rect;
 		std::string m_title{};
-		Vector2i m_frambeuffer_size{ 1, 1 };
 		Vector2f m_content_scale{ 1.0f, 1.0f };
 		bool m_deffered_close{ false };
-		bool m_postprocessing = true;
-		Enviorment m_env;
 
 		const TimeMs_t m_creation_time;
 		const float m_stp;
 
-		std::unique_ptr<WindowDrawBuffer> m_drawbuffer;
-
-		DrawCallback m_draw_callback = nullptr;
 		WindowCallback_t m_callback = nullptr;
 		KeyCallback_t m_key_callback = nullptr;
 		MouseButtonCallback_t m_mouse_button_callback = nullptr;

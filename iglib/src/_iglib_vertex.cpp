@@ -4,8 +4,12 @@
 
 FORCEINLINE VertexBufferId_t create_buffer()
 {
-	VertexBufferId_t i;
+	VertexBufferId_t i = 0;
 	glGenBuffers(1, &i);
+	if (!i)
+	{
+		bite::warn("Warning: Creating vertex buffer failed with error code " + std::to_string(glGetError()));
+	}
 	return i;
 }
 

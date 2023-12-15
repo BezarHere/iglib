@@ -2,16 +2,8 @@
 #include "internal.h"
 #include "_iglib_window.h"
 
-static Vertex2D g_ScreenQuadVertcies[ 4 ]
-{
-	{ {0.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {0.f, 1.f} }, // topleft
-	{ {0.f, 1.f}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f} }, // bottomleft
-	{ {1.f, 1.f}, {1.f, 1.f, 1.f, 1.f}, {1.f, 0.f} }, // bottomright
-	{ {1.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {1.f, 1.f} } // topright
-};
 
-static Vertex2DBuffer g_ScreenQuadBuffer{};
-static ShaderInstance_t g_ScreenShader{};
+
 static GLFWwindow *create_glfw_window(int width, int height, const std::string &title, GLFWmonitor *fullscreen, GLFWwindow *share)
 {
 	if (!is_glfw_running())
@@ -39,24 +31,7 @@ static GLFWwindow *create_glfw_window(int width, int height, const std::string &
 	}
 
 
-	if (!g_ScreenShader)
-	{
-		static const std::string PostProcessing_Vert =
-			"void main() { gl_Position = vec4(to_native_space(pos), 0.0, 1.0); UV = texcoord; }";
-
-		static const std::string PostProcessing_Frag =
-			"void main() {"
-				"Color = vec4(texture(uTex0, UV).rgb, 1.0);"
-				//"Color = vec4(UV, 1.0, 1.0);"
-			"}";
-
-		g_ScreenQuadBuffer.set_primitive(PrimitiveType::Quad);
-		g_ScreenQuadBuffer.set_usage(BufferUsage::Dynamic);
-		g_ScreenQuadBuffer.create(4, nullptr);
-		g_ScreenShader = Shader::compile(
-			PostProcessing_Vert, PostProcessing_Frag, ShaderUsage::ScreenSpace
-		);
-	}
+	
 
 
 	return hdl;
@@ -309,9 +284,9 @@ namespace ig
 				window->m_rect.x = a;
 				window->m_rect.y = b;
 				break;
-			case ig::WindowCallbackReason::ResizedFramebuffer:
-				window->m_frambeuffer_size.set(a, b);
-				break;
+			//case ig::WindowCallbackReason::ResizedFramebuffer:
+			//	window->m_frambeuffer_size.set(a, b);
+			//	break;
 			default:
 				break;
 			}
@@ -415,74 +390,7 @@ namespace ig
 
 #pragma endregion
 
-	struct Window::WindowDrawBuffer
-	{
-		static constexpr GLuint RenderTextureType = GL_RGB;
-		static constexpr GLuint RenderTextureTypeHDR = GL_RGB16F;
-		static constexpr GLuint RenderDepthStencilMode = GL_DEPTH24_STENCIL8;
-
-		~WindowDrawBuffer()
-		{
-			glDeleteFramebuffers(1, &fbo);
-			glDeleteRenderbuffers(1, &rbo);
-			glDeleteTextures(1, &cto);
-		}
-
-		FORCEINLINE static std::unique_ptr<WindowDrawBuffer> generate(Vector2i size, const Enviorment &env)
-		{
-			GLuint fbo = 0, rbo = 0, cto = 0;
-			
-			glGenFramebuffers(1, &fbo);
-
-			REPORT_V(fbo == NULL, std::unique_ptr<WindowDrawBuffer>(nullptr));
-
-			glGenTextures(1, &cto);
-
-			if (cto == NULL)
-			{
-				glDeleteFramebuffers(1, &fbo);
-				REPORT_V(cto == NULL, std::unique_ptr<WindowDrawBuffer>(nullptr));
-			}
-
-			glBindTexture(GL_TEXTURE_2D, cto);
-			glTexImage2D(GL_TEXTURE_2D, 0, env.hdr ? RenderTextureTypeHDR : RenderTextureType, size.x, size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-
-			glGenRenderbuffers(1, &rbo);
-
-			if (rbo == NULL)
-			{
-				glDeleteFramebuffers(1, &fbo);
-				glDeleteTextures(1, &cto);
-				REPORT_V(rbo == NULL, std::unique_ptr<WindowDrawBuffer>(nullptr));
-			}
-
-
-			glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-			glRenderbufferStorage(GL_RENDERBUFFER, RenderDepthStencilMode, size.x, size.y);
-
-			
-
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cto, 0);
-			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-			WARN(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE); // <- BUGBUG
-
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NULL);
-			glBindRenderbuffer(GL_RENDERBUFFER, NULL);
-			glBindTexture(GL_TEXTURE_2D, NULL);
-
-			return std::unique_ptr<WindowDrawBuffer>(new WindowDrawBuffer{ fbo, rbo, cto, size });
-		}
-
-		const GLuint fbo = 0, rbo = 0, cto = 0;
-		const Vector2i ctosz{};
-	};
+	
 
 	Window::Window() noexcept
 		: m_hdl(nullptr),
@@ -490,8 +398,7 @@ namespace ig
 		m_focused{ false },
 		m_hidden{ false },
 		m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) },
-		m_stp{ (float)glfwGetTime() },
-		m_drawbuffer{ nullptr }
+		m_stp{ (float)glfwGetTime() }
 	{
 		refresh_rect();
 	}
@@ -518,8 +425,7 @@ namespace ig
 			m_title{ title },
 			m_hidden{ hidden },
 			m_creation_time{ TimeMs_t::duration(TimeMs_t::clock::now().time_since_epoch().count()) },
-			m_stp{ (float)glfwGetTime() },
-			m_drawbuffer{ nullptr }
+			m_stp{ (float)glfwGetTime() }
 	{
 		if (handle == nullptr)
 		{
@@ -529,7 +435,6 @@ namespace ig
 		}
 		WindowCallbackEngine::link(this);
 		refresh_rect();
-		m_drawbuffer.reset(WindowDrawBuffer::generate(size(), m_env).release());
 	}
 
 
@@ -540,8 +445,7 @@ namespace ig
 		m_title(move.m_title),
 		m_hidden{ move.m_hidden },
 		m_stp{ move.m_stp },
-		m_mouse_button_callback{ move.m_mouse_button_callback },
-		m_drawbuffer{ move.m_drawbuffer.release() }
+		m_mouse_button_callback{ move.m_mouse_button_callback }
 	{
 		if (move.m_hdl == nullptr)
 			return;
@@ -578,7 +482,6 @@ namespace ig
 		m_callback = other.m_callback;
 		m_content_scale = other.m_content_scale;
 		m_rect = other.m_rect;
-		m_frambeuffer_size = other.m_frambeuffer_size;
 		m_visible_state = other.m_visible_state;
 		m_mouse_button_callback = other.m_mouse_button_callback;
 
@@ -700,81 +603,11 @@ namespace ig
 		return m_mouse_scroll_callback;
 	}
 
-	void Window::render()
-	{
-		const Vector2i sz = size();
-		// MINIMIZED, no drawing
-		if (sz.area() == 0)
-		{
-			return;
-		}
-		push_to_draw_pipline((WindowHandle_t)m_hdl);
-		// TODO: Invoke a query to update size, size is still updated by the resize callback but still
-
-		if (m_postprocessing && sz != m_drawbuffer->ctosz)
-		{
-			m_drawbuffer.reset(WindowDrawBuffer::generate(sz, m_env).release());
-		}
-
-
-		//glDisable(GL_DEPTH);
-		glEnable(GL_SCISSOR_TEST);
-		glEnable(GL_BLEND);
-		glEnable(GL_DEPTH_CLAMP);
-
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glScissor(0, 0, sz.x, sz.y);
-		//glCullFace(GL_FRONT);
-
-		const bool postprocessing = m_postprocessing && m_drawbuffer.get() != nullptr;
-		if (postprocessing)
-		{
-			glBindRenderbuffer(GL_RENDERBUFFER, m_drawbuffer->rbo);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_drawbuffer->fbo);
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		}
-
-		Canvas canvas{ *this };
-		if (m_draw_callback)
-			m_draw_callback(canvas);
-
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, NULL);
-		glBindRenderbuffer(GL_RENDERBUFFER, NULL);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_SCISSOR_TEST);
-		glDisable(GL_BLEND);
-		glDisable(GL_DEPTH_CLAMP);
-
-		if (postprocessing)
-		{
-			g_ScreenQuadVertcies[ 1 ].pos.y = (float)sz.y;
-			g_ScreenQuadVertcies[ 2 ].pos = Vector2f(sz);
-			g_ScreenQuadVertcies[ 3 ].pos.x = (float)sz.x;
-			g_ScreenQuadBuffer.update(g_ScreenQuadVertcies);
-
-			canvas.bind_shader(g_ScreenShader);
-			canvas.set_texture(m_drawbuffer->cto);
-			canvas.draw(g_ScreenQuadBuffer);
-		}
-
-		pop_draw_pipline();
-		glfwSwapBuffers((GLFWwindow *)m_hdl);
-	}
 
 	void Window::poll()
 	{
 		push_to_draw_pipline((WindowHandle_t)m_hdl);
 		glfwPollEvents();
-		pop_draw_pipline();
-	}
-
-	void Window::clear()
-	{
-		push_to_draw_pipline((WindowHandle_t)m_hdl);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		pop_draw_pipline();
 	}
 
@@ -807,16 +640,6 @@ namespace ig
 	bool Window::is_decorated() const
 	{
 		return glfwGetWindowAttrib((GLFWwindow *)m_hdl, GLFW_DECORATED);
-	}
-
-	void Window::set_draw_callback(DrawCallback callback) noexcept
-	{
-		m_draw_callback = callback;
-	}
-
-	DrawCallback Window::get_draw_callback() const noexcept
-	{
-		return m_draw_callback;
 	}
 
 	void Window::hide()

@@ -22,6 +22,7 @@ namespace ig
 		Shader();
 		~Shader();
 
+		/// @warn THIS WILL REBUILD A NEW 'DEFAULT' SHADER, WICH IS EXPENSIVE
 		static ShaderInstance_t get_default(ShaderUsage usage = ShaderUsage::Usage3D);
 		static ShaderInstance_t compile(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage = ShaderUsage::Usage3D);
 

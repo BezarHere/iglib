@@ -1,7 +1,6 @@
 #pragma once
 #include "_iglib_vertex.h"
 #include "_iglib_indexbuffer.h"
-#include "_iglib_batchdraw.h"
 #include "_iglib_image.h"
 #include "_iglib_texture.h"
 #include "_iglib_shader.h"
@@ -11,54 +10,17 @@
 
 namespace ig
 {
-	enum class TextureSlot
-	{
-		Slot0, Slot1, Slot2, Slot3,
-		Slot4, Slot5, Slot6, Slot7,
-		_MAX
-	};
 
-	enum class DrawType
-	{
-		Drawing2D,
-		Drawing3D,
-		DirectDrawing,
-		Raw,
-	};
-
-	// VALUES COPIED FROM GL.H
-	enum class CullWinding
-	{
-		CW = 0x900,
-		CCW = 0x901
-	};
-
-	// VALUES COPIED FROM GL.H
-	enum class CullFace
-	{
-		Front = 0x404,
-		Back = 0x405,
-		FrontAndBack = 0x408
-	};
-
-	// VALUES COPIED FROM GL.H
-	enum class Feature
-	{
-		DepthTest = 0xb71,
-		Culling = 0xb44
-	};
-
-	class Window;
+	class Renderer;
 
 
 	class Canvas
 	{
-		friend Window;
+		friend Renderer;
 	public:
+		Canvas( Canvas &&move ) noexcept;
 		~Canvas();
 		
-		// what will the canvas expect to draw in later calls? and what default shader will it resort to?
-		void set_draw_type( const DrawType type );
 
 		void quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr);
 		void quad(Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, const Colorf &clr); // <- should be counter clockwise winded
@@ -83,84 +45,33 @@ namespace ig
 
 		void draw(const Vertex3DBuffer &buf, int start = 0, int count = -1);
 
-		void bind_shader(const ShaderInstance_t &shader);
-		void unbind_shader();
-
-		void set_cullwinding( CullWinding winding );
-		void set_cullface( CullFace face );
-
-		void enable_feature(Feature feature);
-		void disable_feature(Feature feature);
-
-		ShaderId_t get_shader_id() const noexcept;
-
-		// will update the _screensize and _time
-		void update_shader_uniforms();
-
-		const Window &get_window() const;
-
 		inline Transform2D &transform2d() noexcept { return m_transform2d; }
 		inline const Transform2D &transform2d() const noexcept { return m_transform2d; }
 
 		inline Transform3D &transform3d() noexcept { return m_transform3d; }
 		inline const Transform3D &transform3d() const noexcept { return m_transform3d; }
 
-		// USE ONLY IF YOU WANT TO INTEGRATE OPENGL CODE WITH IGLIB OR YOU KNOW WHAT ARE YOU DOING
-		void set_texture(const TextureId_t tex, const TextureSlot slot = TextureSlot::Slot0);
-		TextureId_t get_texture(const TextureSlot slot = TextureSlot::Slot0) const noexcept;
-
-		void set_active_textures_count(int count);
-		int get_active_textures_count() const noexcept;
-
 		Camera &camera();
 		const Camera &camera() const;
 		void update_camera();
 
-		/// \note used to set samplers slots
-		void set_shader_uniform(int location, int value);
-		void set_shader_uniform(int location, float value);
-		void set_shader_uniform(int location, Vector2i value);
-		void set_shader_uniform(int location, Vector2f value);
-		void set_shader_uniform(int location, Vector3i value);
-		void set_shader_uniform(int location, Vector3f value);
-		void set_shader_uniform(int location, const Vector4i &value);
-		void set_shader_uniform(int location, const Vector4f &value);
-		
-		// array uniform setters
-		void set_shader_uniform(int location, int count, const int *value);
-		void set_shader_uniform(int location, int count, const float *value);
-		void set_shader_uniform(int location, int count, const Vector2i *value);
-		void set_shader_uniform(int location, int count, const Vector2f *value);
-		void set_shader_uniform(int location, int count, const Vector3i *value);
-		void set_shader_uniform(int location, int count, const Vector3f *value);
-		void set_shader_uniform(int location, int count, const Vector4i *value);
-		void set_shader_uniform(int location, int count, const Vector4f *value);
+		/// @brief Make sure this canvas has a renderer to avoid null-deref
+		const Renderer &get_renderer() const;
 
 	private:
-		Canvas(const Window &wnd);
+		Canvas( const Renderer &renderer );
 		Canvas(const Canvas &) = delete;
-		Canvas(Canvas &&) = delete;
 		void operator=(const Canvas &) = delete;
 		void operator=(Canvas &&) = delete;
 
 	private:
-		const Window &m_wnd;
+		const Renderer &m_renderer;
 
-		std::shared_ptr<const Shader> m_shader;
-		DrawType m_draw_type = DrawType::Drawing2D;
-		ShaderUsage m_shading_usage = ShaderUsage::Usage2D;
-		
-		TextureId_t m_textures[int(TextureSlot::_MAX)];
-		int m_active_textrues_count = 1; // will upload all textures from 0 to m_active_textrues_count - 1
-		
 		Transform2D m_transform2d{};
-		Transform3D m_transform3d;
+		Transform3D m_transform3d{};
 
 		Camera m_camera;
-		struct CameraCache
-		{
-			Matrix4x4 m_proj_matrix;
-		} m_camera_cache;
+		Matrix4x4 m_cam_cache;
 	};
 
 	typedef void(*DrawCallback)(Canvas &canvas);

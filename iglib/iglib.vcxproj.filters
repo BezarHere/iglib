@@ -57,16 +57,10 @@
     <ClInclude Include="src\intrinsics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\_iglib_polygon.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\_iglib_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\_iglib_texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\_iglib_batchdraw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\_iglib_vertex.h">
@@ -105,6 +99,9 @@
     <ClInclude Include="src\_iglib_nativedialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\_iglib_renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp">
@@ -122,16 +119,10 @@
     <ClCompile Include="src\_iglib_canvas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\_iglib_polygon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\_iglib_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\_iglib_texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\_iglib_batchdraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\_iglib_font.cpp">
@@ -150,6 +141,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\_iglib_ssm2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\_iglib_renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
