@@ -223,22 +223,20 @@ namespace ig
 				 clr );
 	}
 
-	void Canvas::line(Vector2f start, Vector2f end, const Colorb clr)
+	void Canvas::line(Vector2f start, Vector2f end, const Colorf clr)
 	{
-		line(start, end, 1.0f, clr);
+		g_Line2DVertcies[ 0 ].pos = start;
+		g_Line2DVertcies[ 0 ].clr = clr;
+		g_Line2DVertcies[ 1 ].pos = end;
+		g_Line2DVertcies[ 1 ].clr = clr;
+		g_Line2DBuffer.update( g_Line2DVertcies );
+		draw( g_Line2DBuffer );
 	}
 
-	void Canvas::line(Vector2f start, Vector2f end, float_t width, const Colorb clr)
+	void Canvas::line(Vector2f start, Vector2f end, float_t width, const Colorf clr)
 	{
-		start = to_clamped_space(start, m_wnd.size());
-		end = to_clamped_space(end, m_wnd.size());
-
-		glBegin(GL_LINES);
-		glLineWidth(width);
-		glColor4ub(clr.r, clr.g, clr.b, clr.a);
-		glVertex2f(start.x, start.y);
-		glVertex2f(end.x, end.y);
-		glEnd();
+		const Vector2f dir = start.direction( end ).tangent() * width;
+		quad( start + dir, start - dir, end - dir, end + dir, clr );
 	}
 
 	void Canvas::line(Vector3f start, Vector3f end, const Colorf &clr)

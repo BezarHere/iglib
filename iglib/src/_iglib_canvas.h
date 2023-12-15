@@ -31,8 +31,8 @@ namespace ig
 
 		void plane(Vector3f center, Vector2f extent, const Colorf &clr);
 
-		void line(Vector2f start, Vector2f end, const Colorb clr);
-		void line(Vector2f start, Vector2f end, float_t width, const Colorb clr);
+		void line(Vector2f start, Vector2f end, const Colorf clr);
+		void line(Vector2f start, Vector2f end, float_t width, const Colorf clr);
 		void line(Vector3f start, Vector3f end, const Colorf &clr);
 
 		void cube(Vector3f center, Vector3f extent, const Colorf &clr);

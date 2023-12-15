@@ -185,7 +185,6 @@ namespace ig
 		}
 
 
-		glDisable(GL_DEPTH_TEST);
 		glEnable( GL_SCISSOR_TEST );
 		glEnable( GL_BLEND );
 		glEnable( GL_DEPTH_CLAMP );
@@ -202,6 +201,9 @@ namespace ig
 			glClearColor( m_background_clr.r, m_background_clr.g, m_background_clr.b, m_background_clr.a );
 			glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		}
+
+		g_RendererGlState.size = sz;
+		g_RendererGlState.postprocessing = postprocessing;
 
 		if (m_callback)
 			m_callback( *this );
@@ -225,7 +227,6 @@ namespace ig
 
 			bind_shader( g_ScreenShader );
 			bind_texture( m_buffers_state.colorbuffer_object );
-
 			m_canvas.draw( g_ScreenQuadBuffer );
 		}
 

@@ -338,7 +338,7 @@ int main()
 		ig::Renderer renderer{ i, draw2d_callback };
 		ig::RenderEnviorment ebv = renderer.get_enviorment();
 		ebv.enabled_postprocessing = false;
-		renderer.set_enviorment( ebv );
+		//renderer.set_enviorment( ebv );
 
 		std::cout << ig::get_opengl_version() << '\n';
 		while (!i.should_close())
