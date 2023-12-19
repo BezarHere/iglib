@@ -10,9 +10,7 @@
 
 namespace ig
 {
-
 	class Renderer;
-
 
 	class Canvas
 	{
@@ -45,27 +43,34 @@ namespace ig
 
 		void draw(const Vertex3DBuffer &buf, int start = 0, int count = -1);
 
+		// for conveinent sake only
+		template <typename _VB, typename _ST>
+		void text( const BaseTextTemplate<_VB, _ST> &txt );
+
 		inline Transform2D &transform2d() noexcept { return m_transform2d; }
 		inline const Transform2D &transform2d() const noexcept { return m_transform2d; }
 
 		inline Transform3D &transform3d() noexcept { return m_transform3d; }
 		inline const Transform3D &transform3d() const noexcept { return m_transform3d; }
 
+		void update_transform_state();
+
 		Camera &camera();
 		const Camera &camera() const;
 		void update_camera();
 
-		/// @brief Make sure this canvas has a renderer to avoid null-deref
-		const Renderer &get_renderer() const;
+		Renderer *get_renderer();
+		const Renderer *get_renderer() const;
 
 	private:
-		Canvas( const Renderer &renderer );
+		Canvas();
+		Canvas( Renderer *renderer );
+		void operator=(Canvas &&) noexcept;
 		Canvas(const Canvas &) = delete;
 		void operator=(const Canvas &) = delete;
-		void operator=(Canvas &&) = delete;
 
 	private:
-		const Renderer &m_renderer;
+		Renderer *m_renderer;
 
 		Transform2D m_transform2d{};
 		Transform3D m_transform3d{};
@@ -75,5 +80,13 @@ namespace ig
 	};
 
 	typedef void(*DrawCallback)(Canvas &canvas);
+
+	template<typename _VB, typename _ST>
+	inline void Canvas::text( const BaseTextTemplate<_VB, _ST> &txt ) {
+		//if (txt.is_dirty())
+		//	txt.rebuild();
+		this->get_renderer().bind_texture(txt.get_font().get_atlas());
+		this->draw( txt.get_buffer() );
+	}
 
 }

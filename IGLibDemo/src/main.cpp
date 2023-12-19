@@ -186,11 +186,11 @@ void draw_fromto_comp(Canvas &c, Renderer &rend)
 	//c.transform2d().rotate( c.get_window().get_shader_time() );
 	
 	c.draw( text->get_buffer() );
-	const float lowest_axis = float(std::min(c.get_renderer().get_window().width(), c.get_renderer().get_window().height())) / 2.f;
-	//c.set_texture(NULL);
-	//c.rect({ 0.f, 0.f }, { lowest_axis, lowest_axis }, { 1.0, 1.0, 1.0 });
+	const float lowest_axis = float(std::min(c.get_renderer()->get_window().width(), c.get_renderer()->get_window().height())) / 2.f;
+	rend.bind_texture(NULL);
+	c.rect({ 0.f, 0.f }, { lowest_axis, lowest_axis }, { 1.0, 1.0, 1.0 });
 	//c.set_texture(font->get_atlas());
-	//c.rect( { lowest_axis + 16.f, 0.0f }, {lowest_axis * 2 + 16.f, lowest_axis}, {1.0, 1.0, 1.0});
+	c.rect( { lowest_axis + 16.f, 0.0f }, {lowest_axis * 2 + 16.f, lowest_axis}, {1.0, 1.0, 1.0});
 }
 
 void draw2d_callback(ig::Renderer &rend)
@@ -199,15 +199,15 @@ void draw2d_callback(ig::Renderer &rend)
 
 	static Vector2f last_m{};
 	static bool first_call = true;
-	const ig::Vector2f m = c.get_renderer().get_window().get_mouse_position();
-	const bool m_inside_window = c.get_renderer().get_window().width() > m.x && c.get_renderer().get_window().height() > m.y && m.x > 0.f && m.y > 0.f;
+	const ig::Vector2f m = c.get_renderer()->get_window().get_mouse_position();
+	const bool m_inside_window = c.get_renderer()->get_window().width() > m.x && c.get_renderer()->get_window().height() > m.y && m.x > 0.f && m.y > 0.f;
 	if (first_call)
 	{
 		last_m = m;
 		first_call = false;
 	}
 
-	const float t = c.get_renderer().get_window().get_shader_time();
+	const float t = c.get_renderer()->get_window().get_shader_time();
 	//switch (rot_switch)
 	//{
 	//case 1:
@@ -312,9 +312,9 @@ int main()
 	
 	{
 		ig::Window i = ig::Window({512, 512}, "Window !!!");
-		font = new Font( "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\font.ttf", 64, []( codepoint_t cp ){ return cp < 128; } );
+		//font = new Font( "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\font.ttf", 64, []( codepoint_t cp ){ return cp < 128; } );
 		//delete font;
-		//font = new Font();
+		font = new Font(Font::get_default());
 		//font->set_char_spacing( -2 );
 		const std::string garbage = readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" ) + readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" );
 		text = new Text2D( "hello?! dat not good q", *font);
@@ -336,9 +336,11 @@ int main()
 		i.set_mouse_scroll_callback(scroll);
 
 		ig::Renderer renderer{ i, draw2d_callback };
-		ig::RenderEnviorment ebv = renderer.get_enviorment();
-		ebv.enabled_postprocessing = false;
+		//ig::RenderEnviorment ebv = renderer.get_enviorment();
+		//ebv.enabled_postprocessing = false;
 		//renderer.set_enviorment( ebv );
+
+		renderer.set_enviorment( ig::RenderEnviorment{ false } );
 
 		std::cout << ig::get_opengl_version() << '\n';
 		while (!i.should_close())

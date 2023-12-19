@@ -127,7 +127,7 @@ namespace ig
 			return Transform2D(this->operator*(other.m_elements.xdir), this->operator*(other.m_elements.ydir), this->operator*(other.m_elements.origin));
 		}
 
-		inline const transform_element3x2 &get_data()
+		inline const transform_element3x2 &get_data() const
 		{
 			return m_elements;
 		}
@@ -427,7 +427,7 @@ namespace ig
 			return Transform3D(this->operator*(other.m_elements.xdir), this->operator*(other.m_elements.ydir), this->operator*(other.m_elements.zdir), this->operator*(other.m_elements.origin));
 		}
 
-		inline const transform_element4x3 &get_data()
+		inline const transform_element4x3 &get_data() const
 		{
 			return m_elements;
 		}

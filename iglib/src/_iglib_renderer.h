@@ -50,6 +50,8 @@ namespace ig
 		bool hdr = true;
 	};
 
+	class Renderer;
+
 	typedef void(*RenderCallback)(Renderer &renderer);
 
 	class Renderer
@@ -161,8 +163,7 @@ namespace ig
 
 
 		} m_state;
-		Canvas m_canvas;
-
+		Canvas m_active_canvas;
 	};
 
 }

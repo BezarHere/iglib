@@ -19,11 +19,12 @@ static struct RendererOpenglPressitenceState
 {
 	Vector2i size;
 	bool postprocessing;
-} g_RendererGlState;
+} g_RendererGlState{};
 
+// will haunt me later
+static const Canvas *g_ActiveCanvas;
 
-static FORCEINLINE void init_globals()
-{
+static FORCEINLINE void init_globals() {
 	static bool s__has_ran = false;
 	if (s__has_ran)return; s__has_ran = true;
 
@@ -32,9 +33,9 @@ static FORCEINLINE void init_globals()
 
 	static const std::string PostProcessing_Frag =
 		"void main() {"
-			"Color = vec4(texture(uTex0, UV).rgb, 1.0);"
+		"Color = vec4(texture(uTex0, UV).rgb, 1.0);"
 		//"Color = vec4(UV, 1.0, 1.0);"
-	"}";
+		"}";
 
 	g_ScreenQuadBuffer.set_primitive( PrimitiveType::Quad );
 	g_ScreenQuadBuffer.set_usage( BufferUsage::Dynamic );
@@ -42,7 +43,7 @@ static FORCEINLINE void init_globals()
 	g_ScreenShader = Shader::compile(
 		PostProcessing_Vert, PostProcessing_Frag, ShaderUsage::ScreenSpace
 	);
-	
+
 	for (int i = 0; i < (int)ShaderUsage::_Max; i++)
 	{
 		g_DefaultShaders[ i ] = Shader::get_default( ShaderUsage( i ) );
@@ -70,8 +71,7 @@ namespace ig
 
 	struct Renderer::RenderBuffersState::Regenarator
 	{
-		FORCEINLINE static void cleanup( Renderer::RenderBuffersState &buffer_state )
-		{
+		FORCEINLINE static void cleanup( Renderer::RenderBuffersState &buffer_state ) {
 			glDeleteFramebuffers( 1, &buffer_state.framebuffer_object );
 			glDeleteRenderbuffers( 1, &buffer_state.renderbuffer_object );
 			glDeleteTextures( 1, &buffer_state.colorbuffer_object );
@@ -81,8 +81,7 @@ namespace ig
 			buffer_state.colorbuffer_object = NULL;
 		}
 
-		FORCEINLINE static void regenerate( Renderer::RenderBuffersState &buffer_state, Vector2i size, const RenderEnviorment &env )
-		{
+		FORCEINLINE static void regenerate( Renderer::RenderBuffersState &buffer_state, Vector2i size, const RenderEnviorment &env ) {
 			cleanup( buffer_state );
 
 			glGenFramebuffers( 1, &buffer_state.framebuffer_object );
@@ -134,33 +133,29 @@ namespace ig
 
 	Renderer::RenderBuffersState::RenderBuffersState()
 		: colorbuffer_object{ NULL }, framebuffer_object{ NULL },
-			renderbuffer_object{ NULL }, colorbuffer_size{ -1, -1 }
-			
+		renderbuffer_object{ NULL }, colorbuffer_size{ -1, -1 }
+
 	{
 	}
 
-	Renderer::RenderBuffersState::~RenderBuffersState()
-	{
+	Renderer::RenderBuffersState::~RenderBuffersState() {
 		Regenarator::cleanup( *this );
 	}
 
 	Renderer::Renderer( const Window &window, RenderCallback render_callback )
-		: m_window{ window }, m_canvas{ *this },
-			m_callback{ render_callback }
-	{
+		: m_window{ window }, m_active_canvas{},
+		m_callback{ render_callback } {
 		init_globals();
 	}
 
-	void Renderer::clear()
-	{
+	void Renderer::clear() {
 		push_to_draw_pipline( (WindowHandle_t)m_window.m_hdl );
 		glClearColor( m_background_clr.r, m_background_clr.g, m_background_clr.b, m_background_clr.a );
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		pop_draw_pipline();
 	}
-	
-	bool Renderer::draw()
-	{
+
+	bool Renderer::draw() {
 		if (g_BoundRenderer)
 		{
 			bite::raise( "Drawing to Renderer while there is a renderer already boud!" );
@@ -193,7 +188,7 @@ namespace ig
 		glScissor( 0, 0, sz.x, sz.y );
 		//glCullFace(GL_FRONT);
 
-		
+
 		if (postprocessing)
 		{
 			glBindRenderbuffer( GL_RENDERBUFFER, m_buffers_state.renderbuffer_object );
@@ -205,10 +200,13 @@ namespace ig
 		g_RendererGlState.size = sz;
 		g_RendererGlState.postprocessing = postprocessing;
 
+		m_active_canvas.m_renderer = this;
+		try_update_shader_state();
 		if (m_callback)
 			m_callback( *this );
 		else
 			bite::warn( "Renderer has no render callback" );
+		
 
 		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, NULL );
 		glBindRenderbuffer( GL_RENDERBUFFER, NULL );
@@ -218,6 +216,9 @@ namespace ig
 		glDisable( GL_BLEND );
 		glDisable( GL_DEPTH_CLAMP );
 
+		// why? to remove all the transforms and camera cfg
+		m_active_canvas = Canvas( this );
+
 		if (g_RendererGlState.postprocessing)
 		{
 			g_ScreenQuadVertcies[ 1 ].pos.y = (float)g_RendererGlState.size.y;
@@ -225,43 +226,43 @@ namespace ig
 			g_ScreenQuadVertcies[ 3 ].pos.x = (float)g_RendererGlState.size.x;
 			g_ScreenQuadBuffer.update( g_ScreenQuadVertcies );
 
+			
+			set_draw_type( DrawType::Drawing2D );
 			bind_shader( g_ScreenShader );
 			bind_texture( m_buffers_state.colorbuffer_object );
-			m_canvas.draw( g_ScreenQuadBuffer );
+
+			m_active_canvas.draw( g_ScreenQuadBuffer );
 		}
 
 		pop_draw_pipline();
 		glfwSwapBuffers( (GLFWwindow *)m_window.m_hdl );
+
+		m_active_canvas.m_renderer = nullptr; // <- clear out the renderer so later draw calls fail untile the next draw op
 		g_BoundRenderer = nullptr;
+		return true;
 	}
 
-	void Renderer::set_callback( RenderCallback callback )
-	{
+	void Renderer::set_callback( RenderCallback callback ) {
 		m_callback = callback;
 	}
 
-	RenderCallback Renderer::get_callback() const
-	{
+	RenderCallback Renderer::get_callback() const {
 		return m_callback;
 	}
 
-	Canvas &Renderer::get_canvas()
-	{
-		return m_canvas;
+	Canvas &Renderer::get_canvas() {
+		return m_active_canvas;
 	}
 
-	bool Renderer::is_active() const
-	{
+	bool Renderer::is_active() const {
 		return g_BoundRenderer == this;
 	}
 
-	const Window &Renderer::get_window() const
-	{
+	const Window &Renderer::get_window() const {
 		return m_window;
 	}
 
-	void Renderer::set_draw_type( const DrawType type )
-	{
+	void Renderer::set_draw_type( const DrawType type ) {
 		m_state.draw_type = type;
 
 		switch (type)
@@ -299,8 +300,7 @@ namespace ig
 		}
 	}
 
-	void Renderer::bind_shader( const ShaderInstance_t &shader )
-	{
+	void Renderer::bind_shader( const ShaderInstance_t &shader ) {
 		if (m_state.bound_shader.get() == shader.get())
 			return;
 
@@ -315,20 +315,17 @@ namespace ig
 		try_update_shader_state();
 	}
 
-	void Renderer::bind_default_shader( ShaderUsage usage )
-	{
+	void Renderer::bind_default_shader( ShaderUsage usage ) {
 		bind_shader( g_DefaultShaders[ (int)usage ] );
 	}
 
-	void Renderer::unbind_shader()
-	{
+	void Renderer::unbind_shader() {
 		glUseProgram( g_DefaultShaders[ (int)m_state.shading_usage ]->get_id() );
 		m_state.bound_shader = g_DefaultShaders[ (int)m_state.shading_usage ];
 		try_update_shader_state();
 	}
 
-	void Renderer::try_update_shader_state()
-	{
+	void Renderer::try_update_shader_state() {
 		if (!m_state.bound_shader)
 			return;
 
@@ -344,58 +341,51 @@ namespace ig
 
 		if (m_state.bound_shader->get_usage() == ShaderUsage::Usage2D)
 		{
-			glUniformMatrix2fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_trans" ), 1, GL_FALSE, m_canvas.m_transform2d.get_data().f );
-			glUniform2f( glGetUniformLocation( m_state.bound_shader->get_id(), "_offset" ), m_canvas.m_transform2d.get_data().origin.x, m_canvas.m_transform2d.get_data().origin.y );
+			glUniformMatrix2fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_trans" ), 1, GL_FALSE, m_active_canvas.m_transform2d.get_data().f );
+			glUniform2f( glGetUniformLocation( m_state.bound_shader->get_id(), "_offset" ), m_active_canvas.m_transform2d.get_data().origin.x, m_active_canvas.m_transform2d.get_data().origin.y );
 		}
 		else if (m_state.bound_shader->get_usage() == ShaderUsage::Usage3D)
 		{
-			glUniform3f( glGetUniformLocation( m_state.bound_shader->get_id(), "_offset" ), m_canvas.m_transform3d.get_data().origin.x, m_canvas.m_transform3d.get_data().origin.y, m_canvas.m_transform3d.get_data().origin.z );
-			glUniformMatrix3fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_trans" ), 1, GL_TRUE, m_canvas.m_transform3d.get_data().f );
-			glUniformMatrix4fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_proj" ), 1, GL_TRUE, m_canvas.m_cam_cache.m_elements.data() );
-			glUniformMatrix3fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_view_transform" ), 1, GL_TRUE, m_canvas.m_camera.transform.get_data().f );
-			glUniform3fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_view_position" ), 1, m_canvas.m_camera.transform.get_data().f + 9 );
+			const auto &trans3d = m_active_canvas.transform3d().get_data();
+			glUniform3f( glGetUniformLocation( m_state.bound_shader->get_id(), "_offset" ), trans3d.origin.x, trans3d.origin.y, trans3d.origin.z );
+			glUniformMatrix3fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_trans" ), 1, GL_TRUE, trans3d.f );
+			glUniformMatrix4fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_proj" ), 1, GL_TRUE, m_active_canvas.m_cam_cache.m_elements.data() );
+			glUniformMatrix3fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_view_transform" ), 1, GL_TRUE, m_active_canvas.m_camera.transform.get_data().f );
+			glUniform3fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_view_position" ), 1, m_active_canvas.m_camera.transform.get_data().f + 9 );
 		}
 
 	}
 
-	void Renderer::set_cullwinding( CullWinding winding )
-	{
+	void Renderer::set_cullwinding( CullWinding winding ) {
 		glFrontFace( int( winding ) );
 	}
 
-	void Renderer::set_cullface( CullFace face )
-	{
+	void Renderer::set_cullface( CullFace face ) {
 		glCullFace( int( face ) );
 	}
 
-	void Renderer::enable_feature( Feature feature )
-	{
+	void Renderer::enable_feature( Feature feature ) {
 		glEnable( int( feature ) );
 	}
 
-	void Renderer::disable_feature( Feature feature )
-	{
+	void Renderer::disable_feature( Feature feature ) {
 		glDisable( int( feature ) );
 	}
 
-	ShaderId_t Renderer::get_shader_id() const noexcept
-	{
+	ShaderId_t Renderer::get_shader_id() const noexcept {
 		return m_state.bound_shader->get_id();
 	}
 
-	void Renderer::bind_texture( const TextureId_t tex, const TextureSlot slot )
-	{
+	void Renderer::bind_texture( const TextureId_t tex, const TextureSlot slot ) {
 		m_state.textures[ int( slot ) ] = tex;
 		try_update_shader_state();
 	}
 
-	TextureId_t ig::Renderer::get_texture( const TextureSlot slot ) const noexcept
-	{
+	TextureId_t ig::Renderer::get_texture( const TextureSlot slot ) const noexcept {
 		return m_state.textures[ int( slot ) ];
 	}
 
-	void Renderer::set_active_textures_count( int count )
-	{
+	void Renderer::set_active_textures_count( int count ) {
 		if (count < 0)
 		{
 			bite::warn( "can't set the active textures count to less then zero" );
@@ -411,100 +401,81 @@ namespace ig
 		m_state.active_textrues_count = count;
 	}
 
-	int Renderer::get_active_textures_count() const noexcept
-	{
+	int Renderer::get_active_textures_count() const noexcept {
 		return m_state.active_textrues_count;
 	}
 
-	void Renderer::set_enviorment( const RenderEnviorment &env )
-	{
+	void Renderer::set_enviorment( const RenderEnviorment &env ) {
 		m_enviorment = env;
 		try_update_shader_state();
 	}
 
-	const RenderEnviorment &Renderer::get_enviorment()
-	{
+	const RenderEnviorment &Renderer::get_enviorment() {
 		return m_enviorment;
 	}
 
 
-	void Renderer::set_shader_uniform( int location, int value )
-	{
+	void Renderer::set_shader_uniform( int location, int value ) {
 		glUniform1i( location, value );
 	}
 
-	void Renderer::set_shader_uniform( int location, float value )
-	{
+	void Renderer::set_shader_uniform( int location, float value ) {
 		glUniform1f( location, value );
 	}
 
-	void Renderer::set_shader_uniform( int location, Vector2i value )
-	{
+	void Renderer::set_shader_uniform( int location, Vector2i value ) {
 		glUniform2i( location, value.x, value.y );
 	}
 
-	void Renderer::set_shader_uniform( int location, Vector2f value )
-	{
+	void Renderer::set_shader_uniform( int location, Vector2f value ) {
 		glUniform2f( location, value.x, value.y );
 	}
 
-	void Renderer::set_shader_uniform( int location, Vector3i value )
-	{
+	void Renderer::set_shader_uniform( int location, Vector3i value ) {
 		glUniform3i( location, value.x, value.y, value.z );
 	}
 
-	void Renderer::set_shader_uniform( int location, Vector3f value )
-	{
+	void Renderer::set_shader_uniform( int location, Vector3f value ) {
 		glUniform3f( location, value.x, value.y, value.z );
 	}
 
-	void Renderer::set_shader_uniform( int location, const Vector4i &value )
-	{
+	void Renderer::set_shader_uniform( int location, const Vector4i &value ) {
 		glUniform4i( location, value.x, value.y, value.z, value.w );
 	}
 
-	void Renderer::set_shader_uniform( int location, const Vector4f &value )
-	{
+	void Renderer::set_shader_uniform( int location, const Vector4f &value ) {
 		glUniform4f( location, value.x, value.y, value.z, value.w );
 	}
 
-	void Renderer::set_shader_uniform( int location, int count, const int *value )
-	{
+	void Renderer::set_shader_uniform( int location, int count, const int *value ) {
 		glUniform1iv( location, count, value );
 	}
 
-	void Renderer::set_shader_uniform( int location, int count, const float *value )
-	{
+	void Renderer::set_shader_uniform( int location, int count, const float *value ) {
 		glUniform1fv( location, count, value );
 	}
 
-	void Renderer::set_shader_uniform( int location, int count, const Vector2i *value )
-	{
+	void Renderer::set_shader_uniform( int location, int count, const Vector2i *value ) {
 		glUniform2iv( location, count, (const GLint *)value );
 	}
 
-	void Renderer::set_shader_uniform( int location, int count, const Vector2f *value )
-	{
+	void Renderer::set_shader_uniform( int location, int count, const Vector2f *value ) {
 		glUniform2fv( location, count, (const GLfloat *)value );
 	}
 
-	void Renderer::set_shader_uniform( int location, int count, const Vector3i *value )
-	{
+	void Renderer::set_shader_uniform( int location, int count, const Vector3i *value ) {
 		glUniform3iv( location, count, (const GLint *)value );
 	}
 
-	void Renderer::set_shader_uniform( int location, int count, const Vector3f *value )
-	{
+	void Renderer::set_shader_uniform( int location, int count, const Vector3f *value ) {
 		glUniform3fv( location, count, (const GLfloat *)value );
 	}
 
-	void Renderer::set_shader_uniform( int location, int count, const Vector4i *value )
-	{
+	void Renderer::set_shader_uniform( int location, int count, const Vector4i *value ) {
 		glUniform4iv( location, count, (const GLint *)value );
 	}
 
-	void Renderer::set_shader_uniform( int location, int count, const Vector4f *value )
-	{
+	void Renderer::set_shader_uniform( int location, int count, const Vector4f *value ) {
 		glUniform4fv( location, count, (const GLfloat *)value );
 	}
 

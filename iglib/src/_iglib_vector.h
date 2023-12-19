@@ -541,7 +541,7 @@ namespace ig
 
 		inline constexpr bool operator!=(const this_type &other) const
 		{
-			return x != other.x || y != other.y || y != other.y;
+			return x != other.x || y != other.y || z != other.z;
 		}
 
 		inline constexpr this_type operator-() const
