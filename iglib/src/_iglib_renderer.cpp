@@ -181,9 +181,9 @@ namespace ig
 
 
 		glEnable( GL_SCISSOR_TEST );
-		glEnable( GL_BLEND );
 		glEnable( GL_DEPTH_CLAMP );
 
+		glEnable( GL_BLEND );
 		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 		glScissor( 0, 0, sz.x, sz.y );
 		//glCullFace(GL_FRONT);
@@ -201,7 +201,9 @@ namespace ig
 		g_RendererGlState.postprocessing = postprocessing;
 
 		m_active_canvas.m_renderer = this;
-		try_update_shader_state();
+		set_draw_type( DrawType::Drawing2D );
+		bind_default_shader( ShaderUsage::Usage2D );
+		//try_update_shader_state();
 		if (m_callback)
 			m_callback( *this );
 		else
@@ -234,6 +236,7 @@ namespace ig
 			m_active_canvas.draw( g_ScreenQuadBuffer );
 		}
 
+		bind_texture(0);
 		pop_draw_pipline();
 		glfwSwapBuffers( (GLFWwindow *)m_window.m_hdl );
 

@@ -197,6 +197,8 @@ void draw2d_callback(ig::Renderer &rend)
 {
 	Canvas &c = rend.get_canvas();
 
+	c.rect( { 0.f, 0.f }, rend.get_window().size(), { 0.f, 0.f, 1.f, 1.f } );
+
 	static Vector2f last_m{};
 	static bool first_call = true;
 	const ig::Vector2f m = c.get_renderer()->get_window().get_mouse_position();
@@ -258,7 +260,7 @@ void draw2d_callback(ig::Renderer &rend)
 	c.cube({ inverted_m.x / 100.0f - 2.f, inverted_m.y / 100.0f, cube_distance }, { 1.f, 1.f, 1.f }, { 0.3f, 0.2f, 0.1f, 1.f });
 	rend.bind_default_shader( ShaderUsage::Usage2D );
 	rend.disable_feature( Feature::DepthTest );
-	draw_fromto_comp(c, rend);
+	//draw_fromto_comp(c, rend);
 	
 	//std::cout << c.transform3d().get_position() << '\n';
 	
