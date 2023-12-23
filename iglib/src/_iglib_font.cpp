@@ -378,7 +378,7 @@ namespace ig
 			}
 
 			for ( FT_ULong gchar = FT_Get_First_Char( face, &gindex );
-						gchar = FT_Get_Next_Char( face, gchar, &gindex );
+						(gchar = FT_Get_Next_Char( face, gchar, &gindex )) != 0;
 						gindex )
 			{
 				if (!glyphs_predicate( codepoint_t( gchar ) ))
