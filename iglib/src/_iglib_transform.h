@@ -70,6 +70,11 @@ namespace ig
 			m_elements.origin = pos;
 		}
 
+		inline void translate(Vector2f offset)
+		{
+			m_elements.origin += offset;
+		}
+
 		inline void set_scale(Vector2f scale)
 		{
 			m_elements.xdir = m_elements.xdir.normalized() * scale.x;
@@ -387,6 +392,10 @@ namespace ig
 		inline void set_position(Vector3f pos)
 		{
 			m_elements.origin = pos;
+		}
+
+		inline void translate( Vector3f offset ) {
+			m_elements.origin += offset;
 		}
 
 		inline void set_scale(Vector3f scale)
