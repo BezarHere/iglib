@@ -48,8 +48,16 @@ namespace ig
 			return { r * other.r, g * other.g, b * other.b, a * other.a };
 		}
 
+		inline constexpr _NODISCARD this_type operator*( value_type factor ) const {
+			return { r * factor, g * factor, b * factor, a * factor };
+		}
+
 		inline constexpr _NODISCARD this_type operator/( const this_type &other ) const {
 			return { r / other.r, g / other.g, b / other.b, a / other.a };
+		}
+
+		inline constexpr _NODISCARD this_type operator/( value_type factor ) const {
+			return { r / factor, g / factor, b / factor, a / factor };
 		}
 
 		inline constexpr _NODISCARD this_type operator+( const this_type &other ) const {
