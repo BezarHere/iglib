@@ -264,7 +264,8 @@ namespace ig
 		static constexpr color_type Teal = rgb( 0.0, 0.5019607843137255, 0.5019607843137255 );
 		static constexpr color_type Thistle = rgb( 0.8470588235294118, 0.7490196078431373, 0.8470588235294118 );
 		static constexpr color_type Tomato = rgb( 1.0, 0.38823529411764707, 0.2784313725490196 );
-		static constexpr color_type Transparent = rgba( 1.0, 1.0, 1.0, 0.0 );
+		static constexpr color_type Transparent = rgba( 1.0, 1.0, 1.0, 0.0 ); // transparent white
+		static constexpr color_type Void = rgba( 0.0, 0.0, 0.0, 0.0 ); // transparent black
 		static constexpr color_type Turquoise = rgb( 0.25098039215686274, 0.8784313725490196, 0.8156862745098039 );
 		static constexpr color_type Violet = rgb( 0.9333333333333333, 0.5098039215686274, 0.9333333333333333 );
 		static constexpr color_type Webgray = rgb( 0.5019607843137255, 0.5019607843137255, 0.5019607843137255 );
