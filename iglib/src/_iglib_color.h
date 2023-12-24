@@ -98,7 +98,7 @@ namespace ig
 
 		inline constexpr _NODISCARD this_type operator&(const this_type &other) const {
 			static constexpr value_type Two = value_type( 2 );
-			return { (r + other.r) / Two, (g + other.g) / Two, (b + other.b) / Two, (a + other.a) / Two }
+			return { (r + other.r) / Two, (g + other.g) / Two, (b + other.b) / Two, (a + other.a) / Two };
 		}
 
 		value_type r, g, b, a;
