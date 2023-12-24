@@ -10,22 +10,95 @@ namespace ig
 		using this_type = BaseColorTemplate<_T, _DEFAULT>;
 		static constexpr value_type full_value = value_type(_DEFAULT);
 
-		constexpr BaseColorTemplate()
+		inline constexpr BaseColorTemplate()
 			: r{}, g{}, b{}, a{ value_type(full_value) }
 		{}
 
-		constexpr BaseColorTemplate(value_type rr, value_type gg, value_type bb, value_type aa = value_type(full_value))
+		inline constexpr BaseColorTemplate(value_type rr, value_type gg, value_type bb, value_type aa = value_type(full_value))
 			: r{ rr }, g{ gg }, b{ bb }, a{ aa }
 		{}
 
-		constexpr this_type inverted(const bool use_alpha = false) const
+		inline constexpr this_type inverted(const bool use_alpha = false) const
 		{
 			return { full_value - r, full_value - g, full_value - b, use_alpha ? a : (full_value - a) };
 		}
 
-		constexpr this_type brighten(const value_type factor, const bool use_alpha = false) const
+		inline constexpr this_type brighten(const value_type factor, const bool use_alpha = false) const
 		{
-			return { full_value * factor, full_value * factor, full_value * factor, use_alpha ? full_value : (full_value * factor) };
+			return { r * factor, g * factor, b * factor, use_alpha ? a : (a * factor) };
+		}
+
+		inline constexpr this_type darken( const value_type factor, const bool use_alpha = false ) const {
+			return brighten( full_value / factor, use_alpha );
+		}
+
+		// set the opacity (alpha) of the color
+		inline constexpr this_type opacity(const value_type alpha) const
+		{
+			return { r, g, b, alpha };
+		}
+
+		// set the transparency (inverse of alpha) of the color
+		inline constexpr _NODISCARD this_type transparency(const value_type alpha) const
+		{
+			return { r, g, b, full_value - alpha };
+		}
+
+		inline constexpr _NODISCARD this_type operator*( const this_type &other ) const {
+			return { r * other.r, g * other.g, b * other.b, a * other.a };
+		}
+
+		inline constexpr _NODISCARD this_type operator/( const this_type &other ) const {
+			return { r / other.r, g / other.g, b / other.b, a / other.a };
+		}
+
+		inline constexpr _NODISCARD this_type operator+( const this_type &other ) const {
+			return { r + other.r, g + other.g, b + other.b, a + other.a };
+		}
+
+		inline constexpr _NODISCARD this_type operator-( const this_type &other ) const {
+			return { r - other.r, g - other.g, b - other.b, a - other.a };
+		}
+
+		inline constexpr this_type &operator*=( const this_type &other ) {
+			r *= other.r;
+			g *= other.g;
+			b *= other.b;
+			a *= other.a;
+			return *this;
+		}
+
+		inline constexpr this_type &operator/=( const this_type &other ) {
+			r /= other.r;
+			g /= other.g;
+			b /= other.b;
+			a /= other.a;
+			return *this;
+		}
+
+		inline constexpr this_type &operator+=( const this_type &other ) {
+			r += other.r;
+			g += other.g;
+			b += other.b;
+			a += other.a;
+			return *this;
+		}
+
+		inline constexpr this_type &operator-=( const this_type &other ) {
+			r -= other.r;
+			g -= other.g;
+			b -= other.b;
+			a -= other.a;
+			return *this;
+		}
+
+		inline constexpr _NODISCARD this_type operator~() const {
+			return this->inverted();
+		}
+
+		inline constexpr _NODISCARD this_type operator&(const this_type &other) const {
+			static constexpr value_type Two = value_type( 2 );
+			return { (r + other.r) / Two, (g + other.g) / Two, (b + other.b) / Two, (a + other.a) / Two }
 		}
 
 		value_type r, g, b, a;
