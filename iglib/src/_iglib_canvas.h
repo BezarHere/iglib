@@ -42,10 +42,10 @@ namespace ig
 		// watch out for when the count is greater then the 32 bit signed limit (2^31)
 		void draw(const Vertex2 *vertices, size_t count, PrimitiveType draw_type);
 
-		void draw(const Vertex2DBuffer &buf, int start = 0, int count = -1);
-		void draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies);
+		void draw(const Vertex2Buffer &buf, int start = 0, int count = -1);
+		void draw(const Vertex2Buffer &buf, const IndexBuffer &indcies);
 
-		void draw(const Vertex3DBuffer &buf, int start = 0, int count = -1);
+		void draw(const Vertex3Buffer &buf, int start = 0, int count = -1);
 
 		// for convenient sake only
 		template <typename _VB, typename _ST>

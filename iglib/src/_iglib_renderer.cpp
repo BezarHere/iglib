@@ -10,7 +10,7 @@ static Vertex2 g_ScreenQuadVertcies[ 4 ]
 	{ {1.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {1.f, 1.f} } // topright
 };
 
-static Vertex2DBuffer g_ScreenQuadBuffer{};
+static Vertex2Buffer g_ScreenQuadBuffer{};
 static ShaderInstance_t g_ScreenShader{};
 static ShaderInstance_t g_DefaultShaders[ (int)ShaderUsage::_Max ]{};
 static std::shared_ptr<const Texture> g_PlankTexture;

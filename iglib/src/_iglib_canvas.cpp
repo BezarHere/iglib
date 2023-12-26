@@ -46,7 +46,7 @@ FORCEINLINE const Vector2fSpan_t &get_circle_frame( uint16_t res ) {
 }
 
 // a cube consists of two quads each one consisting of two tringles
-static Vertex3DBuffer DefaultCubeBuffer{};
+static Vertex3Buffer DefaultCubeBuffer{};
 constexpr IndexBuffer::index_type DefaultCubeIndexBuffer_Values[]
 {
 	// front
@@ -76,13 +76,13 @@ constexpr IndexBuffer::index_type DefaultCubeIndexBuffer_Values[]
 };
 
 static IndexBuffer DefaultCubeIndexBuffer{};
-static Vertex3DBuffer DefaultLineBuffer{};
+static Vertex3Buffer DefaultLineBuffer{};
 
-static Vertex2DBuffer g_Quad2DBuffer;
-static Vertex3DBuffer g_Quad3DBuffer;
-static Vertex2DBuffer g_Triangle2DBuffer;
-static Vertex2DBuffer g_Line2DBuffer;
-static Vertex2DBuffer g_Free2DDrawBuffer;
+static Vertex2Buffer g_Quad2DBuffer;
+static Vertex3Buffer g_Quad3DBuffer;
+static Vertex2Buffer g_Triangle2DBuffer;
+static Vertex2Buffer g_Line2DBuffer;
+static Vertex2Buffer g_Free2DDrawBuffer;
 
 static Vertex2 g_Quad2DVertices[ 4 ]{};
 static Vertex3 g_Quad3DVertices[ 4 ]{};
@@ -326,7 +326,7 @@ namespace ig
 	void Canvas::draw( const Vertex2 *vertices, size_t count, PrimitiveType draw_type ) {
 		if (count > 32)
 		{
-			Vertex2DBuffer b{ draw_type, count };
+			Vertex2Buffer b{ draw_type, count };
 			
 			b.update( vertices );
 			
@@ -350,22 +350,22 @@ namespace ig
 			verts[ i ].clr = clr;
 		}
 
-		Vertex2DBuffer buff{};
+		Vertex2Buffer buff{};
 		buff.set_primitive( PrimitiveType::TriangleFan );
 		buff.create( res, verts.begin() );
 		draw( buff );
 	}
 
-	void Canvas::draw( const Vertex2DBuffer &buf, int start, int count ) {
+	void Canvas::draw( const Vertex2Buffer &buf, int start, int count ) {
 		buf._bind_array_buffer();
 
 		glEnableVertexAttribArray( 0 );
 		glEnableVertexAttribArray( 1 );
 		glEnableVertexAttribArray( 2 );
 
-		glVertexAttribPointer( 0, 2, GL_FLOAT, 0, sizeof( Vertex2DBuffer::vertex_type ), (const void *)offsetof( Vertex2DBuffer::vertex_type, pos ) );
-		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2DBuffer::vertex_type ), (const void *)offsetof( Vertex2DBuffer::vertex_type, clr ) );
-		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2DBuffer::vertex_type ), (const void *)offsetof( Vertex2DBuffer::vertex_type, uv ) );
+		glVertexAttribPointer( 0, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, pos ) );
+		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, clr ) );
+		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, uv ) );
 
 		glDrawArrays( to_glprimitve( buf.get_primitive() ), start, count ? count : (static_cast<int>(buf.size()) - start) );
 
@@ -377,7 +377,7 @@ namespace ig
 			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
 	}
 
-	void Canvas::draw( const Vertex2DBuffer &buf, const IndexBuffer &indcies ) {
+	void Canvas::draw( const Vertex2Buffer &buf, const IndexBuffer &indcies ) {
 		buf._bind_array_buffer();
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indcies.get_id() );
 
@@ -385,9 +385,9 @@ namespace ig
 		glEnableVertexAttribArray( 1 );
 		glEnableVertexAttribArray( 2 );
 
-		glVertexAttribPointer( 0, 2, GL_FLOAT, 0, sizeof( Vertex2DBuffer::vertex_type ), (const void *)offsetof( Vertex2DBuffer::vertex_type, pos ) );
-		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2DBuffer::vertex_type ), (const void *)offsetof( Vertex2DBuffer::vertex_type, clr ) );
-		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2DBuffer::vertex_type ), (const void *)offsetof( Vertex2DBuffer::vertex_type, uv ) );
+		glVertexAttribPointer( 0, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, pos ) );
+		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, clr ) );
+		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, uv ) );
 
 		glDrawElements( to_glprimitve( buf.get_primitive() ), (int)buf.size(), GL_UNSIGNED_INT, nullptr );
 
@@ -401,7 +401,7 @@ namespace ig
 			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
 	}
 
-	void Canvas::draw( const Vertex3DBuffer &buf, int start, int count ) {
+	void Canvas::draw( const Vertex3Buffer &buf, int start, int count ) {
 		buf._bind_array_buffer();
 
 		glEnableVertexAttribArray( 0 );
@@ -409,10 +409,10 @@ namespace ig
 		glEnableVertexAttribArray( 2 );
 		glEnableVertexAttribArray( 3 );
 
-		glVertexAttribPointer( 0, 3, GL_FLOAT, 0, sizeof( Vertex3DBuffer::vertex_type ), (const void *)offsetof( Vertex3DBuffer::vertex_type, pos ) );
-		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex3DBuffer::vertex_type ), (const void *)offsetof( Vertex3DBuffer::vertex_type, clr ) );
-		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex3DBuffer::vertex_type ), (const void *)offsetof( Vertex3DBuffer::vertex_type, uv ) );
-		glVertexAttribPointer( 3, 3, GL_FLOAT, 0, sizeof( Vertex3DBuffer::vertex_type ), (const void *)offsetof( Vertex3DBuffer::vertex_type, normal ) );
+		glVertexAttribPointer( 0, 3, GL_FLOAT, 0, sizeof( Vertex3Buffer::vertex_type ), (const void *)offsetof( Vertex3Buffer::vertex_type, pos ) );
+		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex3Buffer::vertex_type ), (const void *)offsetof( Vertex3Buffer::vertex_type, clr ) );
+		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex3Buffer::vertex_type ), (const void *)offsetof( Vertex3Buffer::vertex_type, uv ) );
+		glVertexAttribPointer( 3, 3, GL_FLOAT, 0, sizeof( Vertex3Buffer::vertex_type ), (const void *)offsetof( Vertex3Buffer::vertex_type, normal ) );
 
 		glDrawArrays( to_glprimitve( buf.get_primitive() ), start, count < 0 ? ((int)buf.size() - start) : count );
 

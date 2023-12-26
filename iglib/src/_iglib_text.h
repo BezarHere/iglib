@@ -194,12 +194,12 @@ namespace ig
 		bool m_dirty = true;
 	};
 
-	using Text2D = BaseTextTemplate<Vertex2DBuffer, std::string>;
-	using Text3D = BaseTextTemplate<Vertex3DBuffer, std::string>;
+	using Text2D = BaseTextTemplate<Vertex2Buffer, std::string>;
+	using Text3D = BaseTextTemplate<Vertex3Buffer, std::string>;
 
-	using wText2D = BaseTextTemplate<Vertex2DBuffer, std::wstring>;
-	using wText3D = BaseTextTemplate<Vertex3DBuffer, std::wstring>;
+	using wText2D = BaseTextTemplate<Vertex2Buffer, std::wstring>;
+	using wText3D = BaseTextTemplate<Vertex3Buffer, std::wstring>;
 
-	using u16Text2D = BaseTextTemplate<Vertex2DBuffer, std::u16string>;
-	using u16Text3D = BaseTextTemplate<Vertex3DBuffer, std::u16string>;
+	using u16Text2D = BaseTextTemplate<Vertex2Buffer, std::u16string>;
+	using u16Text3D = BaseTextTemplate<Vertex3Buffer, std::u16string>;
 }

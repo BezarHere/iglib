@@ -100,7 +100,7 @@ namespace ig
 		PrimitiveType m_type;
 	};
 
-	using Vertex2DBuffer = BaseVertexBuffer<Vertex2>;
-	using Vertex3DBuffer = BaseVertexBuffer<Vertex3>;
+	using Vertex2Buffer = BaseVertexBuffer<Vertex2>;
+	using Vertex3Buffer = BaseVertexBuffer<Vertex3>;
 
 }
