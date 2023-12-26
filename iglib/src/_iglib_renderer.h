@@ -43,7 +43,7 @@ namespace ig
 		Culling = 0xb44
 	};
 
-	struct RenderEnviorment
+	struct RenderEnvironment
 	{
 		bool enabled_postprocessing = true;
 		Colorf ambient_light = { 1.f, 1.f, 1.f };
@@ -63,7 +63,7 @@ namespace ig
 
 		/// @brief binds this renderer to the draw pipeline
 		/// @param canvas pointer to a canvas instance
-		/// @return wheather it's bound to the draw pipeline successfuly
+		/// @return weather it's bound to the draw pipeline successfully
 		bool draw();
 
 		void set_callback( RenderCallback callback );
@@ -96,8 +96,8 @@ namespace ig
 		void set_active_textures_count( int count );
 		int get_active_textures_count() const noexcept;
 
-		void set_enviorment( const RenderEnviorment &env );
-		const RenderEnviorment &get_enviorment();
+		void set_environment( const RenderEnvironment &env );
+		const RenderEnvironment &get_environment();
 
 		void try_update_shader_state();
 
@@ -140,13 +140,13 @@ namespace ig
 			unsigned int framebuffer_object = 0, renderbuffer_object = 0, colorbuffer_object = 0;
 			Vector2i colorbuffer_size{};
 
-			struct Regenarator;
+			struct Regenerator;
 		};
 
 		const Window &m_window;
 		Colorf m_background_clr = Colorf( 0.f, 0.f, 0.f );
 		RenderBuffersState m_buffers_state;
-		RenderEnviorment m_enviorment;
+		RenderEnvironment m_environment;
 		
 		RenderCallback m_callback;
 
@@ -159,7 +159,7 @@ namespace ig
 			ShaderUsage shading_usage = ShaderUsage::Usage2D;
 
 			TextureId_t textures[ int( TextureSlot::_MAX ) ];
-			int active_textrues_count = 1; // will upload all textures from 0 to m_active_textrues_count - 1
+			int active_textures_count = 1; // will upload all textures from 0 to m_active_textures_count - 1
 
 
 		} m_state;

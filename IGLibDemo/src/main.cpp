@@ -337,11 +337,11 @@ int main()
 		i.set_mouse_scroll_callback(scroll);
 
 		ig::Renderer renderer{ i, draw2d_callback };
-		//ig::RenderEnviorment ebv = renderer.get_enviorment();
+		//ig::RenderEnvironment ebv = renderer.get_environment();
 		//ebv.enabled_postprocessing = false;
-		//renderer.set_enviorment( ebv );
+		//renderer.set_environment( ebv );
 
-		renderer.set_enviorment( ig::RenderEnviorment{ false } );
+		renderer.set_environment( ig::RenderEnvironment{ false } );
 
 		std::cout << ig::get_opengl_version() << '\n';
 		while (!i.should_close())

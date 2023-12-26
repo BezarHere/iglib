@@ -69,7 +69,7 @@ namespace ig
 	static constexpr GLuint RenderTextureTypeHDR = GL_RGB16F;
 	static constexpr GLuint RenderDepthStencilMode = GL_DEPTH24_STENCIL8;
 
-	struct Renderer::RenderBuffersState::Regenarator
+	struct Renderer::RenderBuffersState::Regenerator
 	{
 		FORCEINLINE static void cleanup( Renderer::RenderBuffersState &buffer_state ) {
 			glDeleteFramebuffers( 1, &buffer_state.framebuffer_object );
@@ -81,7 +81,7 @@ namespace ig
 			buffer_state.colorbuffer_object = NULL;
 		}
 
-		FORCEINLINE static void regenerate( Renderer::RenderBuffersState &buffer_state, Vector2i size, const RenderEnviorment &env ) {
+		FORCEINLINE static void regenerate( Renderer::RenderBuffersState &buffer_state, Vector2i size, const RenderEnvironment &env ) {
 			cleanup( buffer_state );
 
 			glGenFramebuffers( 1, &buffer_state.framebuffer_object );
@@ -139,7 +139,7 @@ namespace ig
 	}
 
 	Renderer::RenderBuffersState::~RenderBuffersState() {
-		Regenarator::cleanup( *this );
+		Regenerator::cleanup( *this );
 	}
 
 	Renderer::Renderer( const Window &window, RenderCallback render_callback )
@@ -173,10 +173,10 @@ namespace ig
 
 		push_to_draw_pipline( (WindowHandle_t)m_window.m_hdl );
 
-		const bool postprocessing = m_enviorment.enabled_postprocessing;
+		const bool postprocessing = m_environment.enabled_postprocessing;
 		if (postprocessing && sz != m_buffers_state.colorbuffer_size)
 		{
-			RenderBuffersState::Regenarator::regenerate( m_buffers_state, sz, m_enviorment );
+			RenderBuffersState::Regenerator::regenerate( m_buffers_state, sz, m_environment );
 		}
 
 
@@ -332,7 +332,7 @@ namespace ig
 		if (!m_state.bound_shader)
 			return;
 
-		const int atc = m_state.active_textrues_count;
+		const int atc = m_state.active_textures_count;
 		for (int i = 0; i < atc; i++)
 		{
 			glActiveTexture( GL_TEXTURE0 + i );
@@ -401,20 +401,20 @@ namespace ig
 			return;
 		}
 
-		m_state.active_textrues_count = count;
+		m_state.active_textures_count = count;
 	}
 
 	int Renderer::get_active_textures_count() const noexcept {
-		return m_state.active_textrues_count;
+		return m_state.active_textures_count;
 	}
 
-	void Renderer::set_enviorment( const RenderEnviorment &env ) {
-		m_enviorment = env;
+	void Renderer::set_environment( const RenderEnvironment &env ) {
+		m_environment = env;
 		try_update_shader_state();
 	}
 
-	const RenderEnviorment &Renderer::get_enviorment() {
-		return m_enviorment;
+	const RenderEnvironment &Renderer::get_environment() {
+		return m_environment;
 	}
 
 
