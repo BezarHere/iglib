@@ -10,31 +10,6 @@ constexpr int MaxTextureArea = 1 << 28;
 
 #include "default_bitmap.inl"
 
-FORCEINLINE void glColor3(const Colorb clr)
-{
-  glColor3ub(clr.r, clr.g, clr.b);
-}
-
-FORCEINLINE void glColor3f(const Colorf &clr)
-{
-  glColor3f(clr.r, clr.g, clr.b);
-}
-
-FORCEINLINE void glTexCoord2f(const Vector2f v)
-{
-  glTexCoord2f(v.x, v.y);
-}
-
-FORCEINLINE void glVertex2i(const Vector2i v)
-{
-  glVertex2i(v.x, v.y);
-}
-
-FORCEINLINE void glVertex2f(const Vector2f f)
-{
-  glVertex2f(f.x, f.y);
-}
-
 constexpr FORCEINLINE int to_glprimitve(const PrimitiveType type)
 {
   switch (type)
@@ -108,13 +83,6 @@ constexpr FORCEINLINE int to_gldrawusage(const BufferUsage usage)
 		GL_STREAM_DRAW
 	};
 	return LookupTable[ (int)usage ];
-}
-
-FORCEINLINE void glVertex(const Vertex2D &_Vert)
-{
-  glColor3f(_Vert.clr);
-  glTexCoord2f(_Vert.uv);
-  glVertex2i(_Vert.pos);
 }
 
 FORCEINLINE void flip_v(unsigned char *data, const size_t ww, const size_t hh, const size_t ch_count)
