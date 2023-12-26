@@ -1,5 +1,6 @@
 #pragma once
 #include "_iglib_vertex.h"
+#include "_iglib_vertexarray.h"
 #include "_iglib_indexbuffer.h"
 #include "_iglib_image.h"
 #include "_iglib_texture.h"
