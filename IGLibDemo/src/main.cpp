@@ -104,7 +104,7 @@ void key_callback(ig::Window &window, ig::Key key, ig::KeyAction action, ig::Key
 	if (key == ig::Key_S)
 	{
 		zb += 1.f;
-		tr.rotate(-0.1);
+		tr.rotate(-0.1f);
 	}
 
 
@@ -321,7 +321,6 @@ int main()
 		const std::string garbage = readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" ) + readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" );
 		text = new Text2D( "hello?! dat not good q", *font);
 		text->set_scale( {1.f, 1.f } );
-
 
 		{
 			ig::Image img{ "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\checkers.png" };
