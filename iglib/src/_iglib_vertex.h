@@ -43,12 +43,15 @@ namespace ig
 	template <typename _VRT>
 	class BaseVertexBuffer
 	{
-		// internal impl of a template? yes but... it works
+		// internal impl of a template? yes but it works
 	public:
 		using vertex_type = _VRT;
 
 		BaseVertexBuffer();
 		BaseVertexBuffer( size_t size );
+
+		// setting 'size' to 0 will not create the buffer
+		BaseVertexBuffer( PrimitiveType type, size_t size = 0, BufferUsage usage = BufferUsage::Static );
 		~BaseVertexBuffer() noexcept;
 
 		BaseVertexBuffer( const BaseVertexBuffer &copy );
@@ -66,9 +69,9 @@ namespace ig
 		void create( const size_t size, const vertex_type *vertices = nullptr );
 
 		/// updates the vertex buffer
-		/// \param vertices: the vertices that are loaded
-		/// \param vertices_count: the vertices count to be loaded
-		/// \param offset: where should the vertices be put (e.g. 0 will put the vertices at the beginning of the buffer and forward and 2 will put them at index [2] and forward)
+		/// \param vertices: the vertices that are used
+		/// \param vertices_count: the vertices count to be read
+		/// \param offset: where to update (passing 0 will update from the beginning of the buffer while passing N will update from the vertex N)
 		void update( const vertex_type *vertices, const size_t vertices_count, const uint32_t offset );
 
 		/// will update the entire current buffer with \p vertices, \p vertices should be an array with size not smaller then the buffer size

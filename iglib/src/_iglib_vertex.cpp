@@ -55,12 +55,19 @@ namespace ig
 
 	template<typename _VRT>
 	BaseVertexBuffer<_VRT>::BaseVertexBuffer()
-		: m_id{ 0 } {
+		: m_id{ 0 }, m_size{ 0 }, m_usage{ BufferUsage::Static }, m_type{ PrimitiveType::TriangleFan } {
 	}
 
 	template<typename _VRT>
-	BaseVertexBuffer<_VRT>::BaseVertexBuffer( size_t size ) {
+	BaseVertexBuffer<_VRT>::BaseVertexBuffer( size_t size ) : BaseVertexBuffer() {
 		create( size );
+	}
+
+	template<typename _VRT>
+	BaseVertexBuffer<_VRT>::BaseVertexBuffer( PrimitiveType type, size_t size, BufferUsage usage )
+		: m_id{ 0 }, m_type{ type }, m_usage{ usage }, m_size{ size } {
+		if (size)
+			create( size );
 	}
 
 	template<typename _VRT>
