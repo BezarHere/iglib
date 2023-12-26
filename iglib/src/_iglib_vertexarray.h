@@ -14,6 +14,15 @@ namespace ig
 		using vertex_buffer = BaseVertexBuffer<vertex_type>;
 		using verticies_container = std::vector<vertex_type>;
 
+		inline BaseVertexArray()
+			: m_buffer{}, m_vertices{} {
+		}
+
+		inline BaseVertexArray( PrimitiveType type, size_t size = 0, BufferUsage usage = BufferUsage::Static )
+			: m_buffer{ type, size, usage }, m_vertices{} {
+			m_vertices.resize( size, vertex_type() );
+		}
+
 		inline verticies_container &get_vertices() {
 			return m_vertices;
 		}
