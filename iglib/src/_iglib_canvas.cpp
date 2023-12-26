@@ -82,11 +82,12 @@ static Vertex2DBuffer g_Quad2DBuffer;
 static Vertex3DBuffer g_Quad3DBuffer;
 static Vertex2DBuffer g_Triangle2DBuffer;
 static Vertex2DBuffer g_Line2DBuffer;
+static Vertex2DBuffer g_Free2DDrawBuffer;
 
-static Vertex2 g_Quad2DVertcies[ 4 ]{};
-static Vertex3 g_Quad3DVertcies[ 4 ]{};
-static Vertex2 g_Triangle2DVertcies[ 3 ]{};
-static Vertex2 g_Line2DVertcies[ 2 ]{};
+static Vertex2 g_Quad2DVertices[ 4 ]{};
+static Vertex3 g_Quad3DVertices[ 4 ]{};
+static Vertex2 g_Triangle2DVertices[ 3 ]{};
+static Vertex2 g_Line2DVertices[ 2 ]{};
 
 static const Canvas *g_CurrentCanvas;
 
@@ -106,18 +107,21 @@ FORCEINLINE void try_generate_opengl_globals() {
 	g_Line2DBuffer.set_primitive( PrimitiveType::Line );
 	DefaultCubeBuffer.set_primitive( PrimitiveType::Triangle );
 
+	g_Free2DDrawBuffer.set_usage( BufferUsage::Static );
+
 	g_Quad2DBuffer.create( 4 );
 	g_Quad3DBuffer.create( 4 );
 	g_Triangle2DBuffer.create( 3 );
 	g_Line2DBuffer.create( 2 );
+	g_Free2DDrawBuffer.create( 32 );
 
 
 	// uvs
 	{
-		g_Quad2DVertcies[ 0 ].uv = { 0.f, 0.f };
-		g_Quad2DVertcies[ 1 ].uv = { 0.f, 1.f };
-		g_Quad2DVertcies[ 2 ].uv = { 1.f, 1.f };
-		g_Quad2DVertcies[ 3 ].uv = { 1.f, 0.f };
+		g_Quad2DVertices[ 0 ].uv = { 0.f, 0.f };
+		g_Quad2DVertices[ 1 ].uv = { 0.f, 1.f };
+		g_Quad2DVertices[ 2 ].uv = { 1.f, 1.f };
+		g_Quad2DVertices[ 3 ].uv = { 1.f, 0.f };
 	}
 
 }
@@ -158,47 +162,47 @@ namespace ig
 	}
 
 	void Canvas::quad( Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr ) {
-		g_Quad2DVertcies[ 0 ].pos = to_clamped_space( p0, wf );
-		g_Quad2DVertcies[ 1 ].pos = to_clamped_space( p1, wf );
-		g_Quad2DVertcies[ 2 ].pos = to_clamped_space( p2, wf );
-		g_Quad2DVertcies[ 3 ].pos = to_clamped_space( p3, wf );
+		g_Quad2DVertices[ 0 ].pos = to_clamped_space( p0, wf );
+		g_Quad2DVertices[ 1 ].pos = to_clamped_space( p1, wf );
+		g_Quad2DVertices[ 2 ].pos = to_clamped_space( p2, wf );
+		g_Quad2DVertices[ 3 ].pos = to_clamped_space( p3, wf );
 
-		g_Quad2DVertcies[ 0 ].clr = clr;
-		g_Quad2DVertcies[ 1 ].clr = clr;
-		g_Quad2DVertcies[ 2 ].clr = clr;
-		g_Quad2DVertcies[ 3 ].clr = clr;
+		g_Quad2DVertices[ 0 ].clr = clr;
+		g_Quad2DVertices[ 1 ].clr = clr;
+		g_Quad2DVertices[ 2 ].clr = clr;
+		g_Quad2DVertices[ 3 ].clr = clr;
 
-		g_Quad2DBuffer.update( g_Quad2DVertcies );
+		g_Quad2DBuffer.update( g_Quad2DVertices );
 		draw( g_Quad2DBuffer );
 	}
 
 	void Canvas::quad( Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, const Colorf &clr ) {
-		g_Quad3DVertcies[ 0 ].pos = p0;
-		g_Quad3DVertcies[ 1 ].pos = p1;
-		g_Quad3DVertcies[ 2 ].pos = p2;
-		g_Quad3DVertcies[ 3 ].pos = p3;
+		g_Quad3DVertices[ 0 ].pos = p0;
+		g_Quad3DVertices[ 1 ].pos = p1;
+		g_Quad3DVertices[ 2 ].pos = p2;
+		g_Quad3DVertices[ 3 ].pos = p3;
 
-		g_Quad3DVertcies[ 0 ].clr = clr;
-		g_Quad3DVertcies[ 1 ].clr = clr;
-		g_Quad3DVertcies[ 2 ].clr = clr;
-		g_Quad3DVertcies[ 3 ].clr = clr;
+		g_Quad3DVertices[ 0 ].clr = clr;
+		g_Quad3DVertices[ 1 ].clr = clr;
+		g_Quad3DVertices[ 2 ].clr = clr;
+		g_Quad3DVertices[ 3 ].clr = clr;
 
-		g_Quad3DBuffer.update( g_Quad3DVertcies );
+		g_Quad3DBuffer.update( g_Quad3DVertices );
 		draw( g_Quad3DBuffer );
 	}
 
 	void Canvas::quad( const Vector3f p[], const Colorf &clr ) {
-		g_Quad3DVertcies[ 0 ].pos = p[ 0 ];
-		g_Quad3DVertcies[ 1 ].pos = p[ 1 ];
-		g_Quad3DVertcies[ 2 ].pos = p[ 2 ];
-		g_Quad3DVertcies[ 3 ].pos = p[ 3 ];
+		g_Quad3DVertices[ 0 ].pos = p[ 0 ];
+		g_Quad3DVertices[ 1 ].pos = p[ 1 ];
+		g_Quad3DVertices[ 2 ].pos = p[ 2 ];
+		g_Quad3DVertices[ 3 ].pos = p[ 3 ];
 
-		g_Quad3DVertcies[ 0 ].clr = clr;
-		g_Quad3DVertcies[ 1 ].clr = clr;
-		g_Quad3DVertcies[ 2 ].clr = clr;
-		g_Quad3DVertcies[ 3 ].clr = clr;
+		g_Quad3DVertices[ 0 ].clr = clr;
+		g_Quad3DVertices[ 1 ].clr = clr;
+		g_Quad3DVertices[ 2 ].clr = clr;
+		g_Quad3DVertices[ 3 ].clr = clr;
 
-		g_Quad3DBuffer.update( g_Quad3DVertcies );
+		g_Quad3DBuffer.update( g_Quad3DVertices );
 		draw( g_Quad3DBuffer );
 	}
 
@@ -206,16 +210,16 @@ namespace ig
 		quad( start, { end.x, start.y }, end, { start.x, end.y }, clr );
 	}
 
-	void Canvas::traingle( Vector2f p0, Vector2f p1, Vector2f p2, const Colorf &clr ) {
-		g_Triangle2DVertcies[ 0 ].pos = to_clamped_space( p0, m_wnd.size() );
-		g_Triangle2DVertcies[ 1 ].pos = to_clamped_space( p1, m_wnd.size() );
-		g_Triangle2DVertcies[ 2 ].pos = to_clamped_space( p2, m_wnd.size() );
+	void Canvas::triangle( Vector2f p0, Vector2f p1, Vector2f p2, const Colorf &clr ) {
+		g_Triangle2DVertices[ 0 ].pos = to_clamped_space( p0, m_wnd.size() );
+		g_Triangle2DVertices[ 1 ].pos = to_clamped_space( p1, m_wnd.size() );
+		g_Triangle2DVertices[ 2 ].pos = to_clamped_space( p2, m_wnd.size() );
 
-		g_Triangle2DVertcies[ 0 ].clr = clr;
-		g_Triangle2DVertcies[ 1 ].clr = clr;
-		g_Triangle2DVertcies[ 2 ].clr = clr;
+		g_Triangle2DVertices[ 0 ].clr = clr;
+		g_Triangle2DVertices[ 1 ].clr = clr;
+		g_Triangle2DVertices[ 2 ].clr = clr;
 
-		g_Triangle2DBuffer.update( g_Triangle2DVertcies );
+		g_Triangle2DBuffer.update( g_Triangle2DVertices );
 		draw( g_Triangle2DBuffer );
 	}
 
@@ -228,11 +232,11 @@ namespace ig
 	}
 
 	void Canvas::line( Vector2f start, Vector2f end, const Colorf clr ) {
-		g_Line2DVertcies[ 0 ].pos = start;
-		g_Line2DVertcies[ 0 ].clr = clr;
-		g_Line2DVertcies[ 1 ].pos = end;
-		g_Line2DVertcies[ 1 ].clr = clr;
-		g_Line2DBuffer.update( g_Line2DVertcies );
+		g_Line2DVertices[ 0 ].pos = start;
+		g_Line2DVertices[ 0 ].clr = clr;
+		g_Line2DVertices[ 1 ].pos = end;
+		g_Line2DVertices[ 1 ].clr = clr;
+		g_Line2DBuffer.update( g_Line2DVertices );
 		draw( g_Line2DBuffer );
 	}
 
@@ -319,13 +323,21 @@ namespace ig
 
 	}
 
-	void Canvas::draw( Vertex2 *vert, size_t count, PrimitiveType draw_type ) {
-		glBegin( to_glprimitve( draw_type ) );
-
-		for (const Vertex2 &v : std::initializer_list<Vertex2>( vert, vert + count ))
-			glVertex( v );
-
-		glEnd();
+	void Canvas::draw( const Vertex2 *vertices, size_t count, PrimitiveType draw_type ) {
+		if (count > 32)
+		{
+			Vertex2DBuffer b{ draw_type, count };
+			
+			b.update( vertices );
+			
+			draw( b );
+		}
+		else
+		{
+			g_Free2DDrawBuffer.set_primitive( draw_type );
+			g_Free2DDrawBuffer.update( vertices, count, 0 );
+			draw( g_Free2DDrawBuffer, 0, (int)count );
+		}
 	}
 
 	void Canvas::circle( float radius, Vector2f center, const Colorf clr, const uint16_t res ) {
@@ -355,14 +367,14 @@ namespace ig
 		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2DBuffer::vertex_type ), (const void *)offsetof( Vertex2DBuffer::vertex_type, clr ) );
 		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2DBuffer::vertex_type ), (const void *)offsetof( Vertex2DBuffer::vertex_type, uv ) );
 
-		glDrawArrays( to_glprimitve( buf.get_primitive() ), start, count < 0 ? ((int)buf.size() - start) : count );
+		glDrawArrays( to_glprimitve( buf.get_primitive() ), start, count ? count : (static_cast<int>(buf.size()) - start) );
 
 		glDisableVertexAttribArray( 0 );
 		glDisableVertexAttribArray( 1 );
 		glDisableVertexAttribArray( 2 );
 
 		if (!buf._unbind_array_buffer())
-			raise( "draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process" );
+			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
 	}
 
 	void Canvas::draw( const Vertex2DBuffer &buf, const IndexBuffer &indcies ) {
@@ -386,7 +398,7 @@ namespace ig
 
 		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, NULL );
 		if (!buf._unbind_array_buffer())
-			raise( "draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process" );
+			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
 	}
 
 	void Canvas::draw( const Vertex3DBuffer &buf, int start, int count ) {
@@ -410,7 +422,7 @@ namespace ig
 		glDisableVertexAttribArray( 3 );
 
 		if (!buf._unbind_array_buffer())
-			raise( "draw failed: unbind faild at vertex buffer becuse of possible race condition, unbinding the vertex 2d buffer mid process" );
+			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
 	}
 
 	Renderer *Canvas::get_renderer() {

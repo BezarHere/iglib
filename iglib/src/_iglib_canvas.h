@@ -25,7 +25,7 @@ namespace ig
 		void quad(const Vector3f p[], const Colorf &clr); // <- should be counter clockwise winded
 
 		void rect(Vector2f start, Vector2f end, const Colorf &clr);
-		void traingle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorf &clr);
+		void triangle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorf &clr);
 
 		void plane(Vector3f center, Vector2f extent, const Colorf &clr);
 
@@ -37,13 +37,17 @@ namespace ig
 		
 		void circle(float radius, Vector2f center, const Colorf clr, const uint16_t vertcies_count = 32);
 		
-		void draw(Vertex2 *vert, size_t count, PrimitiveType draw_type);
+		// better to use a managed vertex buffer
+		// discourage the use for vertex count > 32
+		// watch out for when the count is greater then the 32 bit signed limit (2^31)
+		void draw(const Vertex2 *vertices, size_t count, PrimitiveType draw_type);
+
 		void draw(const Vertex2DBuffer &buf, int start = 0, int count = -1);
 		void draw(const Vertex2DBuffer &buf, const IndexBuffer &indcies);
 
 		void draw(const Vertex3DBuffer &buf, int start = 0, int count = -1);
 
-		// for conveinent sake only
+		// for convenient sake only
 		template <typename _VB, typename _ST>
 		void text( const BaseTextTemplate<_VB, _ST> &txt );
 
