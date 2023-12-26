@@ -19,7 +19,7 @@ namespace ig
 		struct Shape2D
 		{
 			Transform2D transform;
-			std::vector<Vertex2D> vertcies;
+			std::vector<Vertex2> vertcies;
 			std::shared_ptr<Texture> texture;
 			PrimitiveType primitve;
 		};

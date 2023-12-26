@@ -2,7 +2,7 @@
 #include "_iglib_renderer.h"
 #include "internal.h"
 
-static Vertex2D g_ScreenQuadVertcies[ 4 ]
+static Vertex2 g_ScreenQuadVertcies[ 4 ]
 {
 	{ {0.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {0.f, 1.f} }, // topleft
 	{ {0.f, 1.f}, {1.f, 1.f, 1.f, 1.f}, {0.f, 0.f} }, // bottomleft

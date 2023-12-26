@@ -83,10 +83,10 @@ static Vertex3DBuffer g_Quad3DBuffer;
 static Vertex2DBuffer g_Triangle2DBuffer;
 static Vertex2DBuffer g_Line2DBuffer;
 
-static Vertex2D g_Quad2DVertcies[ 4 ]{};
-static Vertex3D g_Quad3DVertcies[ 4 ]{};
-static Vertex2D g_Triangle2DVertcies[ 3 ]{};
-static Vertex2D g_Line2DVertcies[ 2 ]{};
+static Vertex2 g_Quad2DVertcies[ 4 ]{};
+static Vertex3 g_Quad3DVertcies[ 4 ]{};
+static Vertex2 g_Triangle2DVertcies[ 3 ]{};
+static Vertex2 g_Line2DVertcies[ 2 ]{};
 
 static const Canvas *g_CurrentCanvas;
 
@@ -242,7 +242,7 @@ namespace ig
 	}
 
 	void Canvas::line( Vector3f start, Vector3f end, const Colorf &clr ) {
-		static Vertex3D ff[ 2 ]{};
+		static Vertex3 ff[ 2 ]{};
 
 		ff[ 0 ].pos = start;
 		ff[ 1 ].pos = end;
@@ -303,7 +303,7 @@ namespace ig
 			1.0f, 0.0f,
 		};
 
-		Vertex3D v[ sizeof( g_vertex_buffer_data ) / (sizeof( GLfloat ) * 3) ];
+		Vertex3 v[ sizeof( g_vertex_buffer_data ) / (sizeof( GLfloat ) * 3) ];
 		for (size_t i = 0; i < 36; i++)
 		{
 			v[ i ].pos.set( g_vertex_buffer_data[ i * 3 ], g_vertex_buffer_data[ (i * 3) + 1 ], g_vertex_buffer_data[ (i * 3) + 2 ] );
@@ -319,17 +319,17 @@ namespace ig
 
 	}
 
-	void Canvas::draw( Vertex2D *vert, size_t count, PrimitiveType draw_type ) {
+	void Canvas::draw( Vertex2 *vert, size_t count, PrimitiveType draw_type ) {
 		glBegin( to_glprimitve( draw_type ) );
 
-		for (const Vertex2D &v : std::initializer_list<Vertex2D>( vert, vert + count ))
+		for (const Vertex2 &v : std::initializer_list<Vertex2>( vert, vert + count ))
 			glVertex( v );
 
 		glEnd();
 	}
 
 	void Canvas::circle( float radius, Vector2f center, const Colorf clr, const uint16_t res ) {
-		span<Vertex2D> verts( res );
+		span<Vertex2> verts( res );
 
 		const auto &poly = get_circle_frame( res );
 		for (size_t i = 0; i < poly.sz; i++)

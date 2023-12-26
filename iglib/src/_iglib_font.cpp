@@ -241,7 +241,7 @@ struct CodepoinIndex
 };
 
 // TODO: Test
-FORCEINLINE Image pack_font_atlas(const Image &source, const Vector2i raw_count, const Vector2i glyph_size, const Vector2i spacing)
+inline Image pack_font_atlas(const Image &source, const Vector2i raw_count, const Vector2i glyph_size, const Vector2i spacing)
 {
 	// already packed
 	if (!spacing.x && !spacing.y)

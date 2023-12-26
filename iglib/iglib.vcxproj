@@ -259,6 +259,7 @@
     <ClCompile Include="src\_iglib_ssm2.cpp" />
     <ClCompile Include="src\_iglib_texture.cpp" />
     <ClCompile Include="src\_iglib_vertex.cpp" />
+    <ClCompile Include="src\_iglib_vertexarray.cpp" />
     <ClCompile Include="src\_iglib_wavefront_obj.cpp" />
     <ClCompile Include="src\_iglib_window.cpp" />
   </ItemGroup>
