@@ -367,3 +367,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /iglib/py/mc_glyphs.png
 /iglib/py/signed_distance_field_img2.py
+/iglib/statics.csv
