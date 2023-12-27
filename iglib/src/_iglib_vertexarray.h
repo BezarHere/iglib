@@ -4,7 +4,7 @@
 
 namespace ig
 {
-	template <typename _VRT>
+	template <typename _VRT, typename _CNT = std::vector<_VRT>>
 	class BaseVertexArray
 	{
 	public:
@@ -12,15 +12,19 @@ namespace ig
 
 		using vertex_type = _VRT;
 		using vertex_buffer = BaseVertexBuffer<vertex_type>;
-		using verticies_container = std::vector<vertex_type>;
+		using verticies_container = _CNT;
 
 		inline BaseVertexArray()
-			: m_buffer{}, m_vertices{} {
+			: m_buffer{}, m_vertices{}, m_dirty{ false } {
 		}
 
 		inline BaseVertexArray( PrimitiveType type, size_t size = 0, BufferUsage usage = BufferUsage::Static )
-			: m_buffer{ type, size, usage }, m_vertices{} {
+			: m_buffer{ type, size, usage }, m_vertices{}, m_dirty{ false } {
 			m_vertices.resize( size, vertex_type() );
+		}
+
+		inline bool is_dirty() const noexcept {
+			return m_dirty;
 		}
 
 		inline verticies_container &get_vertices() {
@@ -48,20 +52,47 @@ namespace ig
 				to = m_vertices.size();
 			}
 
-			if (m_buffer.size() < to)
+			if (m_buffer.size() != to)
 			{
 				m_buffer.create( to );
 			}
 
+			if (m_dirty)
+				m_dirty = false;
+
 			m_buffer.update( m_vertices.data() + from, to - from, from );
+		}
+
+		inline void push_back( const vertex_type &vertex ) {
+			if (!m_dirty)
+				m_dirty = true;
+			return m_vertices.push_back( vertex );
+		}
+
+		template <typename ..._VALTY>
+		inline void emplace_back( _VALTY &&... args ) {
+			if (!m_dirty)
+				m_dirty = true;
+			return m_vertices.emplace_back( args );
+		}
+
+		inline vertex_type &operator[]( size_t index ) {
+			if (!m_dirty)
+				m_dirty = true;
+			return m_vertices[index];
+		}
+
+		inline const vertex_type &at( size_t index ) const {
+			return m_vertices.at( index );
 		}
 
 	private:
 		std::vector<vertex_type> m_vertices;
 		vertex_buffer m_buffer;
+		bool m_dirty;
 	};
 
 
-	using Vertex2Array = BaseVertexArray<Vertex2>;
-	using Vertex3Array = BaseVertexArray<Vertex3>;
+	using Vertex2Array = BaseVertexArray<Vertex2, std::vector<Vertex2>>;
+	using Vertex3Array = BaseVertexArray<Vertex3, std::vector<Vertex3>>;
 }
