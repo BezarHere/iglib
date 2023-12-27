@@ -12,7 +12,7 @@ namespace ig
 
 		using vertex_type = _VRT;
 		using vertex_buffer = BaseVertexBuffer<vertex_type>;
-		using verticies_container = _CNT;
+		using container_type = _CNT;
 
 		inline BaseVertexArray()
 			: m_buffer{}, m_vertices{}, m_dirty{ false } {
@@ -27,11 +27,11 @@ namespace ig
 			return m_dirty;
 		}
 
-		inline verticies_container &get_vertices() {
+		inline container_type &get_vertices() {
 			return m_vertices;
 		}
 
-		inline const verticies_container &get_vertices() const {
+		inline const container_type &get_vertices() const {
 			return m_vertices;
 		}
 
@@ -87,7 +87,7 @@ namespace ig
 		}
 
 	private:
-		std::vector<vertex_type> m_vertices;
+		container_type m_vertices;
 		vertex_buffer m_buffer;
 		bool m_dirty;
 	};
