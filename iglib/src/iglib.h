@@ -6,6 +6,8 @@
 #include "_iglib_errors.h"
 #include "_iglib_wavefront_obj.h"
 
+#define IGLIB_H
+
 namespace ig
 {
 	struct Version
