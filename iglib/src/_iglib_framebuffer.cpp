@@ -7,11 +7,11 @@
 namespace ig
 {
 	Framebuffer::Framebuffer()
-		: Framebuffer(nullptr) {
+		: Framebuffer( std::_Noinit ) {
 		glGenFramebuffers( 1, &m_name );
 	}
 
-	Framebuffer::Framebuffer( std::nullptr_t ) noexcept
+	Framebuffer::Framebuffer( std::_Uninitialized ) noexcept
 		: m_name{ 0 } {
 	}
 

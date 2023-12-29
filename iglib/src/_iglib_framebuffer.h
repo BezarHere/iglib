@@ -32,7 +32,7 @@ namespace ig
 	public:
 		Framebuffer();
 		// will not create the framebuffer
-		Framebuffer( std::nullptr_t ) noexcept;
+		Framebuffer( std::_Uninitialized ) noexcept;
 		Framebuffer( Framebuffer &&move ) noexcept;
 		Framebuffer &operator=( Framebuffer &&move ) noexcept;
 		~Framebuffer();
