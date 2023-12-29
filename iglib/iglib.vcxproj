@@ -225,6 +225,7 @@
     <ClInclude Include="src\_iglib_framebuffer.h" />
     <ClInclude Include="src\_iglib_indexbuffer.h" />
     <ClInclude Include="src\_iglib_nativedialog.h" />
+    <ClInclude Include="src\_iglib_renderbuffer.h" />
     <ClInclude Include="src\_iglib_renderer.h" />
     <ClInclude Include="src\_iglib_text.h" />
     <ClInclude Include="src\_iglib_rect.h" />
