@@ -222,6 +222,7 @@
     <ClInclude Include="src\_iglib_application_config.h" />
     <ClInclude Include="src\_iglib_base.h" />
     <ClInclude Include="src\_iglib_errors.h" />
+    <ClInclude Include="src\_iglib_framebuffer.h" />
     <ClInclude Include="src\_iglib_indexbuffer.h" />
     <ClInclude Include="src\_iglib_nativedialog.h" />
     <ClInclude Include="src\_iglib_renderer.h" />
@@ -252,6 +253,7 @@
     </ClCompile>
     <ClCompile Include="src\_iglib_font.cpp" />
     <ClCompile Include="src\_iglib_canvas.cpp" />
+    <ClCompile Include="src\_iglib_framebuffer.cpp" />
     <ClCompile Include="src\_iglib_image.cpp" />
     <ClCompile Include="src\_iglib_indexbuffer.cpp" />
     <ClCompile Include="src\_iglib_renderer.cpp" />
