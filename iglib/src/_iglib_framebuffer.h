@@ -26,7 +26,7 @@ namespace ig
 		DepthStencil = 0x821A
 	};
 
-	typedef unsigned int framebuffer_id;
+	typedef unsigned int framebuffer_name;
 	class Framebuffer
 	{
 	public:
@@ -40,8 +40,8 @@ namespace ig
 		void attach_texture( FramebufferAttachmentSlot slot, TextureId_t tex_id );
 		//void attach_render_buffer( FramebufferAttachmentSlot slot, renderbuffer_id rb_id );
 
-		inline framebuffer_id get_id() const noexcept {
-			return m_id;
+		inline framebuffer_name get_name() const noexcept {
+			return m_name;
 		}
 
 	private:
@@ -50,7 +50,7 @@ namespace ig
 		Framebuffer &operator=( const Framebuffer & ) = delete;
 
 	private:
-		framebuffer_id m_id;
+		framebuffer_name m_name;
 	};
 
 }
