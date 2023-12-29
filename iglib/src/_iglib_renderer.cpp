@@ -15,7 +15,7 @@ static ShaderInstance_t g_ScreenShader{};
 static ShaderInstance_t g_DefaultShaders[ (int)ShaderUsage::_Max ]{};
 static std::shared_ptr<const Texture> g_PlankTexture;
 static const Renderer *g_BoundRenderer = nullptr;
-static struct RendererOpenglPressitenceState
+static struct RendererOpenglPersistenceState
 {
 	Vector2i size;
 	bool postprocessing;
@@ -66,7 +66,7 @@ static FORCEINLINE void init_globals() {
 namespace ig
 {
 	static constexpr GLuint RenderTextureType = GL_RGB;
-	static constexpr GLuint RenderTextureTypeHDR = GL_RGB16F;
+	static constexpr GLuint RenderTextureTypeHDR = GL_RGB;
 	static constexpr GLuint RenderDepthStencilMode = GL_DEPTH24_STENCIL8;
 
 	struct Renderer::RenderBuffersState::Regenerator
@@ -83,6 +83,7 @@ namespace ig
 
 		FORCEINLINE static void regenerate( Renderer::RenderBuffersState &buffer_state, Vector2i size, const RenderEnvironment &env ) {
 			cleanup( buffer_state );
+			buffer_state.colorbuffer_size = size;
 
 			glGenFramebuffers( 1, &buffer_state.framebuffer_object );
 
@@ -121,7 +122,7 @@ namespace ig
 
 			glBindFramebuffer( GL_DRAW_FRAMEBUFFER, buffer_state.framebuffer_object );
 			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer_state.colorbuffer_object, 0 );
-			glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer_state.renderbuffer_object );
+			glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, GL_RENDERBUFFER, buffer_state.renderbuffer_object );
 
 			WARN( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE ); // <- BUGBUG
 
@@ -158,7 +159,7 @@ namespace ig
 	bool Renderer::draw() {
 		if (g_BoundRenderer)
 		{
-			bite::raise( "Drawing to Renderer while there is a renderer already boud!" );
+			bite::raise( "Drawing to Renderer while there is a renderer already bound!" );
 		}
 		g_BoundRenderer = this;
 
