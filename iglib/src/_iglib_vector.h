@@ -6,14 +6,16 @@
 
 namespace ig
 {
-	template <typename _T>
+	template <typename _T, typename _R = _T>
 	struct BaseVector2Template
 	{
-		using this_type = BaseVector2Template<_T>;
+		using this_type = BaseVector2Template<_T, _R>;
+		using real_this_type = BaseVector2Template<_R, _R>;
 		using value_type = _T;
+		using real_type = _R;
 
-		constexpr inline BaseVector2Template(_T x_, _T y_) noexcept
-			: x{ x_ }, y{ y_ }
+		constexpr inline BaseVector2Template(value_type xx, value_type yy) noexcept
+			: x{ xx }, y{ yy }
 		{
 		}
 
@@ -24,8 +26,21 @@ namespace ig
 		}
 
 		template <typename _E>
-		constexpr inline BaseVector2Template(const BaseVector2Template<_E> &copy) noexcept
-			: x{ _T(copy.x) }, y{ _T(copy.y) }
+		constexpr inline BaseVector2Template(const BaseVector2Template<value_type, _E> &copy) noexcept
+			: x{ value_type(copy.x) }, y{ value_type(copy.y) }
+		{
+		}
+
+		template <typename _E, typename _V>
+		constexpr inline BaseVector2Template(const BaseVector2Template<_E, _V> &copy) noexcept
+			: x{ value_type(copy.x) }, y{ value_type(copy.y) }
+		{
+		}
+
+		// for win32's Point & PointF
+		template <typename _P>
+		constexpr inline explicit BaseVector2Template(const _P &copy) noexcept
+			: x{ value_type(copy.X) }, y{ value_type(copy.Y) }
 		{
 		}
 
@@ -57,27 +72,27 @@ namespace ig
 			return this_type(this->y, -this->x);
 		}
 
-		inline constexpr _T length_squared() const
+		inline constexpr value_type length_squared() const
 		{
 			return (this->x * this->x) + (this->y * this->y);
 		}
 
-		inline _T length() const
+		inline real_type length() const
 		{
-			return std::sqrt((this->x * this->x) + (this->y * this->y));
+			return std::sqrt(real_type(this->x * this->x) + real_type(this->y * this->y));
 		}
 
-		inline _T distance(const this_type &other) const
+		inline real_type distance(const this_type &other) const
 		{
-			const _T dx = this->x - other.x;
-			const _T dy = this->y - other.y;
-			return std::sqrt((dx * dx) + (dy * dy));
+			const value_type dx = this->x - other.x;
+			const value_type dy = this->y - other.y;
+			return std::sqrt( real_type(dx * dx) + real_type(dy * dy));
 		}
 
-		inline constexpr _T distance_squared(const this_type &other) const
+		inline constexpr value_type distance_squared(const this_type &other) const
 		{
-			const _T dx = this->x - other.x;
-			const _T dy = this->y - other.y;
+			const value_type dx = this->x - other.x;
+			const value_type dy = this->y - other.y;
 			return (dx * dx) + (dy * dy);
 		}
 
@@ -88,19 +103,19 @@ namespace ig
 
 		inline constexpr this_type direction_squared(const this_type &other) const
 		{
-			const _T dx = other.x - this->x;
-			const _T dy = other.y - this->y;
+			const value_type dx = other.x - this->x;
+			const value_type dy = other.y - this->y;
 			return this_type(dx, dy) / ((dx * dx) + (dy * dy));
 		}
 
-		inline constexpr _T dot(const this_type &other) const
+		inline constexpr value_type dot(const this_type &other) const
 		{
 			return (this->x * other.x) - (this->y * other.y);
 		}
 
 		inline void normalize()
 		{
-			const value_type l = this->length();
+			const real_type l = this->length();
 			x /= l;
 			y /= l;
 		}
@@ -111,19 +126,19 @@ namespace ig
 			return this_type(x / l, y / l);
 		}
 
-		inline _T angle() const
+		inline real_type angle() const
 		{
-			return std::atan2( this->y, this->x );
+			return std::atan2( real_type( this->y ), real_type( this->x ) );
 		}
 
-		inline _T angle_to( const this_type &other ) const
+		inline real_type angle_to( const this_type &other ) const
 		{
-			return std::atan2( other.y - this->y, other.x - this->x );
+			return std::atan2( real_type( other.y - this->y ), real_type(other.x - this->x) );
 		}
 
-		inline this_type rotated( const _T radians ) const
+		inline this_type rotated( const value_type radians ) const
 		{
-			const _T sin = std::sin( radians ), cos = std::cos( radians );
+			const value_type sin = std::sin( radians ), cos = std::cos( radians );
 			return this_type( (this->y * sin) + (this->x * cos), (this->x * sin) + (this->y * cos) );
 		}
 
@@ -142,7 +157,7 @@ namespace ig
 			return this_type(x * other.x, y * other.y);
 		}
 
-		inline constexpr this_type operator*(const _T other) const
+		inline constexpr this_type operator*(const value_type other) const
 		{
 			return this_type(x * other, y * other);
 		}
@@ -152,7 +167,7 @@ namespace ig
 			return this_type(x / other.x, y / other.y);
 		}
 
-		inline constexpr this_type operator/(const _T other) const
+		inline constexpr this_type operator/(const value_type other) const
 		{
 			return this_type(x / other, y / other);
 		}
@@ -214,111 +229,46 @@ namespace ig
 			return this_type(-x, -y);
 		}
 
-		_T x, y;
-	};
-
-	template <typename _T, typename _R>
-	struct IntegralVector2Template : public BaseVector2Template<_T>
-	{
-		using base_type = BaseVector2Template<_T>;
-		using this_type = IntegralVector2Template<_T, _R>;
-		using real_type = _R;
-		using integral_type = _T;
-		using real_this_type = BaseVector2Template<_R>;
-
-
-		constexpr inline IntegralVector2Template(_T x_, _T y_)
-			: base_type(x_, y_)
-		{
-		}
-
-
-		constexpr inline IntegralVector2Template()
-			: base_type()
-		{
-		}
-
 		template <typename _E>
-		constexpr inline IntegralVector2Template(const BaseVector2Template<_E> &copy)
-			: base_type(copy)
-		{
-		}
-
-		inline real_type length() const
-		{
-			return std::sqrt(real_type((this->x * this->x) + (this->y * this->y)));
-		}
-
-		inline real_type distance(const this_type &other) const
-		{
-			const _T dx = this->x - other.x;
-			const _T dy = this->y - other.y;
-			return std::sqrt(real_type((dx * dx) + (dy * dy)));
-		}
-
-		inline real_type angle() const
-		{
-			return std::atan2(real_type(this->y), real_type(this->x));
-		}
-
-		inline real_type angle_to(const this_type &other) const
-		{
-			return std::atan2(real_type(other.y - this->y), real_type(other.x - this->x));
-		}
-
-		inline real_this_type rotated(const real_type radians) const
-		{
-			const real_type sin = std::sin(radians), cos = std::cos(radians);
-			return real_this_type((this->y * sin) + (this->x * cos), (this->x * sin) + (this->y * cos));
-		}
-
-		template <typename _E>
-		inline constexpr this_type operator&( const _E bits ) const
-		{
+		inline constexpr this_type operator&( const _E bits ) const {
 			return this_type( this->x >> bits, this->y >> bits );
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator<<(const _E bits) const
-		{
-			return this_type(this->x << bits, this->y << bits);
+		inline constexpr this_type operator<<( const _E bits ) const {
+			return this_type( this->x << bits, this->y << bits );
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator>>(const _E bits) const
-		{
-			return this_type(this->x >> bits, this->y >> bits);
+		inline constexpr this_type operator>>( const _E bits ) const {
+			return this_type( this->x >> bits, this->y >> bits );
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator<<(const BaseVector2Template<_E> bits_v) const
-		{
-			return this_type(this->x << bits_v.x, this->y << bits_v.y);
+		inline constexpr this_type operator<<( const BaseVector2Template<_E> bits_v ) const {
+			return this_type( this->x << bits_v.x, this->y << bits_v.y );
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator>>(const BaseVector2Template<_E> bits_v) const
-		{
-			return this_type(this->x >> bits_v.x, this->y >> bits_v.y);
+		inline constexpr this_type operator>>( const BaseVector2Template<_E> bits_v ) const {
+			return this_type( this->x >> bits_v.x, this->y >> bits_v.y );
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator|(const _E bits) const
-		{
-			return this_type(this->x | bits, this->y | bits);
+		inline constexpr this_type operator|( const _E bits ) const {
+			return this_type( this->x | bits, this->y | bits );
 		}
 
 		template <typename _E>
-		inline constexpr this_type operator^(const _E bits) const
-		{
-			return this_type(this->x ^ bits, this->y ^ bits);
+		inline constexpr this_type operator^( const _E bits ) const {
+			return this_type( this->x ^ bits, this->y ^ bits );
 		}
 
-		inline constexpr this_type operator~() const
-		{
-			return this_type(~this->x, ~this->y);
+		inline constexpr this_type operator~() const {
+			return this_type( ~this->x, ~this->y );
 		}
 
+		value_type x, y;
 	};
 
 
@@ -774,10 +724,10 @@ namespace ig
 
 	using Vector2f = BaseVector2Template<float_t>;
 	using Vector2d = BaseVector2Template<double_t>;
-	using Vector2s = IntegralVector2Template<int16_t, float_t>;
-	using Vector2u = IntegralVector2Template<uint32_t, float_t>;
-	using Vector2i = IntegralVector2Template<int32_t, float_t>;
-	using Vector2l = IntegralVector2Template<int64_t, double_t>;
+	using Vector2s = BaseVector2Template<int16_t, float_t>;
+	using Vector2u = BaseVector2Template<uint32_t, float_t>;
+	using Vector2i = BaseVector2Template<int32_t, float_t>;
+	using Vector2l = BaseVector2Template<int64_t, double_t>;
 
 	using Vector3f = RealVector3Template<float_t>;
 	using Vector3d = RealVector3Template<double_t>;
@@ -802,8 +752,8 @@ namespace ig
 namespace std
 {
 
-	template <typename _T>
-	inline std::ostream &operator<<(std::ostream &out, const ig::BaseVector2Template<_T> &vec)
+	template <typename _T, typename _R>
+	inline std::ostream &operator<<(std::ostream &out, const ig::BaseVector2Template<_T, _R> &vec)
 	{
 		return out << '(' << vec.x << ", " << vec.y << ')';
 	}
