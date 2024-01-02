@@ -16,3 +16,4 @@
 // For more information see https://go.microsoft.com/fwlink/?linkid=865984
 #define _NORETURN __attribute__((noreturn))
 #define _NORETURN __declspec(noreturn)
+#define APIENTRY

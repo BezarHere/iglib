@@ -224,7 +224,6 @@
     <ClInclude Include="src\_iglib_errors.h" />
     <ClInclude Include="src\_iglib_framebuffer.h" />
     <ClInclude Include="src\_iglib_indexbuffer.h" />
-    <ClInclude Include="src\_iglib_nativedialog.h" />
     <ClInclude Include="src\_iglib_renderbuffer.h" />
     <ClInclude Include="src\_iglib_renderer.h" />
     <ClInclude Include="src\_iglib_text.h" />
@@ -234,6 +233,7 @@
     <ClInclude Include="src\_iglib_ssm2.h" />
     <ClInclude Include="src\_iglib_vector.h" />
     <ClInclude Include="src\_iglib_vertexarray.h" />
+    <ClInclude Include="src\_iglib_meshdesc.h" />
     <ClInclude Include="src\_iglib_wavefront_obj.h" />
     <ClInclude Include="src\_iglib_window.h" />
     <ClInclude Include="src\_iglib_matrix.h" />
@@ -257,6 +257,7 @@
     <ClCompile Include="src\_iglib_framebuffer.cpp" />
     <ClCompile Include="src\_iglib_image.cpp" />
     <ClCompile Include="src\_iglib_indexbuffer.cpp" />
+    <ClCompile Include="src\_iglib_renderbuffer.cpp" />
     <ClCompile Include="src\_iglib_renderer.cpp" />
     <ClCompile Include="src\_iglib_shader.cpp" />
     <ClCompile Include="src\_iglib_ssm2.cpp" />
