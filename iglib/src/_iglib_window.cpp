@@ -2,7 +2,44 @@
 #include "internal.h"
 #include "_iglib_window.h"
 
+constexpr std::array<const char *, 6> DebugSources =
+{
+	"API", "WindowSys", "ShaderCompiler", "3rdParty", "Application", "Other"
+};
 
+constexpr std::array<const char *, 9> DebugMsgTypes =
+{
+	"Error", "DeprecatedBehavior", "UndefinedBehavior", "Portability", "Performance", "Marker",
+	"PushGroup", "PopGroup", "Other"
+};
+
+constexpr std::array<const char *, 4> DebugMsgSeverity =
+{
+	"High", "Med", "Low", "None"
+};
+
+constexpr FORCEINLINE const char *gldbg_get_severity( const GLenum s ) {
+	if (s == GL_DEBUG_SEVERITY_NOTIFICATION)
+		return DebugMsgSeverity[ 3 ];
+	return DebugMsgSeverity[ s - GL_DEBUG_SEVERITY_HIGH ];
+}
+
+void APIENTRY debug_callback( GLenum source, GLenum type, GLuint id,
+												GLenum severity, GLsizei length, const GLchar *message, const void *userParam ) {
+	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return; // skips notifications
+	(void)userParam;
+	(void)id;
+	bite::warn(
+		  "Message from "
+		+ std::string( DebugSources[ source - GL_DEBUG_SOURCE_API ] )
+		+ " severity "
+		+ gldbg_get_severity( severity )
+		+ " type "
+		+ DebugMsgTypes[ type - GL_DEBUG_TYPE_ERROR ] // <- works for now
+		+ ": "
+		+ std::string( message, length )
+	);
+}
 
 static GLFWwindow *create_glfw_window(int width, int height, const std::string &title, GLFWmonitor *fullscreen, GLFWwindow *share)
 {
@@ -10,14 +47,8 @@ static GLFWwindow *create_glfw_window(int width, int height, const std::string &
 	{
 		init_glfw();
 	}
-	
 
-	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-
+	glfw_init_window_hints();
 	GLFWwindow *hdl = glfwCreateWindow(
 		width, height, title.c_str(), fullscreen, share
 	);
@@ -28,6 +59,11 @@ static GLFWwindow *create_glfw_window(int width, int height, const std::string &
 	{
 		glfwMakeContextCurrent(hdl);
 		init_glew();
+#ifdef _DEBUG
+		glEnable( GL_DEBUG_OUTPUT );
+		glDebugMessageCallback( debug_callback, nullptr );
+#endif // _DEBUG
+
 	}
 
 
