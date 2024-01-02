@@ -89,10 +89,11 @@ namespace ig
 
 	template<typename _VB, typename _ST>
 	inline void Canvas::text( const BaseTextTemplate<_VB, _ST> &txt ) {
-		//if (txt.is_dirty())
-		//	txt.rebuild();
-		this->get_renderer()->bind_texture(txt.get_font().get_atlas());
+		this->get_renderer()->bind_texture( txt.get_font().get_atlas() );
+		this->get_renderer()->bind_shader( Font::get_shader() );
 		this->draw( txt.get_buffer() );
+		this->get_renderer()->bind_texture( NULL );
+		this->get_renderer()->bind_default_shader( ShaderUsage::Usage2D );
 	}
 
 }
