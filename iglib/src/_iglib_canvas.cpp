@@ -151,6 +151,7 @@ namespace ig
 	Canvas::Canvas() 
 		: m_renderer{ nullptr }, m_transform2d{}, m_transform3d{}
 	{
+		try_generate_opengl_globals();
 	}
 
 	Canvas::Canvas( Canvas &&move ) noexcept
@@ -348,6 +349,7 @@ namespace ig
 		{
 			verts[ i ].pos = Vector2f( (poly.ptr.get()[ i ].x * radius) + center.x, (poly.ptr.get()[ i ].y * radius) + center.y );
 			verts[ i ].clr = clr;
+			verts[ i ].uv = -(poly.ptr.get()[ i ] + Vector2f( 1.f, 1.f )) / 2.f;
 		}
 
 		Vertex2Buffer buff{};
@@ -367,7 +369,7 @@ namespace ig
 		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, clr ) );
 		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, uv ) );
 
-		glDrawArrays( to_glprimitve( buf.get_primitive() ), start, count ? count : (static_cast<int>(buf.size()) - start) );
+		glDrawArrays( to_glprimitve( buf.get_primitive() ), start, count >= 0 ? count : (static_cast<int>(buf.size()) - start) );
 
 		glDisableVertexAttribArray( 0 );
 		glDisableVertexAttribArray( 1 );
@@ -377,9 +379,9 @@ namespace ig
 			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
 	}
 
-	void Canvas::draw( const Vertex2Buffer &buf, const IndexBuffer &indcies ) {
+	void Canvas::draw( const Vertex2Buffer &buf, const IndexBuffer &indices ) {
 		buf._bind_array_buffer();
-		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indcies.get_id() );
+		glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, indices.get_id() );
 
 		glEnableVertexAttribArray( 0 );
 		glEnableVertexAttribArray( 1 );

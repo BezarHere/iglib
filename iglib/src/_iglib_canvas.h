@@ -1,6 +1,7 @@
 #pragma once
 #include "_iglib_vertex.h"
 #include "_iglib_vertexarray.h"
+#include "_iglib_meshdesc.h"
 #include "_iglib_indexbuffer.h"
 #include "_iglib_image.h"
 #include "_iglib_texture.h"
@@ -22,8 +23,8 @@ namespace ig
 		
 
 		void quad(Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, const Colorf &clr);
-		void quad(Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, const Colorf &clr); // <- should be counter clockwise winded
-		void quad(const Vector3f p[], const Colorf &clr); // <- should be counter clockwise winded
+		void quad(Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, const Colorf &clr);
+		void quad(const Vector3f p[], const Colorf &clr);
 
 		void rect(Vector2f start, Vector2f end, const Colorf &clr);
 		void triangle(Vector2f p0, Vector2f p1, Vector2f p2, const Colorf &clr);
