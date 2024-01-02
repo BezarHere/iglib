@@ -47,8 +47,11 @@ extern void push_to_draw_pipline(WindowHandle_t hdl);
 extern WindowHandle_t top_draw_pipline();
 extern void pop_draw_pipline();
 
-extern void lazyload_opengl_procs();
+
 extern int register_openglinit_callback(void(*callback)(void)); // always returns 0
+
+extern void glfw_init_window_hints();
+extern bool set_glfw_context_version( int major, int minor, bool compat = false );
 
 template <typename _T>
 FORCEINLINE _T *blockcpy(const _T *src, const size_t size)
