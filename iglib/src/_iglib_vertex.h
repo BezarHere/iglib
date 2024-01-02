@@ -7,6 +7,7 @@ namespace ig
 {
 	enum class PrimitiveType
 	{
+		Point,
 		Quad,
 		Triangle,
 		Line,
