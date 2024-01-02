@@ -15,7 +15,7 @@ enum class CustomCodeState
 
 struct ShaderTemplate
 {
-	int version = 330; // compat versions are negtive
+	int version = 440; // compat versions are negative
 	GLuint type;
 	ShaderUsage usage;
 	struct {
@@ -31,17 +31,16 @@ struct ShaderTemplate
 //	
 //}
 
-FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
-{
+FORCEINLINE std::string generate_shader_code( const ShaderTemplate &temp ) {
 	if (temp.custom_code.state == CustomCodeState::Whole)
 		return temp.custom_code.src;
 
 	std::ostringstream ss{};
 
-	ss << "#version " << std::abs(temp.version);
+	ss << "#version " << std::abs( temp.version );
 	if (temp.version < 0)
 	{
-		ss << ' ' << "compatiblty";
+		ss << ' ' << "compatibly";
 	}
 	ss << '\n';
 
@@ -114,7 +113,7 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 
 		if (temp.usage != ShaderUsage::ScreenSpace)
 		{
-			
+
 			if (temp.usage == ShaderUsage::Usage3D)
 			{
 
@@ -150,9 +149,10 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 	}
 	else if (temp.type == GL_FRAGMENT_SHADER)
 	{
-		ss << "out vec4 Color;"
-					"in vec4 FragColor;"
-					"in vec2 UV;";
+		ss << "layout (location = 0) out vec4 Color;"
+			"layout (location = 1) out vec4 OverColor;"
+			"in vec4 FragColor;"
+			"in vec2 UV;";
 
 		ss << "uniform sampler2D uTex0;";
 		ss << "uniform sampler2D uTex1;";
@@ -181,7 +181,9 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 		//if (temp.usage == ShaderUsage::Usage3D)
 		//	ss << "Color = vec4(UV, 1.0, 1.0);";
 		//else
-			ss << "Color = texture(uTex0, UV) * FragColor;";
+		ss << "Color = texture(uTex0, UV) * FragColor;";
+		ss << "OverColor.rgb = vec3(1.0);";
+		ss << "OverColor.a = 1.0;";
 		//ss << "Color = vec4(UV, 1.0, 1.0) * FragColor;";
 		//ss << "Color = texture(uTex0, UV) * FragColor;";
 		//ss << "Color = vec4(1.0, 1.0, 1.0, 1.0);";
@@ -191,67 +193,68 @@ FORCEINLINE std::string generate_shader_code(const ShaderTemplate &temp)
 	return ss.str();
 }
 
-GLuint compile_shaders(const std::string &shader, GLenum type)
-{
+GLuint compile_shaders( const std::string &shader, GLenum type ) {
 
 	const char *shaderCode = shader.c_str();
-	GLuint shaderId = glCreateShader(type);
+	GLuint shaderId = glCreateShader( type );
 
-	if (shaderId == 0) { // Error: Cannot create shader object
+	if (shaderId == 0)
+	{ // Error: Cannot create shader object
 		std::cout << "Error creating shaders";
 		return 0;
 	}
 
 	// Attach source code to this object
-	glShaderSource(shaderId, 1, &shaderCode, NULL);
-	glCompileShader(shaderId); // compile the shader object
+	glShaderSource( shaderId, 1, &shaderCode, NULL );
+	glCompileShader( shaderId ); // compile the shader object
 
 	GLint compileStatus;
 
 	// check for compilation status
-	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &compileStatus);
+	glGetShaderiv( shaderId, GL_COMPILE_STATUS, &compileStatus );
 
-	if (!compileStatus) { // If compilation was not successful
+	if (!compileStatus)
+	{ // If compilation was not successful
 		int length;
-		glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &length);
+		glGetShaderiv( shaderId, GL_INFO_LOG_LENGTH, &length );
 		char *cMessage = new char[ length ];
 
 		// Get additional information
-		glGetShaderInfoLog(shaderId, length, &length, cMessage);
+		glGetShaderInfoLog( shaderId, length, &length, cMessage );
 		std::cout << "Cannot Compile Shader: " << cMessage;
 		delete[] cMessage;
-		glDeleteShader(shaderId);
+		glDeleteShader( shaderId );
 		return 0;
 	}
 
 	return shaderId;
 }
 
-FORCEINLINE GLuint gen_shader(const std::string &src, const GLuint type)
-{
-	GLuint id = glCreateShader(type);
+FORCEINLINE GLuint gen_shader( const std::string &src, const GLuint type ) {
+	GLuint id = glCreateShader( type );
 	const char *cstr = src.c_str();
 
-	ASSERT(id != NULL);
+	ASSERT( id != NULL );
 
-	glShaderSource(id, 1, &cstr, NULL);
-	glCompileShader(id);
+	glShaderSource( id, 1, &cstr, NULL );
+	glCompileShader( id );
 
 	GLint compileStatus;
 
 	// check for compilation status
-	glGetShaderiv(id, GL_COMPILE_STATUS, &compileStatus);
+	glGetShaderiv( id, GL_COMPILE_STATUS, &compileStatus );
 
-	if (!compileStatus) { // If compilation was not successful
+	if (!compileStatus)
+	{ // If compilation was not successful
 		int length;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		glGetShaderiv( id, GL_INFO_LOG_LENGTH, &length );
 		char *cMessage = new char[ length ];
 
 		// Get additional information
-		glGetShaderInfoLog(id, length, &length, cMessage);
+		glGetShaderInfoLog( id, length, &length, cMessage );
 		std::cerr << "Shader Error: " << cMessage << '\n';
 		delete[] cMessage;
-		glDeleteShader(id);
+		glDeleteShader( id );
 		return 0;
 	}
 	//std::cout << "shader id " << id << " reported: " << success << '\n';
@@ -259,14 +262,13 @@ FORCEINLINE GLuint gen_shader(const std::string &src, const GLuint type)
 	return id;
 }
 
-FORCEINLINE ShaderId_t gen_program(const GLuint vertex, const GLuint fragment)
-{
+FORCEINLINE ShaderId_t gen_program( const GLuint vertex, const GLuint fragment ) {
 	if (!vertex || !fragment)
 	{
 		if (vertex)
-			glDeleteShader(vertex);
+			glDeleteShader( vertex );
 		else if (fragment)
-			glDeleteShader(fragment);
+			glDeleteShader( fragment );
 
 		return 0;
 	}
@@ -279,7 +281,7 @@ FORCEINLINE ShaderId_t gen_program(const GLuint vertex, const GLuint fragment)
 		std::cerr << "couldn't create shader program\n";
 		return 0;
 	}
-	
+
 	//if (!vertex.log.code)
 	//{
 	//	raise("vertex subshader: " + vertex.log.msg);
@@ -292,27 +294,27 @@ FORCEINLINE ShaderId_t gen_program(const GLuint vertex, const GLuint fragment)
 	//	raise("fragment subshader: " + fragment.log.msg);
 	//}
 
-	glAttachShader(id, vertex);
-	glAttachShader(id, fragment);
-	
-	glLinkProgram(id);
+	glAttachShader( id, vertex );
+	glAttachShader( id, fragment );
 
-	glDetachShader(id, vertex);
-	glDetachShader(id, fragment);
+	glLinkProgram( id );
 
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
+	glDetachShader( id, vertex );
+	glDetachShader( id, fragment );
+
+	glDeleteShader( vertex );
+	glDeleteShader( fragment );
 
 	int success;
 	constexpr int log_length = 512;
 	int log_ml;
 	char msg[ log_length ]{};
-	glGetProgramiv(id, GL_LINK_STATUS, &success);
-	glGetProgramInfoLog(id, log_length, &log_ml, msg);
-	
+	glGetProgramiv( id, GL_LINK_STATUS, &success );
+	glGetProgramInfoLog( id, log_length, &log_ml, msg );
+
 	if (success == GL_FALSE)
 	{
-		glDeleteProgram(id);
+		glDeleteProgram( id );
 		std::cerr << "shader program error: " << msg << '\n';
 		return 0;
 	}
@@ -320,20 +322,35 @@ FORCEINLINE ShaderId_t gen_program(const GLuint vertex, const GLuint fragment)
 	return id;
 }
 
+static inline ShaderId_t generate_shader_prog( const std::string &vertex, const std::string &fragment, const ShaderUsage usage ) {
+
+	const std::string vert = generate_shader_code( { DefaultShaderVersion,
+																						 GL_VERTEX_SHADER,
+																						 usage,
+																						 { CustomCodeState::AfterUniforms, vertex.c_str() } } );
+
+	const std::string frag = generate_shader_code( { DefaultShaderVersion,
+																						 GL_FRAGMENT_SHADER,
+																						 usage,
+																						 { CustomCodeState::AfterUniforms, fragment.c_str() } } );
+	return gen_program( gen_shader( vert, GL_VERTEX_SHADER ),
+											gen_shader( frag, GL_FRAGMENT_SHADER ) );
+}
+
 namespace ig
 {
-	ShaderInstance_t Shader::get_default(ShaderUsage usage)
-	{
+
+	ShaderInstance_t Shader::get_default( ShaderUsage usage ) {
 		struct
 		{
 			bool inited = false;
 			std::string vertex, fragment;
 		} static cache_defaults[ (int)ShaderUsage::_Max ]{};
 
-		if (!cache_defaults[(int)usage].inited)
+		if (!cache_defaults[ (int)usage ].inited)
 		{
-			cache_defaults[ (int)usage ].vertex = generate_shader_code({ DefaultShaderVersion, GL_VERTEX_SHADER, usage });
-			cache_defaults[ (int)usage ].fragment = generate_shader_code({ DefaultShaderVersion, GL_FRAGMENT_SHADER, usage });
+			cache_defaults[ (int)usage ].vertex = generate_shader_code( { DefaultShaderVersion, GL_VERTEX_SHADER, usage } );
+			cache_defaults[ (int)usage ].fragment = generate_shader_code( { DefaultShaderVersion, GL_FRAGMENT_SHADER, usage } );
 			cache_defaults[ (int)usage ].inited = true;
 		}
 
@@ -344,82 +361,75 @@ namespace ig
 		);
 	}
 
-	ShaderInstance_t Shader::compile(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage)
-	{
+	ShaderInstance_t Shader::compile( const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage ) {
 		return compile_raw(
-			generate_shader_code({
+			generate_shader_code( {
 					DefaultShaderVersion,
 					GL_VERTEX_SHADER,
 					usage,
 					{ CustomCodeState::AfterUniforms, vertex_src.c_str() }
-			}),
-			generate_shader_code({
+														} ),
+			generate_shader_code( {
 					DefaultShaderVersion,
 					GL_FRAGMENT_SHADER,
 					usage,
 					{ CustomCodeState::AfterUniforms, fragment_src.c_str() }
-			}),
+														} ),
 			usage
 		);
 	}
 
-	ShaderInstance_t Shader::compile_raw(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage)
-	{
+	ShaderInstance_t Shader::compile_raw( const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage ) {
 		return ShaderInstance_t(
 			new Shader(
-				gen_program(gen_shader(vertex_src, GL_VERTEX_SHADER),
-										gen_shader(fragment_src, GL_FRAGMENT_SHADER)),
-				usage)
+				gen_program( gen_shader( vertex_src, GL_VERTEX_SHADER ),
+										 gen_shader( fragment_src, GL_FRAGMENT_SHADER ) ),
+				usage )
 		);
 	}
 
 	Shader::Shader()
-		: m_id{ 0 }, m_usage{ ShaderUsage::Usage3D }
-	{
+		: m_id{ 0 }, m_usage{ ShaderUsage::Usage3D } {
 	}
 
-	Shader::Shader(ShaderId_t id, ShaderUsage usage)
-		: m_id{ id }, m_usage{ usage }
-	{
+	Shader::Shader( const std::string &vertex, const std::string &fragment, ShaderUsage usage )
+		: m_id{ generate_shader_prog( vertex, fragment, usage ) }, m_usage{ usage } {
 	}
 
-	Shader::~Shader()
-	{
+	Shader::Shader( ShaderId_t id, ShaderUsage usage )
+		: m_id{ id }, m_usage{ usage } {
+	}
+
+	Shader::~Shader() {
 		if (m_id)
-			glDeleteProgram(m_id);
+			glDeleteProgram( m_id );
 	}
 
-	ShaderId_t Shader::get_id() const noexcept
-	{
+	ShaderId_t Shader::get_id() const noexcept {
 		return m_id;
 	}
 
-	bool Shader::is_valid() const noexcept
-	{
+	bool Shader::is_valid() const noexcept {
 		return m_id;
 	}
 
-	bool Shader::_is_current() const
-	{
+	bool Shader::_is_current() const {
 		GLuint p;
-		glGetIntegerv(GL_CURRENT_PROGRAM, (GLint *) & p);
+		glGetIntegerv( GL_CURRENT_PROGRAM, (GLint *)&p );
 		return p == m_id;
 	}
 
-	ShaderUsage Shader::get_usage() const noexcept
-	{
+	ShaderUsage Shader::get_usage() const noexcept {
 		return m_usage;
 	}
 
-	_NODISCARD int Shader::get_uniform_location(const std::string &name) const noexcept
-	{
-		return glGetUniformLocation(get_id(), name.c_str());
+	_NODISCARD int Shader::get_uniform_location( const std::string &name ) const noexcept {
+		return glGetUniformLocation( get_id(), name.c_str() );
 	}
 
-	int Shader::max_uniform_location()
-	{
+	int Shader::max_uniform_location() {
 		int result;
-		glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS, &result);
+		glGetIntegerv( GL_MAX_UNIFORM_LOCATIONS, &result );
 		return result;
 	}
 }

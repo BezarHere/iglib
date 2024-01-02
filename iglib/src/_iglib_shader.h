@@ -18,15 +18,17 @@ namespace ig
 	class Shader
 	{
 	public:
-		// WILL CREATE AN INVALID SHADER
+		/// @brief Creates an invalid shader, use other constructors to create a valid shader
 		Shader();
+		Shader( const std::string &vertex, const std::string &fragment, ShaderUsage usage = ShaderUsage::Usage3D );
+
 		~Shader();
 
 		/// @warn THIS WILL REBUILD A NEW 'DEFAULT' SHADER, WICH IS EXPENSIVE
 		static ShaderInstance_t get_default(ShaderUsage usage = ShaderUsage::Usage3D);
 		static ShaderInstance_t compile(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage = ShaderUsage::Usage3D);
 
-		// will create a raw shader, it's hard to be complaient with the current implementation so try to not use it
+		// will create a raw shader, it's hard to be complaint with the current implementation so try to not use it
 		static ShaderInstance_t compile_raw(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage = ShaderUsage::Usage3D);
 		
 
