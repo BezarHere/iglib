@@ -74,6 +74,9 @@ constexpr dye::TerminalColor ErrorColor{ dye::ColorCode::LightRed, dye::ColorCod
 constexpr dye::TerminalColor WarningColor{ dye::ColorCode::LightYellow, dye::ColorCode::Black };
 constexpr dye::TerminalColor PingColor{ dye::ColorCode::LightBlue, dye::ColorCode::Black };
 
+#define STATIC_SINGLE_CALL { static bool __firstcall = true; if (__firstcall && !(__firstcall = false)) return; }
+#define STATIC_SINGLE_CALL_V(x) { static bool __firstcall = true; if (__firstcall && !(__firstcall = false)) return (x); }
+
 #ifndef ASSERT
 #define ASSERT(cond) if (!(cond)) bite::raise(bite::format("failed condition \"{}\" at \"{}\" line {}", #cond, __FILE__, __LINE__))
 #endif
