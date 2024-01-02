@@ -38,7 +38,7 @@ namespace ig
 		Vector3f normal;
 	};
 
-	typedef unsigned VertexBufferId_t;
+	typedef unsigned VertexBufferName_t;
 
 	template <typename _VRT>
 	class BaseVertexBuffer
@@ -80,7 +80,7 @@ namespace ig
 		void update( const vertex_type *vertices );
 
 		/// OpenGL function
-		VertexBufferId_t get_id() const noexcept;
+		inline VertexBufferName_t get_name() const noexcept;
 
 		/// Internal OpenGL function
 		void _bind_array_buffer() const;
@@ -91,16 +91,21 @@ namespace ig
 
 
 	private:
-		BaseVertexBuffer(VertexBufferId_t id, size_t size = 0, BufferUsage usage = BufferUsage::Static, PrimitiveType type = PrimitiveType::TriangleStrip);
+		BaseVertexBuffer(VertexBufferName_t id, size_t size = 0, BufferUsage usage = BufferUsage::Static, PrimitiveType type = PrimitiveType::TriangleStrip);
 
 	private:
-		VertexBufferId_t m_id;
+		VertexBufferName_t m_name;
 		size_t m_size;
 		BufferUsage m_usage;
 		PrimitiveType m_type;
 	};
+	template <typename _VRT>
+	inline VertexBufferName_t BaseVertexBuffer<_VRT>::get_name() const noexcept 		{
+		return m_name;
+	}
 
 	using Vertex2Buffer = BaseVertexBuffer<Vertex2>;
 	using Vertex3Buffer = BaseVertexBuffer<Vertex3>;
+
 
 }

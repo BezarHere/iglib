@@ -7,25 +7,22 @@ template class BaseVertexBuffer<Vertex2>;
 template class BaseVertexBuffer<Vertex3>;
 
 
-FORCEINLINE VertexBufferId_t create_buffer()
-{
-	VertexBufferId_t i = 0;
-	glGenBuffers(1, &i);
+FORCEINLINE VertexBufferName_t create_buffer() {
+	VertexBufferName_t i = 0;
+	glGenBuffers( 1, &i );
 	if (!i)
 	{
-		bite::warn("Warning: Creating vertex buffer failed with error code " + std::to_string(glGetError()));
+		bite::warn( "Warning: Creating vertex buffer failed with error code " + std::to_string( glGetError() ) );
 	}
 	return i;
 }
 
-FORCEINLINE void free_buffer( VertexBufferId_t &id)
-{
-	glDeleteBuffers(1, &id);
+FORCEINLINE void free_buffer( VertexBufferName_t &id ) {
+	glDeleteBuffers( 1, &id );
 	id = 0;
 }
 
-FORCEINLINE VertexBufferId_t duplicate_buffer( const VertexBufferId_t copy, const int usage )
-{
+FORCEINLINE VertexBufferName_t duplicate_buffer( const VertexBufferName_t copy, const int usage ) {
 	if (!copy)
 		return NULL;
 	glBindBuffer( GL_ARRAY_BUFFER, copy );
@@ -35,7 +32,7 @@ FORCEINLINE VertexBufferId_t duplicate_buffer( const VertexBufferId_t copy, cons
 	glGetBufferSubData( GL_ARRAY_BUFFER, 0, bsize, buffer );
 	glBindBuffer( GL_ARRAY_BUFFER, NULL );
 
-	VertexBufferId_t new_id = create_buffer();
+	VertexBufferName_t new_id = create_buffer();
 	glBindBuffer( GL_ARRAY_BUFFER, new_id );
 	glBufferData( GL_ARRAY_BUFFER, bsize, buffer, usage );
 	glBindBuffer( GL_ARRAY_BUFFER, NULL );
@@ -48,14 +45,13 @@ namespace ig
 {
 
 	template <typename _VRT>
-	BaseVertexBuffer<_VRT>::BaseVertexBuffer(VertexBufferId_t id, size_t size, BufferUsage usage, PrimitiveType type)
-		: m_id{ id }, m_size{ size }, m_usage{ usage }, m_type{ type }
-	{
+	BaseVertexBuffer<_VRT>::BaseVertexBuffer( VertexBufferName_t id, size_t size, BufferUsage usage, PrimitiveType type )
+		: m_name{ id }, m_size{ size }, m_usage{ usage }, m_type{ type } {
 	}
 
 	template<typename _VRT>
 	BaseVertexBuffer<_VRT>::BaseVertexBuffer()
-		: m_id{ 0 }, m_size{ 0 }, m_usage{ BufferUsage::Static }, m_type{ PrimitiveType::TriangleFan } {
+		: m_name{ 0 }, m_size{ 0 }, m_usage{ BufferUsage::Static }, m_type{ PrimitiveType::TriangleFan } {
 	}
 
 	template<typename _VRT>
@@ -65,35 +61,32 @@ namespace ig
 
 	template<typename _VRT>
 	BaseVertexBuffer<_VRT>::BaseVertexBuffer( PrimitiveType type, size_t size, BufferUsage usage )
-		: m_id{ 0 }, m_type{ type }, m_usage{ usage }, m_size{ size } {
+		: m_name{ 0 }, m_type{ type }, m_usage{ usage }, m_size{ size } {
 		if (size)
 			create( size );
 	}
 
 	template<typename _VRT>
 	BaseVertexBuffer<_VRT>::~BaseVertexBuffer() noexcept {
-		if (m_id)
-			free_buffer( m_id );
+		if (m_name)
+			free_buffer( m_name );
 	}
 
 	template <typename _VRT>
 	BaseVertexBuffer<_VRT>::BaseVertexBuffer( const BaseVertexBuffer &copy )
-		: m_id{ duplicate_buffer( copy.m_id, to_gldrawusage( copy.m_usage ) ) }, m_size{ copy.m_size }, m_usage{ copy.m_usage }, m_type{ copy.m_type }
-	{
-		
+		: m_name{ duplicate_buffer( copy.m_name, to_gldrawusage( copy.m_usage ) ) }, m_size{ copy.m_size }, m_usage{ copy.m_usage }, m_type{ copy.m_type } {
+
 	}
 
 	template <typename _VRT>
 	BaseVertexBuffer<_VRT>::BaseVertexBuffer( BaseVertexBuffer &&move ) noexcept
-		: m_id{ move.m_id }, m_size{ move.m_size }, m_usage{ move.m_usage }, m_type{ move.m_type }
-	{
-		move.m_id = NULL;
+		: m_name{ move.m_name }, m_size{ move.m_size }, m_usage{ move.m_usage }, m_type{ move.m_type } {
+		move.m_name = NULL;
 	}
 
 	template <typename _VRT>
-	BaseVertexBuffer<_VRT> &BaseVertexBuffer<_VRT>::operator=( const BaseVertexBuffer &copy )
-	{
-		m_id = duplicate_buffer( copy.m_id, to_gldrawusage( copy.m_usage ) );
+	BaseVertexBuffer<_VRT> &BaseVertexBuffer<_VRT>::operator=( const BaseVertexBuffer &copy ) {
+		m_name = duplicate_buffer( copy.m_name, to_gldrawusage( copy.m_usage ) );
 		m_size = copy.m_size;
 		m_type = copy.m_type;
 		m_usage = copy.m_usage;
@@ -101,61 +94,55 @@ namespace ig
 	}
 
 	template <typename _VRT>
-	BaseVertexBuffer<_VRT> &BaseVertexBuffer<_VRT>::operator=( BaseVertexBuffer &&move ) noexcept
-	{
-		m_id = move.m_id;
+	BaseVertexBuffer<_VRT> &BaseVertexBuffer<_VRT>::operator=( BaseVertexBuffer &&move ) noexcept {
+		m_name = move.m_name;
 		m_size = move.m_size;
 		m_type = move.m_type;
 		m_usage = move.m_usage;
-		move.m_id = NULL;
+		move.m_name = NULL;
 		return *this;
 	}
 
 
 	template <typename _VRT>
-	size_t BaseVertexBuffer<_VRT>::size() const noexcept
-	{
+	size_t BaseVertexBuffer<_VRT>::size() const noexcept {
 		return m_size;
 	}
 
 	template <typename _VRT>
-	BufferUsage BaseVertexBuffer<_VRT>::get_usage() const noexcept
-	{
+	BufferUsage BaseVertexBuffer<_VRT>::get_usage() const noexcept {
 		return m_usage;
 	}
 
 	template <typename _VRT>
-	PrimitiveType BaseVertexBuffer<_VRT>::get_primitive() const noexcept
-	{
+	PrimitiveType BaseVertexBuffer<_VRT>::get_primitive() const noexcept {
 		return m_type;
 	}
 
 	template <typename _VRT>
-	void BaseVertexBuffer<_VRT>::set_primitive(PrimitiveType prim)
-	{
+	void BaseVertexBuffer<_VRT>::set_primitive( PrimitiveType prim ) {
 		m_type = prim;
 	}
 
 	template <typename _VRT>
-	void BaseVertexBuffer<_VRT>::set_usage(BufferUsage usage)
-	{
+	void BaseVertexBuffer<_VRT>::set_usage( BufferUsage usage ) {
 		m_usage = usage;
 	}
 
 	template<typename _VRT>
 	void BaseVertexBuffer<_VRT>::create( const size_t size, const vertex_type *vertices ) {
-		if (m_id)
-			free_buffer( m_id );
+		if (m_name)
+			free_buffer( m_name );
 
 		m_size = size;
-		m_id = create_buffer();
+		m_name = create_buffer();
 		_bind_array_buffer();
 
 
 		glBufferData( GL_ARRAY_BUFFER, size * sizeof( vertex_type ), vertices, to_gldrawusage( m_usage ) );
 
 		if (!_unbind_array_buffer())
-			raise( format( "POSSIBLE RACE COND: at 'create': last bound vertex buffer 2d (id {}) was unbounded mid process", m_id ) );
+			raise( format( "POSSIBLE RACE COND: at 'create': last bound vertex buffer 2d (id {}) was unbounded mid process", m_name ) );
 	}
 
 	template<typename _VRT>
@@ -168,7 +155,7 @@ namespace ig
 		glBufferSubData( GL_ARRAY_BUFFER, offset * sizeof( vertex_type ), vertices_count * sizeof( vertex_type ), vertices );
 
 		if (!_unbind_array_buffer())
-			raise( format( "POSSIBLE RACE COND: at 'update': last bound vertex buffer 2d (id {}) was unbounded mid process", m_id ) );
+			raise( format( "POSSIBLE RACE COND: at 'update': last bound vertex buffer 2d (id {}) was unbounded mid process", m_name ) );
 	}
 
 	template<typename _VRT>
@@ -177,24 +164,16 @@ namespace ig
 	}
 
 	template <typename _VRT>
-	VertexBufferId_t BaseVertexBuffer<_VRT>::get_id() const noexcept
-	{
-		return m_id;
+	void BaseVertexBuffer<_VRT>::_bind_array_buffer() const {
+		glBindBuffer( GL_ARRAY_BUFFER, m_name );
 	}
 
 	template <typename _VRT>
-	void BaseVertexBuffer<_VRT>::_bind_array_buffer() const
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_id);
-	}
-
-	template <typename _VRT>
-	bool BaseVertexBuffer<_VRT>::_unbind_array_buffer() const
-	{
+	bool BaseVertexBuffer<_VRT>::_unbind_array_buffer() const {
 		//int current_ab;
 		//glGetIntegerv(GL_ARRAY_BUFFER, &current_ab);
-		//if (current_ab == m_id)
-		glBindBuffer(GL_ARRAY_BUFFER, NULL);
+		//if (current_ab == m_name)
+		glBindBuffer( GL_ARRAY_BUFFER, NULL );
 		return true;
 	}
 
