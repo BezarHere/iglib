@@ -20,7 +20,11 @@ namespace ig
 	public:
 		/// @brief Creates an invalid shader, use other constructors to create a valid shader
 		Shader();
-		Shader( const std::string &vertex, const std::string &fragment, ShaderUsage usage = ShaderUsage::Usage3D );
+		/// @brief compiles shader from source
+		/// @param vertex the vertex shader source (nullptr to use the default vertex shader)
+		/// @param fragment the fragment shader source (nullptr to use the default fragment shader)
+		/// @param usage the shader usage (for optimization)
+		Shader( const char *vertex, const char *fragment, ShaderUsage usage = ShaderUsage::Usage3D);
 
 		~Shader();
 

@@ -322,17 +322,17 @@ FORCEINLINE ShaderId_t gen_program( const GLuint vertex, const GLuint fragment )
 	return id;
 }
 
-static inline ShaderId_t generate_shader_prog( const std::string &vertex, const std::string &fragment, const ShaderUsage usage ) {
+static inline ShaderId_t generate_shader_prog( const char *vertex, const char *fragment, const ShaderUsage usage ) {
 
 	const std::string vert = generate_shader_code( { DefaultShaderVersion,
 																						 GL_VERTEX_SHADER,
 																						 usage,
-																						 { CustomCodeState::AfterUniforms, vertex.c_str() } } );
+																						 { vertex ? CustomCodeState::AfterUniforms : CustomCodeState::None, vertex } } );
 
 	const std::string frag = generate_shader_code( { DefaultShaderVersion,
 																						 GL_FRAGMENT_SHADER,
 																						 usage,
-																						 { CustomCodeState::AfterUniforms, fragment.c_str() } } );
+																						 { fragment ? CustomCodeState::AfterUniforms : CustomCodeState::None, fragment } } );
 	return gen_program( gen_shader( vert, GL_VERTEX_SHADER ),
 											gen_shader( frag, GL_FRAGMENT_SHADER ) );
 }
@@ -392,7 +392,7 @@ namespace ig
 		: m_id{ 0 }, m_usage{ ShaderUsage::Usage3D } {
 	}
 
-	Shader::Shader( const std::string &vertex, const std::string &fragment, ShaderUsage usage )
+	Shader::Shader( const char *vertex, const char *fragment, ShaderUsage usage )
 		: m_id{ generate_shader_prog( vertex, fragment, usage ) }, m_usage{ usage } {
 	}
 
