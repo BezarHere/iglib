@@ -14,6 +14,8 @@ constexpr FORCEINLINE int to_glprimitve(const PrimitiveType type)
 {
   switch (type)
   {
+  case ig::PrimitiveType::Point:
+		return GL_POINTS;
   case ig::PrimitiveType::Triangle:
     return GL_TRIANGLES;
   case ig::PrimitiveType::Line:
