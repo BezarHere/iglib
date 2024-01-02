@@ -34,19 +34,19 @@ namespace ig
 
 		inline BaseTextTemplate()
 		{
-			m_buffer.set_primitive( PrimitiveType::Quad );
+			m_buffer.set_primitive( PrimitiveType::Triangle );
 		}
 
 		inline BaseTextTemplate( const string_type &str )
 			: m_str{ str }
 		{
-			m_buffer.set_primitive( PrimitiveType::Quad );
+			m_buffer.set_primitive( PrimitiveType::Triangle );
 		}
 
 		inline BaseTextTemplate( const string_type &str, const Font &font )
 			: m_str{ str }, m_font{ font }
 		{
-			m_buffer.set_primitive( PrimitiveType::Quad );
+			m_buffer.set_primitive( PrimitiveType::Triangle );
 		}
 
 		inline const string_type &get_string() const
@@ -113,15 +113,16 @@ namespace ig
 			m_scale = scale;
 		}
 
-		// TODO: make this able to rebuild a specifiy part of the str
+		// TODO: make this able to rebuild a specify part of the str
 		inline void rebuild()
 		{
+			constexpr size_t VerticesPerGlyph = 6; // 2 triangles
 			if (!m_font.valid())
 				return;
 
 			const size_t str_sz = m_str.size();
-			const size_t bufsz = str_sz * 4ull;
-			vertex_type *vertcies = new vertex_type[ bufsz ];
+			const size_t bufsz = str_sz * VerticesPerGlyph;
+			vertex_type *vertices = new vertex_type[ bufsz ];
 			Vector2f pos = { 0.f, 0.f };
 			float line_height = 0.0f;
 			size_t notdraw_count = 0;
@@ -152,36 +153,42 @@ namespace ig
 					continue;
 				}
 
-				const size_t j = (i - notdraw_count) * 4;
+				const size_t j = (i - notdraw_count) * VerticesPerGlyph;
 				const Font::Glyph &gly = m_font.get_glyphs()[ gly_index != Font::NPos ? gly_index : 0 ];
 				const Vector2f hs = Vector2f( gly.size ) * m_scale;
-				const Vector2f offsetss = Vector2f( gly.offset ) * m_scale;
+				const Vector2f offsets_scaled = Vector2f( gly.offset ) * m_scale;
 
-				vertcies[ j + 0 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + hs.x + offsetss.x, pos.y + hs.y + offsetss.y );
-				vertcies[ j + 0 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.left + gly.atlas_uvbox.bottom;
-				vertcies[ j + 0 ].clr = m_clr;
-				vertcies[ j + 1 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + offsetss.x, pos.y + hs.y + offsetss.y );
-				vertcies[ j + 1 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.left;
-				vertcies[ j + 1 ].clr = m_clr;
-				vertcies[ j + 2 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + offsetss.x, pos.y + offsetss.y );
-				vertcies[ j + 2 ].uv = gly.atlas_uvbox.origin;
-				vertcies[ j + 2 ].clr = m_clr;
-				vertcies[ j + 3 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + hs.x + offsetss.x, pos.y + offsetss.y );
-				vertcies[ j + 3 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.bottom;
-				vertcies[ j + 3 ].clr = m_clr;
+				vertices[ j + 0 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + hs.x + offsets_scaled.x, pos.y + hs.y + offsets_scaled.y );
+				vertices[ j + 0 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.left + gly.atlas_uvbox.bottom;
+				vertices[ j + 0 ].clr = m_clr;
+
+				vertices[ j + 1 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + offsets_scaled.x, pos.y + hs.y + offsets_scaled.y );
+				vertices[ j + 1 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.left;
+				vertices[ j + 1 ].clr = m_clr;
+
+				vertices[ j + 2 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + offsets_scaled.x, pos.y + offsets_scaled.y );
+				vertices[ j + 2 ].uv = gly.atlas_uvbox.origin;
+				vertices[ j + 2 ].clr = m_clr;
+
+				vertices[ j + 3 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + hs.x + offsets_scaled.x, pos.y + offsets_scaled.y );
+				vertices[ j + 3 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.bottom;
+				vertices[ j + 3 ].clr = m_clr;
+
+				vertices[ j + 4 ] = vertices[ j + 0 ];
+				vertices[ j + 5 ] = vertices[ j + 2 ];
 
 				pos.x += hs.x + float( m_font.get_char_spacing() * m_scale.x ) + gly.advance;
 				if (hs.y > line_height)
 					line_height = hs.y;
 			}
 
-			if (m_buffer.size() != bufsz - notdraw_count)
-				m_buffer.create( bufsz - notdraw_count, vertcies );
+			if (m_buffer.size() != bufsz - (notdraw_count * VerticesPerGlyph))
+				m_buffer.create( bufsz - (notdraw_count * VerticesPerGlyph), vertices );
 			else
-				m_buffer.update( vertcies );
+				m_buffer.update( vertices );
 
 			m_dirty = false;
-			delete[] vertcies;
+			delete[] vertices;
 		}
 
 	private:
