@@ -2,7 +2,7 @@
 #include "iglib.h"
 #include "internal.h"
 
-constexpr Version CurrentVersion{ 1, 6, 0 };
+constexpr Version CurrentVersion{ 1, 7, 0 };
 
 namespace ig
 {
@@ -17,6 +17,10 @@ namespace ig
 	Version IGlib::version() noexcept
 	{
 		return CurrentVersion;
+	}
+
+	bool IGlib::set_opengl_version( Version v ) {
+		return set_glfw_context_version( v.major, v.minor );
 	}
 
 	

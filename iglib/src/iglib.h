@@ -21,6 +21,10 @@ namespace ig
 		IGlib() = delete;
 
 		static Version version() noexcept;
+		/// @brief sets the opengl version, versions range from 3.0 to 3.3 and 4.0 to 4.6
+		/// @brief the default version is 4.1 and the patch number is unused
+		/// @return weather the change was successful
+		static bool set_opengl_version( Version v );
 
 	};
 
