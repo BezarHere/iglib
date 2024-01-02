@@ -2,6 +2,7 @@
 #include "_iglib_base.h"
 #include "_iglib_vector.h"
 #include "_iglib_texture.h"
+#include "_iglib_shader.h"
 #include <memory>
 
 
@@ -55,7 +56,7 @@ namespace ig
 			float advance;
 		};
 
-		// Creates & returns the a copy of the default font
+		/// @brief a default font (will break if no window/opengl context is running)
 		static Font get_default();
 
 		Font( const std::string &filepath, uint32_t width = 14u, ValidGlyphsPredicate_t glyphs_predicate = nullptr ); // <- truetype
@@ -63,7 +64,7 @@ namespace ig
 		Font();
 
 
-		TextureId_t get_atlas() const;
+		TextureId get_atlas() const;
 
 		Glyph *get_glyphs();
 		const Glyph *get_glyphs() const;
@@ -79,11 +80,17 @@ namespace ig
 		void set_line_spacing( int value );
 		int get_line_spacing() const;
 
-		// the default space width is set automaticly per font
+		// the default space width is set automatically per font
 		void set_space_width( uint32_t width );
 		uint32_t get_space_width() const;
 
 		bool valid() const;
+
+		/// @brief the shader to display fonts
+		/// @brief font rastering may or may not use SDFs
+		/// @brief which this shader can handle
+		/// @return The font shader or null if no font has been successfully created
+		static ShaderInstance_t get_shader();
 
 		struct FontInternal;
 	private:

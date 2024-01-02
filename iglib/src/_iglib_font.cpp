@@ -4,9 +4,9 @@
 #include "draw_internal.h"
 #include "internal.h"
 
-inline std::string FT_Error_Get_String( FT_Error error )
+inline const std::string &FT_Error_Get_String( FT_Error error )
 {
-	const std::string FTErrorMessages[]
+	static const std::array<std::string, 187> FTErrorMessages =
 	{
 		"No error",
 		"Cannot open resource",
@@ -197,9 +197,8 @@ inline std::string FT_Error_Get_String( FT_Error error )
 		"Font glyphs corrupted or missing fields"
 	};
 
-	static const size_t FTErrorMessagesSize = ARRAYSIZE( FTErrorMessages );
-	if (error >= FTErrorMessagesSize)
-		return "UNKOWN_ERROR_" + std::to_string( error );
+	if (error >= FTErrorMessages.size())
+		return "ERROR_CODE_NOTFOUND_" + std::to_string(error);
 	return FTErrorMessages[ error ];
 }
 
@@ -228,9 +227,9 @@ constexpr byte UTF8LenTable[ 256 ]
 
 static FT_Library freetype_lib;
 
-struct CodepoinIndex
+struct CodepointIndex
 {
-	FORCEINLINE CodepoinIndex( codepoint_t cp, size_t i )
+	FORCEINLINE CodepointIndex( codepoint_t cp, size_t i )
 		: codepoint{ cp }, index{ i }
 	{
 
@@ -263,8 +262,7 @@ inline Image pack_font_atlas(const Image &source, const Vector2i raw_count, cons
 #pragma warning(pop)
 	}
 
-	// source will be always formated as LA
-
+	// source will be always formatted as LA
 	Image strip{ raw_count * glyph_size, ColorFormat::LA };
 	for (int y = 0; y < raw_count.y; y++)
 	{
@@ -291,7 +289,7 @@ inline Image pack_font_atlas(const Image &source, const Vector2i raw_count, cons
 
 FORCEINLINE static int __cdecl codepoint_index_qsort_comp( void const *a, void const *b )
 {
-	return ((CodepoinIndex *)a)->codepoint > ((CodepoinIndex *)b)->codepoint;
+	return ((CodepointIndex *)a)->codepoint > ((CodepointIndex *)b)->codepoint;
 }
 
 FORCEINLINE static void init_freetype()
@@ -607,21 +605,23 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 		Texture faces_atlas;
 		std::vector<Glyph> glyphs;
 	private:
-		std::vector<CodepoinIndex> m_codepoint_indexes; // <- should be sorted based on codepoints
+		std::vector<CodepointIndex> m_codepoint_indexes; // <- should be sorted based on codepoints
 	};
 
-	static std::shared_ptr<Font::FontInternal> get_default_font()
+	class FontMachine
 	{
-		static std::shared_ptr<Font::FontInternal> DefaultBitmapFont;
-		REPORT_V( !is_glew_running(), { nullptr } );
-		if (!DefaultBitmapFont)
-		{
-			static Image DefaultBitmapGlyphImage = Image( (const byte *)DefaultGlyphs, DefaultGlyphsSize, ColorFormat::LA );
+	public:
+		inline static void init();
 
-			DefaultBitmapFont.reset( new Font::FontInternal( DefaultBitmapGlyphImage, { 8, 8 }, { 0, 0 }, BitmapFontDef() ) );
-		}
-		return DefaultBitmapFont;
-	}
+		inline static std::shared_ptr<Font::FontInternal> get_defualt_font();
+		inline static ShaderInstance_t &get_font_shader();
+
+	private:
+		static std::shared_ptr<Font::FontInternal> s_default_bitmap_font;
+		static std::shared_ptr<Shader> s_font_shader;
+	};
+	std::shared_ptr<Font::FontInternal> FontMachine::s_default_bitmap_font = { nullptr };
+	std::shared_ptr<Shader> FontMachine::s_font_shader = { nullptr };
 
 	Font::Font( const std::string &filepath, FT_UInt width, ValidGlyphsPredicate_t glyphs_predicate )
 		: m_type{ FontType::TrueType }, m_space_width{ width }, m_internal{ new FontInternal( filepath, width, glyphs_predicate ) }
@@ -645,11 +645,11 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 		Font f;
 		f.m_type = FontType::Bitmap;
 		f.m_space_width = 8;
-		f.m_internal = get_default_font();
+		f.m_internal = FontMachine::get_defualt_font();
 		return f;
 	}
 
-	TextureId_t Font::get_atlas() const
+	TextureId Font::get_atlas() const
 	{
 		return m_internal->faces_atlas.get_handle();
 	}
@@ -707,6 +707,35 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 	bool Font::valid() const
 	{
 		return m_internal && !m_internal->glyphs.empty();
+	}
+
+	ShaderInstance_t Font::get_shader() {
+		return FontMachine::get_font_shader();
+	}
+
+	inline void FontMachine::init() {
+		REPORT( !is_glew_running() );
+
+		STATIC_SINGLE_CALL;
+		
+	}
+
+	inline std::shared_ptr<Font::FontInternal> FontMachine::get_defualt_font() {
+		if (!s_default_bitmap_font)
+		{
+			static Image DefaultBitmapGlyphImage = Image( (const byte *)DefaultGlyphs, DefaultGlyphsSize, ColorFormat::LA );
+
+			s_default_bitmap_font.reset( new Font::FontInternal( DefaultBitmapGlyphImage, { 8, 8 }, { 0, 0 }, BitmapFontDef() ) );
+		}
+		return s_default_bitmap_font;
+	}
+
+	inline ShaderInstance_t &FontMachine::get_font_shader() {
+		if (!s_font_shader)
+		{
+			s_font_shader.reset( new Shader(nullptr, "void main() { Color = texture(uTex0, UV).rrrg * FragColor; }", ShaderUsage::Usage2D) );
+		}
+		return s_font_shader;
 	}
 
 }
