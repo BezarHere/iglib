@@ -14,8 +14,6 @@ constexpr FORCEINLINE int to_glprimitve(const PrimitiveType type)
 {
   switch (type)
   {
-  case ig::PrimitiveType::Quad:
-    return GL_QUADS;
   case ig::PrimitiveType::Triangle:
     return GL_TRIANGLES;
   case ig::PrimitiveType::Line:
@@ -23,26 +21,46 @@ constexpr FORCEINLINE int to_glprimitve(const PrimitiveType type)
   case ig::PrimitiveType::LineStript:
     return GL_LINE_STRIP;
   case ig::PrimitiveType::TriangleStrip:
+  case ig::PrimitiveType::QuadStrip:
     return GL_TRIANGLE_STRIP;
+  case ig::PrimitiveType::Quad:
   case ig::PrimitiveType::TriangleFan:
     return GL_TRIANGLE_FAN;
-  case ig::PrimitiveType::QuadStrip:
-    return GL_QUAD_STRIP;
   default:
 		raise(format("invalid draw type value {}", (int)type));
   }
 }
 
-constexpr FORCEINLINE int to_glpixelformat(const ColorFormat type)
+constexpr FORCEINLINE int to_glinternal_format(const ColorFormat type)
 {
   switch (type)
   {
   case ig::ColorFormat::Invalid:
     return NULL;
   case ig::ColorFormat::L:
-    return GL_LUMINANCE;
+    return GL_RED;
   case ig::ColorFormat::LA:
-    return GL_LUMINANCE_ALPHA;
+    return GL_RG;
+  case ig::ColorFormat::RGB:
+    return GL_RGB;
+  case ig::ColorFormat::RGBA:
+    return GL_RGBA;
+  default:
+		raise(format("invalid draw type value {}", (int)type));
+  }
+}
+
+
+constexpr FORCEINLINE int to_glpixel_format(const ColorFormat type)
+{
+  switch (type)
+  {
+  case ig::ColorFormat::Invalid:
+    return NULL;
+  case ig::ColorFormat::L:
+    return GL_RED;
+  case ig::ColorFormat::LA:
+    return GL_RG;
   case ig::ColorFormat::RGB:
     return GL_RGB;
   case ig::ColorFormat::RGBA:
