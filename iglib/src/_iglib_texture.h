@@ -4,7 +4,7 @@
 
 namespace ig
 {
-	typedef unsigned int TextureId_t;
+	typedef unsigned int TextureId;
 
 	// an 2D array of pixel saved in the VRAM
 	class Texture
@@ -29,12 +29,12 @@ namespace ig
 
 		void bind() const noexcept;
 		void unbind() const noexcept;
-		bool is_binded() const noexcept;
+		bool is_bound() const noexcept;
 
 		Vector2i size() const noexcept;
 		ColorFormat get_channels() const noexcept;
 
-		TextureId_t get_handle() const noexcept;
+		TextureId get_handle() const noexcept;
 
 
 		struct _TextureInternal;

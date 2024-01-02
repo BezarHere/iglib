@@ -14,7 +14,7 @@ struct Texture::_TextureInternal
 			glDeleteTextures(count, &handle);
 	}
 
-	TextureId_t handle;
+	TextureId handle;
 	GLsizei count = 1; // <- might be a VERY buggy thing
 	uint32_t w = 0, h = 0;
 	ColorFormat c = ColorFormat::Invalid;
@@ -23,7 +23,7 @@ struct Texture::_TextureInternal
 
 using TextureInternal = Texture::_TextureInternal;
 
-static TextureId_t g_BindedHdl;
+static TextureId g_BoundHdl;
 
 
 FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h, ColorFormat c, std::shared_ptr<unsigned char[]> buf)
@@ -33,7 +33,7 @@ FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h
 	if (!(w * h))
 		return tex;
 
-	TextureId_t hdl = 0;
+	TextureId hdl = 0;
 	glGenTextures(1, &hdl);
 	tex->handle = hdl;
 
@@ -41,7 +41,7 @@ FORCEINLINE std::unique_ptr<TextureInternal> register_tex(uint32_t w, uint32_t h
 
 	glBindTexture(GL_TEXTURE_2D, tex->handle);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, to_glpixelformat(c), w, h, 0, to_glpixelformat(c), GL_UNSIGNED_BYTE, buf.get());
+	glTexImage2D(GL_TEXTURE_2D, 0, to_glinternal_format(c), w, h, 0, to_glpixel_format(c), GL_UNSIGNED_BYTE, buf.get());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -117,22 +117,22 @@ namespace ig
 
 	void Texture::bind() const noexcept
 	{
-		if (g_BindedHdl && g_BindedHdl != m_internal->handle)
+		if (g_BoundHdl && g_BoundHdl != m_internal->handle)
 			return;
 
 		glBindTexture(GL_TEXTURE_2D, m_internal->handle);
-		g_BindedHdl = m_internal->handle;
+		g_BoundHdl = m_internal->handle;
 	}
 
 	void Texture::unbind() const noexcept
 	{
 		glBindTexture(GL_TEXTURE_2D, NULL);
-		g_BindedHdl = NULL;
+		g_BoundHdl = NULL;
 	}
 
-	bool Texture::is_binded() const noexcept
+	bool Texture::is_bound() const noexcept
 	{
-		return g_BindedHdl == m_internal->handle;
+		return g_BoundHdl == m_internal->handle;
 	}
 
 	Vector2i Texture::size() const noexcept
@@ -145,7 +145,7 @@ namespace ig
 		return m_internal->c;
 	}
 
-	TextureId_t Texture::get_handle() const noexcept
+	TextureId Texture::get_handle() const noexcept
 	{
 		return m_internal->handle;
 	}
