@@ -109,6 +109,14 @@ namespace ig
 			return { (r + other.r) / Two, (g + other.g) / Two, (b + other.b) / Two, (a + other.a) / Two };
 		}
 
+		inline constexpr _NODISCARD bool operator==( const this_type &other ) const {
+			return r == other.r && g == other.g && b == other.b && a == other.a;
+		}
+
+		inline constexpr _NODISCARD bool operator!=( const this_type &other ) const {
+			return r != other.r || g != other.g || b != other.b || a != other.a;
+		}
+
 		value_type r, g, b, a;
 	};
 
