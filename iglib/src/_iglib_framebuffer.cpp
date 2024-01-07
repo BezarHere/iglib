@@ -33,7 +33,7 @@ namespace ig
 		glDeleteFramebuffers( 1, &m_name );
 	}
 
-	void Framebuffer::attach_texture( FramebufferAttachmentSlot slot, TextureId_t tex_id ) {
+	void Framebuffer::attach_texture( FramebufferAttachmentSlot slot, TextureId tex_id ) {
 		PUSH_FBS( GL_DRAW_FRAMEBUFFER, m_name );
 		glFramebufferTexture( GL_FRAMEBUFFER, (GLenum)slot, tex_id, 0 );
 		POP_FBS( GL_DRAW_FRAMEBUFFER );
