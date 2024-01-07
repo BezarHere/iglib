@@ -2,6 +2,12 @@
 #include "_iglib_renderer.h"
 #include "internal.h"
 
+enum ScreenTextureBuffers
+{
+	STF_Color = 0,
+	STF_Overbright = 1,
+};
+
 static Vertex2 g_ScreenQuadVertcies[ 4 ]
 {
 	{ {0.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {0.f, 1.f} }, // topleft
@@ -33,7 +39,7 @@ static FORCEINLINE void init_globals() {
 
 	static const std::string PostProcessing_Frag =
 		"void main() {"
-		"Color = vec4(texture(uTex0, UV).rgb, 1.0);"
+		" if(UV.x < 0.5){ Color = vec4(pow(texture(uTex0, UV).rgb, vec3(1.34)), 1.0); } else { Color = vec4(pow(texture(uTex1, UV).rgb, vec3(1.34)), 1.0); }"
 		//"Color = vec4(UV, 1.0, 1.0);"
 		"}";
 
@@ -50,7 +56,7 @@ static FORCEINLINE void init_globals() {
 	}
 
 
-	// generating plank texutre
+	// generating plank texture
 	{
 		constexpr byte plank_white_data[ 2 * 2 * 4 ]
 		{
@@ -59,13 +65,14 @@ static FORCEINLINE void init_globals() {
 			255, 255, 255, 255,
 			255, 255, 255, 255,
 		};
-		g_PlankTexture.reset( new Texture( Image( plank_white_data, { 2, 2 }, ColorFormat::L ) ) );
+		g_PlankTexture.reset( new Texture( Image( plank_white_data, { 2, 2 }, ColorFormat::RGBA ) ) );
 	}
 }
 
 namespace ig
 {
-	static constexpr GLuint RenderTextureType = GL_RGB;
+	static constexpr GLuint RenderTextureTypeLow = GL_RGB16F;
+	static constexpr GLuint RenderTextureType = GL_RGB16F;
 	static constexpr GLuint RenderTextureTypeHDR = GL_RGB;
 	static constexpr GLuint RenderDepthStencilMode = GL_DEPTH24_STENCIL8;
 
@@ -74,43 +81,79 @@ namespace ig
 		FORCEINLINE static void cleanup( Renderer::RenderBuffersState &buffer_state ) {
 			glDeleteFramebuffers( 1, &buffer_state.framebuffer_object );
 			glDeleteRenderbuffers( 1, &buffer_state.renderbuffer_object );
-			glDeleteTextures( 1, &buffer_state.colorbuffer_object );
+			glDeleteTextures( 2, buffer_state.color_buffers.data() );
 
 			buffer_state.framebuffer_object = NULL;
 			buffer_state.renderbuffer_object = NULL;
-			buffer_state.colorbuffer_object = NULL;
+			buffer_state.color_buffers = { 0 };
 		}
 
 		FORCEINLINE static void regenerate( Renderer::RenderBuffersState &buffer_state, Vector2i size, const RenderEnvironment &env ) {
 			cleanup( buffer_state );
-			buffer_state.colorbuffer_size = size;
-
+			buffer_state.color_buffer_size = size;
+			
 			glGenFramebuffers( 1, &buffer_state.framebuffer_object );
+
+			WARN( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE ); // <- BUGBUG
 
 			REPORT_V( buffer_state.framebuffer_object == NULL, cleanup( buffer_state ) );
 
-			glGenTextures( 1, &buffer_state.colorbuffer_object );
+			glGenTextures( (GLsizei)buffer_state.color_buffers.size(), buffer_state.color_buffers.data());
 
-			if (buffer_state.colorbuffer_object == NULL)
+			for (size_t i = 0; i < buffer_state.color_buffers.size(); i++)
 			{
-				glDeleteFramebuffers( 1, &buffer_state.framebuffer_object );
-				REPORT_V( buffer_state.colorbuffer_object == NULL, cleanup( buffer_state ) );
+				if (buffer_state.color_buffers[ i ] == NULL)
+				{
+					glDeleteTextures( (GLsizei)buffer_state.color_buffers.size(), buffer_state.color_buffers.data() );
+					glDeleteFramebuffers( 1, &buffer_state.framebuffer_object );
+					REPORT_V( buffer_state.color_buffers[ i ] == NULL, cleanup(buffer_state)); // <- what value is 'i'
+				}
+
+				glBindTexture( GL_TEXTURE_2D, buffer_state.color_buffers[i] );
+				switch (ScreenTextureBuffers(i))
+				{
+				case STF_Color:
+					{
+						glTexImage2D( GL_TEXTURE_2D,
+													0,
+													env.hdr ? RenderTextureTypeHDR : RenderTextureType,
+													size.x,
+													size.y,
+													0,
+													GL_RGB,
+													GL_UNSIGNED_BYTE,
+													nullptr );
+					}
+					break;
+				case STF_Overbright:
+					{
+						glTexImage2D( GL_TEXTURE_2D,
+													0,
+													RenderTextureTypeLow,
+													size.x,
+													size.y,
+													0,
+													GL_RGB,
+													GL_UNSIGNED_BYTE,
+													nullptr );
+					}
+					break;
+				default:
+					break;
+				}
+				
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 			}
-
-			glBindTexture( GL_TEXTURE_2D, buffer_state.colorbuffer_object );
-			glTexImage2D( GL_TEXTURE_2D, 0, env.hdr ? RenderTextureTypeHDR : RenderTextureType, size.x, size.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-
 
 			glGenRenderbuffers( 1, &buffer_state.renderbuffer_object );
 
 			if (buffer_state.renderbuffer_object == NULL)
 			{
 				glDeleteFramebuffers( 1, &buffer_state.framebuffer_object );
-				glDeleteTextures( 1, &buffer_state.colorbuffer_object );
+				glDeleteTextures( (GLsizei)buffer_state.color_buffers.size(), buffer_state.color_buffers.data());
 				REPORT_V( buffer_state.renderbuffer_object == NULL, cleanup( buffer_state ) );
 			}
 
@@ -120,21 +163,34 @@ namespace ig
 
 
 
-			glBindFramebuffer( GL_DRAW_FRAMEBUFFER, buffer_state.framebuffer_object );
-			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, buffer_state.colorbuffer_object, 0 );
-			glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, GL_RENDERBUFFER, buffer_state.renderbuffer_object );
+			glBindFramebuffer( GL_FRAMEBUFFER, buffer_state.framebuffer_object );
+			for (size_t i = 0; i < buffer_state.color_buffers.size(); i++)
+			{
+				glFramebufferTexture2D( GL_FRAMEBUFFER, (GLsizei)(GL_COLOR_ATTACHMENT0 + i), GL_TEXTURE_2D, buffer_state.color_buffers[ i ], 0 );
+			}
+			glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, buffer_state.renderbuffer_object );
+
+			{
+				constexpr size_t color_buffers_count = sizeof( buffer_state.color_buffers ) / sizeof( buffer_state.color_buffers[ 0 ] );
+				constexpr GLuint draw_buffers_attachments[ 10 ] = {
+					GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4,
+					GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7, GL_COLOR_ATTACHMENT8, GL_COLOR_ATTACHMENT9,
+				};
+
+				glDrawBuffers( color_buffers_count, draw_buffers_attachments );
+			}
 
 			WARN( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE ); // <- BUGBUG
 
-			glBindFramebuffer( GL_DRAW_FRAMEBUFFER, NULL );
+			glBindFramebuffer( GL_FRAMEBUFFER, NULL );
 			glBindRenderbuffer( GL_RENDERBUFFER, NULL );
 			glBindTexture( GL_TEXTURE_2D, NULL );
 		}
 	};
 
 	Renderer::RenderBuffersState::RenderBuffersState()
-		: colorbuffer_object{ NULL }, framebuffer_object{ NULL },
-		renderbuffer_object{ NULL }, colorbuffer_size{ -1, -1 }
+		: color_buffers{ NULL }, framebuffer_object{ NULL },
+		renderbuffer_object{ NULL }, color_buffer_size{ -1, -1 }
 
 	{
 	}
@@ -175,10 +231,14 @@ namespace ig
 		push_to_draw_pipline( (WindowHandle_t)m_window.m_hdl );
 
 		const bool postprocessing = m_environment.enabled_postprocessing;
-		if (postprocessing && sz != m_buffers_state.colorbuffer_size)
+		if (postprocessing && sz != m_buffers_state.color_buffer_size)
 		{
 			RenderBuffersState::Regenerator::regenerate( m_buffers_state, sz, m_environment );
 		}
+
+		GLuint vao;
+		glGenVertexArrays( 1, &vao );
+		glBindVertexArray( vao );
 
 
 		glEnable( GL_SCISSOR_TEST );
@@ -193,9 +253,9 @@ namespace ig
 		if (postprocessing)
 		{
 			glBindRenderbuffer( GL_RENDERBUFFER, m_buffers_state.renderbuffer_object );
-			glBindFramebuffer( GL_DRAW_FRAMEBUFFER, m_buffers_state.renderbuffer_object );
-			glClearColor( m_background_clr.r, m_background_clr.g, m_background_clr.b, m_background_clr.a );
+			glBindFramebuffer( GL_FRAMEBUFFER, m_buffers_state.framebuffer_object );
 			glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+			glClearColor( m_background_clr.r, m_background_clr.g, m_background_clr.b, m_background_clr.a );
 		}
 
 		g_RendererGlState.size = sz;
@@ -204,15 +264,15 @@ namespace ig
 		m_active_canvas.m_renderer = this;
 		set_draw_type( DrawType::Drawing2D );
 		bind_default_shader( ShaderUsage::Usage2D );
-		//try_update_shader_state();
 		if (m_callback)
 			m_callback( *this );
 		else
 			bite::warn( "Renderer has no render callback" );
 		
 
-		glBindFramebuffer( GL_DRAW_FRAMEBUFFER, NULL );
 		glBindRenderbuffer( GL_RENDERBUFFER, NULL );
+		glBindFramebuffer( GL_FRAMEBUFFER, NULL );
+
 		glDisable( GL_DEPTH_TEST );
 		glDisable( GL_CULL_FACE );
 		glDisable( GL_SCISSOR_TEST );
@@ -229,19 +289,23 @@ namespace ig
 			g_ScreenQuadVertcies[ 3 ].pos.x = (float)g_RendererGlState.size.x;
 			g_ScreenQuadBuffer.update( g_ScreenQuadVertcies );
 
-			
 			set_draw_type( DrawType::Drawing2D );
 			bind_shader( g_ScreenShader );
-			bind_texture( m_buffers_state.colorbuffer_object );
-
+			bind_texture( m_buffers_state.color_buffers[ STF_Color ], TextureSlot::Slot0);
+			bind_texture( m_buffers_state.color_buffers[ STF_Overbright ], TextureSlot::Slot1 );
 			m_active_canvas.draw( g_ScreenQuadBuffer );
+
+
 		}
+
+		glBindVertexArray( NULL );
+		glDeleteVertexArrays( 1, &vao );
 
 		bind_texture(0);
 		pop_draw_pipline();
 		glfwSwapBuffers( (GLFWwindow *)m_window.m_hdl );
 
-		m_active_canvas.m_renderer = nullptr; // <- clear out the renderer so later draw calls fail untile the next draw op
+		m_active_canvas.m_renderer = nullptr; // <- clear out the renderer so later draw calls fail until the next draw op
 		g_BoundRenderer = nullptr;
 		return true;
 	}
@@ -380,12 +444,12 @@ namespace ig
 		return m_state.bound_shader->get_id();
 	}
 
-	void Renderer::bind_texture( const TextureId_t tex, const TextureSlot slot ) {
+	void Renderer::bind_texture( const TextureId tex, const TextureSlot slot ) {
 		m_state.textures[ int( slot ) ] = tex;
 		try_update_shader_state();
 	}
 
-	TextureId_t ig::Renderer::get_texture( const TextureSlot slot ) const noexcept {
+	TextureId ig::Renderer::get_texture( const TextureSlot slot ) const noexcept {
 		return m_state.textures[ int( slot ) ];
 	}
 

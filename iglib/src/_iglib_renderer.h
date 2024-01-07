@@ -3,6 +3,8 @@
 #include "_iglib_color.h"
 #include "_iglib_vector.h"
 #include "_iglib_window.h"
+#include "_iglib_framebuffer.h"
+#include "_iglib_renderbuffer.h"
 
 namespace ig
 {
@@ -79,7 +81,7 @@ namespace ig
 		void set_draw_type( const DrawType type );
 
 		void bind_shader( const ShaderInstance_t &shader );
-		void bind_default_shader(ShaderUsage usage);
+		void bind_default_shader( ShaderUsage usage );
 		void unbind_shader();
 
 		void set_cullwinding( CullWinding winding );
@@ -90,8 +92,8 @@ namespace ig
 
 		ShaderId_t get_shader_id() const noexcept;
 
-		void bind_texture( const TextureId_t tex, const TextureSlot slot = TextureSlot::Slot0 );
-		TextureId_t get_texture( const TextureSlot slot = TextureSlot::Slot0 ) const noexcept;
+		void bind_texture( const TextureId tex, const TextureSlot slot = TextureSlot::Slot0 );
+		TextureId get_texture( const TextureSlot slot = TextureSlot::Slot0 ) const noexcept;
 
 		void set_active_textures_count( int count );
 		int get_active_textures_count() const noexcept;
@@ -137,8 +139,10 @@ namespace ig
 			void operator=( const RenderBuffersState & ) = delete;
 			void operator=( RenderBuffersState && ) = delete;
 
-			unsigned int framebuffer_object = 0, renderbuffer_object = 0, colorbuffer_object = 0;
-			Vector2i colorbuffer_size{};
+			FramebufferId framebuffer_object = 0;
+			RenderbufferId renderbuffer_object = 0;
+			std::array<TextureId, 2> color_buffers = { 0 };
+			Vector2i color_buffer_size{};
 
 			struct Regenerator;
 		};
@@ -147,7 +151,7 @@ namespace ig
 		Colorf m_background_clr = Colorf( 0.f, 0.f, 0.f );
 		RenderBuffersState m_buffers_state;
 		RenderEnvironment m_environment;
-		
+
 		RenderCallback m_callback;
 
 		struct RenderState
@@ -158,7 +162,7 @@ namespace ig
 			DrawType draw_type = DrawType::Drawing2D;
 			ShaderUsage shading_usage = ShaderUsage::Usage2D;
 
-			TextureId_t textures[ int( TextureSlot::_MAX ) ];
+			TextureId textures[ int( TextureSlot::_MAX ) ];
 			int active_textures_count = 1; // will upload all textures from 0 to m_active_textures_count - 1
 
 
