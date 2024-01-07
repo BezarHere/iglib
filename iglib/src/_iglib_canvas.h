@@ -2,7 +2,7 @@
 #include "_iglib_vertex.h"
 #include "_iglib_vertexarray.h"
 #include "_iglib_meshdesc.h"
-#include "_iglib_indexbuffer.h"
+#include "_iglib_vbuffer.h"
 #include "_iglib_image.h"
 #include "_iglib_texture.h"
 #include "_iglib_shader.h"
@@ -45,7 +45,10 @@ namespace ig
 		void draw(const Vertex2 *vertices, size_t count, PrimitiveType draw_type);
 
 		void draw(const Vertex2Buffer &buf, int start = 0, int count = -1);
-		void draw(const Vertex2Buffer &buf, const IndexBuffer &indcies);
+
+		void draw(const Vertex2Buffer &buf, const Index8Buffer &indcies);
+		void draw(const Vertex2Buffer &buf, const Index16Buffer &indcies);
+		void draw(const Vertex2Buffer &buf, const Index32Buffer &indcies);
 
 		void draw(const Vertex3Buffer &buf, int start = 0, int count = -1);
 
