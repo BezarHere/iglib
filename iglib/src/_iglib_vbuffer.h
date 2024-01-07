@@ -50,7 +50,7 @@ namespace ig
 		/// @brief 
 		/// @param size 
 		/// @param data 
-		void create( size_t size, const element_type *data = nullptr );
+		void create( size_t size, VBufferUsage usage, const element_type *data = nullptr );
 
 		/// @brief 
 		/// @param data 
@@ -68,11 +68,11 @@ namespace ig
 		void clear();
 
 		/// @brief bind to use in later api calls
-		void bind();
+		void bind() const;
 
 		/// @brief unbinds this buffers
 		/// @return true if this buffer was bound, otherwise false
-		bool unbind();
+		bool unbind() const;
 
 		/// @brief weather this buffer is bound
 		/// @brief buffers of different _GL_TYPEs can be bound at the same time
@@ -85,6 +85,16 @@ namespace ig
 		inline VBufferName_t get_name() const noexcept {
 			return m_name;
 		}
+
+	private:
+
+		// pushes the currently bound buffer name to a stack then binds this
+		// GLType dependent
+		void _push_bound_name() const;
+		// popes the top buffer name and binds it
+		// GLType dependent
+		void _pop_bound_name() const;
+
 
 	private:
 		VBufferName_t m_name;

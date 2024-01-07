@@ -32,6 +32,20 @@ namespace vbuffer_indirection
 	template <> constexpr GLint get_binding_name<GL_TEXTURE_BUFFER>() {
 		return GL_TEXTURE_BUFFER_BINDING;
 	}
+
+	template <int GLType>
+	static std::stack<VBufferName_t, std::vector<VBufferName_t>> &get_vbuffer_names_stack() {
+		using stack_type = std::stack<VBufferName_t, std::vector<VBufferName_t>>;
+		static stack_type s = std::invoke(
+			[]() {
+				stack_type::container_type container = {};
+				container.reserve( 128 );
+				return stack_type( container );
+			}
+		);
+		return s;
+	}
+
 }
 
 
@@ -156,10 +170,7 @@ namespace ig
 	}
 
 	template<typename _T, int _GL_TYPE>
-	void VBuffer<_T, _GL_TYPE>::create( size_t size, const element_type *data ) {
-		VBufferUsage usage = VBufferUsage::StaticWrite;
-		glGetBufferParameteriv( GLType, GL_BUFFER_USAGE, reinterpret_cast<GLint *>(&usage) );
-
+	void VBuffer<_T, _GL_TYPE>::create( size_t size, VBufferUsage usage, const element_type *data ) {
 		if (m_name)
 			clear();
 
@@ -169,11 +180,11 @@ namespace ig
 	template<typename _T, int _GL_TYPE>
 	VBufferUsage VBuffer<_T, _GL_TYPE>::usage() const {
 		VBufferUsage usage;
-		glBindBuffer( GLType, m_name );
+		_push_bound_name();
 
 		glGetBufferParameteriv( GLType, GL_BUFFER_USAGE, reinterpret_cast<GLint *>(&usage) );
 
-		glBindBuffer( GLType, NULL );
+		_pop_bound_name();
 		return usage;
 	}
 
@@ -191,10 +202,10 @@ namespace ig
 
 	template<typename _T, int _GL_TYPE>
 	size_t VBuffer<_T, _GL_TYPE>::size_bytes() const {
-		glBindBuffer( GLType, m_name );
+		_push_bound_name();
 		size_t bsize = 0;
 		glGetBufferParameteriv( GLType, GL_BUFFER_SIZE, reinterpret_cast<int *>(&bsize) );
-		glBindBuffer( GLType, 0 );
+		_pop_bound_name();
 		return bsize;
 	}
 
@@ -258,12 +269,12 @@ namespace ig
 	}
 
 	template<typename _T, int _GL_TYPE>
-	void VBuffer<_T, _GL_TYPE>::bind() {
+	void VBuffer<_T, _GL_TYPE>::bind() const {
 		glBindBuffer( GLType, m_name );
 	}
 
 	template<typename _T, int _GL_TYPE>
-	bool VBuffer<_T, _GL_TYPE>::unbind() {
+	bool VBuffer<_T, _GL_TYPE>::unbind() const {
 		if (get_bound_buffer_name() != m_name)
 			return false;
 		glBindBuffer( GLType, 0 );
@@ -280,6 +291,18 @@ namespace ig
 		GLint name = NULL;
 		glGetIntegerv( vbuffer_indirection::get_binding_name<GLType>(), &name);
 		return static_cast<VBufferName_t>(name);
+	}
+
+	template<typename _T, int _GL_TYPE>
+	void VBuffer<_T, _GL_TYPE>::_push_bound_name() const {
+		vbuffer_indirection::get_vbuffer_names_stack<GLType>().push(get_bound_buffer_name());
+		bind();
+	}
+
+	template<typename _T, int _GL_TYPE>
+	void VBuffer<_T, _GL_TYPE>::_pop_bound_name() const {
+		glBindBuffer(GLType, vbuffer_indirection::get_vbuffer_names_stack<GLType>().top());
+		vbuffer_indirection::get_vbuffer_names_stack<GLType>().pop();
 	}
 
 }
