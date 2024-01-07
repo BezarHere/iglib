@@ -89,6 +89,10 @@ static Vertex3 g_Quad3DVertices[ 4 ]{};
 static Vertex2 g_Triangle2DVertices[ 3 ]{};
 static Vertex2 g_Line2DVertices[ 2 ]{};
 
+constexpr size_t DefaultQuadsIndicesCount = 6 * 10; // 10 quads
+static Index8Buffer g_DefaultQuadsIndexBuffer;
+static Index8Buffer g_DefaultQuadStripIndexBuffer;
+
 static const Canvas *g_CurrentCanvas;
 
 
@@ -114,6 +118,25 @@ FORCEINLINE void try_generate_opengl_globals() {
 	g_Triangle2DBuffer.create( 3 );
 	g_Line2DBuffer.create( 2 );
 	g_Free2DDrawBuffer.create( 32 );
+
+
+	{
+		constexpr Index8Buffer::element_type Indices[ DefaultQuadsIndicesCount ] =
+		{
+			0,  1,  2,  2,  3,  0,
+			4,  5,  6,  6,  7,  4,
+			8,  9,  10, 10, 11, 8,
+			12, 13, 14, 14, 15, 12,
+			16, 17, 18, 18, 19, 16,
+			20, 21, 22, 22, 23, 20,
+			24, 25, 26, 26, 27, 24,
+			28, 29, 30, 30, 31, 28,
+			32, 33, 34, 34, 35, 32,
+			36, 37, 38, 38, 39, 36,
+		};
+
+		g_DefaultQuadsIndexBuffer = Index8Buffer( DefaultQuadsIndicesCount, VBufferUsage::StaticDraw, Indices );
+	}
 
 
 	// uvs
