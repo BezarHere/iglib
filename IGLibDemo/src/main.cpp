@@ -266,7 +266,25 @@ void draw2d_callback( ig::Renderer &rend ) {
 	if (text->is_dirty())
 		text->rebuild();
 	c.text(*text);
-	c.rect( { 0.f, 32.f }, { 128.f, 128.f + 32.f }, ColorfTable::White );
+	//c.rect( { 0.f, 32.f }, { 128.f, 128.f + 32.f }, ColorfTable::White );
+
+	{
+		constexpr uint16_t Indices[ 6 ] = { 0, 1, 2, 2, 3, 0 };
+		constexpr Vertex2 Vertices[ 4 ] = {
+			{ Vector2f(64.f, 64.f), Colorf(1.f, 0.f, 1.f), Vector2f() },
+			{ Vector2f( 164.f, 64.f ), Colorf( 1.f, 0.f, 0.f ), Vector2f() },
+			{ Vector2f( 200.f, 200.f ), Colorf( 0.f, 1.f, 1.f ), Vector2f() },
+			{ Vector2f( 64.f, 256.f ), Colorf( 1.f, 1.f, 0.f ), Vector2f() },
+		};
+
+		const ig::Index16Buffer index_buffer = { 6, ig::VBufferUsage::StaticRead, Indices };
+		ig::Vertex2Buffer vertex_buffer = { ig::PrimitiveType::Triangle, 4, ig::BufferUsage::Static };
+		vertex_buffer.update(Vertices);
+
+		c.draw( vertex_buffer, index_buffer );
+
+	}
+
 
 	//std::cout << c.transform3d().get_position() << '\n';
 
@@ -317,14 +335,22 @@ int main() {
 
 
 	{
+		std::cout << "starting\n";
 		ig::Window i = ig::Window( { 512, 512 }, "Window !!!" );
+		std::cout << "created the window\n";
+
 		//font = new Font( "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\font.ttf", 64, []( codepoint_t cp ){ return cp < 128; } );
 		//delete font;
 		font = new Font( Font::get_default() );
+
+		std::cout << "created the font\n";
+
 		//font->set_char_spacing( -2 );
 		const std::string garbage = readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" ) + readall( "F:\\Assets\\visual studio\\IGLib\\iglib\\py\\signed_distance_field_img2.py" );
 		//text = new Text2D( "hello?! dat not good q", *font );
 		text = new Text2D( garbage, *font );
+		std::cout << "created the Text2D\n";
+
 		text->set_scale( { 1.f, 1.f } );
 
 		{
@@ -336,12 +362,15 @@ int main() {
 			img.blit( img2, { 0, 0, 256, 256 }, { 200, 200 } );
 			after_tex = ig::Texture( img );
 		}
+		std::cout << "made sample textures\n";
 
 		i.set_callback( callback );
 		i.set_key_callback( key_callback );
 		i.set_mouse_scroll_callback( scroll );
+		std::cout << "set window callbacks\n";
 
 		ig::Renderer renderer{ i, draw2d_callback };
+		std::cout << "created renderer\n";
 		//ig::RenderEnvironment ebv = renderer.get_environment();
 		//ebv.enabled_postprocessing = false;
 		//renderer.set_environment( ebv );
@@ -349,6 +378,7 @@ int main() {
 		//renderer.set_environment( ig::RenderEnvironment{ false } );
 
 		std::cout << ig::get_opengl_version() << '\n';
+		std::cout << "main loop running\n";
 		while (!i.should_close())
 		{
 			std::this_thread::sleep_for( std::chrono::microseconds( long long( 1000.0 / 20.0 ) ) );
