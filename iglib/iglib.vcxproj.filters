@@ -108,6 +108,9 @@
     <ClInclude Include="src\_iglib_meshdesc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\_iglib_vbuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\iglib.cpp">
@@ -159,6 +162,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\_iglib_renderbuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\_iglib_vbuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

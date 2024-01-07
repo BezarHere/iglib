@@ -231,6 +231,7 @@
     <ClInclude Include="src\_iglib_refcounter.h" />
     <ClInclude Include="src\_iglib_shader.h" />
     <ClInclude Include="src\_iglib_ssm2.h" />
+    <ClInclude Include="src\_iglib_vbuffer.h" />
     <ClInclude Include="src\_iglib_vector.h" />
     <ClInclude Include="src\_iglib_vertexarray.h" />
     <ClInclude Include="src\_iglib_meshdesc.h" />
@@ -262,6 +263,7 @@
     <ClCompile Include="src\_iglib_shader.cpp" />
     <ClCompile Include="src\_iglib_ssm2.cpp" />
     <ClCompile Include="src\_iglib_texture.cpp" />
+    <ClCompile Include="src\_iglib_vbuffer.cpp" />
     <ClCompile Include="src\_iglib_vertex.cpp" />
     <ClCompile Include="src\_iglib_vertexarray.cpp" />
     <ClCompile Include="src\_iglib_wavefront_obj.cpp" />
