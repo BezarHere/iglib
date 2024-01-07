@@ -86,6 +86,14 @@ namespace ig
 
 	template <typename _VRT>
 	BaseVertexBuffer<_VRT> &BaseVertexBuffer<_VRT>::operator=( const BaseVertexBuffer &copy ) {
+		if (copy.m_name == m_name)
+			return *this;
+		
+		if (m_name)
+		{
+			free_buffer(m_name);
+		}
+
 		m_name = duplicate_buffer( copy.m_name, to_gldrawusage( copy.m_usage ) );
 		m_size = copy.m_size;
 		m_type = copy.m_type;
@@ -95,6 +103,11 @@ namespace ig
 
 	template <typename _VRT>
 	BaseVertexBuffer<_VRT> &BaseVertexBuffer<_VRT>::operator=( BaseVertexBuffer &&move ) noexcept {
+		if (m_name)
+		{
+			free_buffer( m_name );
+		}
+
 		m_name = move.m_name;
 		m_size = move.m_size;
 		m_type = move.m_type;
