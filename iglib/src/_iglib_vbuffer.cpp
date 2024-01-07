@@ -214,12 +214,34 @@ namespace ig
 	void VBuffer<_T, _GL_TYPE>::update_bytes( const void *data, size_t start_byte, size_t end_byte ) {
 		const size_t buffer_size = size_bytes();
 
+		// no data );
+		if (!buffer_size)
+		{
+#ifdef _DEBUG
+			//! maybe an error broadcast is needed here?
+#endif // _DEBUG
+			return;
+		}
+
 		if (start_byte >= buffer_size)
 		{
 #ifdef _DEBUG
-
+			//! maybe an error broadcast is needed here?
 #endif // _DEBUG
+			return;
+		}
 
+		if (start_byte >= end_byte)
+		{
+			// why? warping indexes baby
+			end_byte = buffer_size - end_byte;
+		}
+
+		if (end_byte >= buffer_size)
+		{
+#ifdef _DEBUG
+			//! maybe an error broadcast is needed here?
+#endif // _DEBUG
 			return;
 		}
 
