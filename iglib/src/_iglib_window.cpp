@@ -402,7 +402,7 @@ namespace ig
 
 	void Window::WindowCallbackEngine::WindowCallbacksRouter::key_pressed(WindowHandle_t hdl, int key, int scancode, int action, int mods)
 	{
-		(scancode);
+		(void)(scancode);
 		Window *window = WindowCallbackEngine::get_window(hdl);
 		if (window->m_key_callback)
 			window->m_key_callback(*window, (Key)key, (KeyAction)action, (KeyModFlags)mods);
