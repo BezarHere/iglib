@@ -8,13 +8,13 @@ namespace ig
 	enum class PrimitiveType
 	{
 		Point,
-		Quad,
+		Quad, // <- DEPRECATED
 		Triangle,
 		Line,
-		LineStript, // connected lines
+		LineStript,
 		TriangleStrip,
 		TriangleFan,
-		QuadStrip
+		QuadStrip // <- DEPRECATED
 	};
 
 	enum class BufferUsage
@@ -100,8 +100,9 @@ namespace ig
 		BufferUsage m_usage;
 		PrimitiveType m_type;
 	};
+
 	template <typename _VRT>
-	inline VertexBufferName_t BaseVertexBuffer<_VRT>::get_name() const noexcept 		{
+	inline VertexBufferName_t BaseVertexBuffer<_VRT>::get_name() const noexcept {
 		return m_name;
 	}
 
