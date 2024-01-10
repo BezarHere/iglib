@@ -37,7 +37,7 @@ namespace ig
 		Maximized
 	};
 
-	enum Key : int16_t
+	enum class KeyCode : int16_t
 	{
 		Unkown = -1,
 		Key_Space = 32,
@@ -162,7 +162,7 @@ namespace ig
 		Key_Menu = 348
 	};
 
-	enum class MouseButton
+	enum class MouseButton : int16_t
 	{
 		Left = 0,
 		Right = 1,
@@ -175,34 +175,60 @@ namespace ig
 		Button8,
 	};
 
-	enum class KeyAction : uint8_t
+	enum class InputAction : uint8_t
 	{
 		Released,
 		Pressed,
 		Repeated
 	};
 
-	enum class KeyModFlags : uint8_t
+	enum InputModFlags : uint8_t
 	{
-		None = 0,
-		Shift = 0x01,
-		Control = 0x02,
-		Alt = 0x04,
-		Super = 0x08,
-		Windows = 0x08,
-		Capslock = 0x10,
-		Numlock = 0x20,
+		InputMod_None = 0,
+		InputMod_Shift = 0x01,
+		InputMod_Control = 0x02,
+		InputMod_Alt = 0x04,
+		InputMod_Super = 0x08,
+		InputMod_Windows = 0x08,
+		InputMod_Capslock = 0x10,
+		InputMod_Numlock = 0x20,
 	};
 
 	class Window;
 
+	enum class InputEventType
+	{
+		Key,
+		MouseButton,
+		MouseScrollWheel,
+	};
+
+	union InputEvent
+	{
+		struct KeyEvent
+		{
+			KeyCode keycode;
+			InputAction action;
+			InputModFlags mods;
+		} key;
+
+		struct MouseButtonEvent
+		{
+			MouseButton button;
+			InputAction action;
+			InputModFlags mods;
+		} mouse_button;
+
+		struct MouseScrollEvent
+		{
+			int16_t x, y;
+		} mouse_scroll;
+	};
+
 	typedef void(*UpdateCallback_t)();
 	typedef void(*WindowCallback_t)(Window &window, WindowCallbackReason reason);
-	typedef void(*KeyCallback_t)(Window &window, Key key, KeyAction action, KeyModFlags mods);
-	typedef void(*MouseButtonCallback_t)(Window &window, MouseButton button, KeyAction action, KeyModFlags mods);
-	typedef void(*MouseScrollCallback_t)(Window &window, double x, double y);
-
-
+	typedef void(*InputCallback_t)(Window &window, InputEvent event, InputEventType type);
+	// TODO: add a callback for when the user drops files over the window
 
 	class Window final
 	{
@@ -249,17 +275,11 @@ namespace ig
 		WindowCallback_t get_callback() const;
 		void set_callback(WindowCallback_t callback);
 
-		bool is_deffered_to_close() const noexcept;
+		bool is_deferred_to_close() const noexcept;
 		bool is_focused() const noexcept;
 
-		KeyCallback_t get_key_callback() const;
-		void set_key_callback(KeyCallback_t callback);
-
-		void set_mouse_callback(MouseButtonCallback_t callback) noexcept;
-		MouseButtonCallback_t get_mouse_callback() const noexcept;
-
-		void set_mouse_scroll_callback(MouseScrollCallback_t callback) noexcept;
-		MouseScrollCallback_t get_mouse_scroll_callback() const noexcept;
+		InputCallback_t get_input_callback() const;
+		void set_input_callback( InputCallback_t callback);
 
 		TimeMs_t get_creation_time() const noexcept;
 		float get_shader_time() const noexcept;
@@ -268,7 +288,7 @@ namespace ig
 		void show();
 
 		// won't always return the value at m_visible_state
-		WindowVisibiltyState get_visiblity_state() const;
+		WindowVisibiltyState get_visibility_state() const;
 
 
 		void poll();
@@ -298,14 +318,12 @@ namespace ig
 		Rect2i m_rect;
 		std::string m_title{};
 		Vector2f m_content_scale{ 1.0f, 1.0f };
-		bool m_deffered_close{ false };
+		bool m_deferred_close{ false };
 
 		const TimeMs_t m_creation_time;
 		const float m_stp;
 
 		WindowCallback_t m_callback = nullptr;
-		KeyCallback_t m_key_callback = nullptr;
-		MouseButtonCallback_t m_mouse_button_callback = nullptr;
-		MouseScrollCallback_t m_mouse_scroll_callback = nullptr;
+		InputCallback_t m_input_callback = nullptr;
 	};
 }

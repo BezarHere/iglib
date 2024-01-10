@@ -76,95 +76,105 @@ std::string readall( const std::string &fs ) {
 static float cube_distance = 0.f;
 static float factor = 1.f;
 static int rot_switch = 0;
-void scroll( ig::Window &w, double x, double y ) {
+void scroll( ig::Window &w, int16_t x, int16_t y ) {
 	factor += y * 0.25f;
 	std::cout << "factor: " << factor << '\n';
+	std::cout << "scrolled by: " << x << ", " << y << '\n';
 }
 
 static ig::Transform3D ply{};
 Vector2f mouse_pos_when_space = { 0.f, 0.f };
-void key_callback( ig::Window &window, ig::Key key, ig::KeyAction action, ig::KeyModFlags mods ) {
-	if (key == ig::Key_W)
+void input_callback( ig::Window &window, ig::InputEvent event, ig::InputEventType type ) {
+	if (type == InputEventType::Key)
 	{
+		const auto key = event.key;
 
-		zb -= 1.f;
-		tr.rotate( 0.1 );
-		window.ping();
-		/*ig::Image img = window.to_image();
-		img.flip_v();
-		img.save_tga("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.tga");*/
-	}
-
-	if (key == ig::Key_S)
-	{
-		zb += 1.f;
-		tr.rotate( -0.1f );
-	}
-
-
-	/*if (key == ig::Key_Space)
-	{
-		mouse_pos_when_space = window.get_mouse_position();
-		tr.set_scale(tr.get_scale() + Vector2f{ 0.1f, 0.1f });
-	}
-
-
-	if (key == ig::Key_LeftControl)
-	{
-		mouse_pos_when_space = window.get_mouse_position();
-		tr.set_scale(tr.get_scale() - Vector2f{ 0.1f, 0.1f });
-	}*/
-
-	const auto v = ply.get_basis().get_rotation();
-	if (action != ig::KeyAction::Released)
-	{
-		switch (key)
+		if (key.keycode == KeyCode::Key_W)
 		{
-		case ig::Key_W:
-			ply.set_position( ply.get_position() - ply.get_back_dir() );
-			break;
-		case ig::Key_S:
-			ply.set_position( ply.get_position() + ply.get_back_dir() );
-			break;
-		case ig::Key_D:
-			ply.set_position( ply.get_position() - ply.get_left_dir() );
-			break;
-		case ig::Key_A:
-			ply.set_position( ply.get_position() + ply.get_left_dir() );
-			break;
-		case ig::Key_Q:
-			ply.set_position( ply.get_position() - ply.get_down_dir() );
-			break;
-		case ig::Key_E:
-			ply.set_position( ply.get_position() + ply.get_down_dir() );
-			break;
-		case ig::Key_Z:
-			ply.get_basis().set_angle( Vector3f( 0.f, Pi * factor / 2.f, 0.f ) + v );
-			rot_switch = 1;
-			break;
-		case ig::Key_X:
-			ply.get_basis().set_angle( -Vector3f( 0.f, Pi * factor / 2.f, 0.f ) + v );
-			rot_switch = 2;
-			break;
-		case ig::Key_C:
-			ply.get_basis().set_angle( Vector3f( Pi * factor / 2.f, 0.f, 0.f ) + v );
-			rot_switch = 3;
-			break;
-		case ig::Key_V:
-			ply.get_basis().set_angle( -Vector3f( Pi * factor / 2.f, 0.f, 0.f ) + v );
-			rot_switch = 4;
-			break;
-		case ig::Key_B:
-			ply.get_basis().set_angle( Vector3f( 0.f, 0.f, Pi * factor / 2.f ) + v );
-			rot_switch = 5;
-			break;
-		case ig::Key_N:
-			ply.get_basis().set_angle( -Vector3f( 0.f, 0.f, Pi * factor / 2.f ) + v );
-			rot_switch = 6;
-			break;
-		default:
-			break;
+
+			zb -= 1.f;
+			tr.rotate( 0.1 );
+			window.ping();
+			/*ig::Image img = window.to_image();
+			img.flip_v();
+			img.save_tga("F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\image.tga");*/
 		}
+
+		if (key.keycode == KeyCode::Key_S)
+		{
+			zb += 1.f;
+			tr.rotate( -0.1f );
+		}
+
+
+		/*if (key == ig::Key_Space)
+		{
+			mouse_pos_when_space = window.get_mouse_position();
+			tr.set_scale(tr.get_scale() + Vector2f{ 0.1f, 0.1f });
+		}
+
+
+		if (key == ig::Key_LeftControl)
+		{
+			mouse_pos_when_space = window.get_mouse_position();
+			tr.set_scale(tr.get_scale() - Vector2f{ 0.1f, 0.1f });
+		}*/
+
+		const auto v = ply.get_basis().get_rotation();
+		if (key.action != InputAction::Released)
+		{
+			switch (key.keycode)
+			{
+			case KeyCode::Key_W:
+				ply.set_position( ply.get_position() - ply.get_back_dir() );
+				break;
+			case KeyCode::Key_S:
+				ply.set_position( ply.get_position() + ply.get_back_dir() );
+				break;
+			case KeyCode::Key_D:
+				ply.set_position( ply.get_position() - ply.get_left_dir() );
+				break;
+			case KeyCode::Key_A:
+				ply.set_position( ply.get_position() + ply.get_left_dir() );
+				break;
+			case KeyCode::Key_Q:
+				ply.set_position( ply.get_position() - ply.get_down_dir() );
+				break;
+			case KeyCode::Key_E:
+				ply.set_position( ply.get_position() + ply.get_down_dir() );
+				break;
+			case KeyCode::Key_Z:
+				ply.get_basis().set_angle( Vector3f( 0.f, Pi * factor / 2.f, 0.f ) + v );
+				rot_switch = 1;
+				break;
+			case KeyCode::Key_X:
+				ply.get_basis().set_angle( -Vector3f( 0.f, Pi * factor / 2.f, 0.f ) + v );
+				rot_switch = 2;
+				break;
+			case KeyCode::Key_C:
+				ply.get_basis().set_angle( Vector3f( Pi * factor / 2.f, 0.f, 0.f ) + v );
+				rot_switch = 3;
+				break;
+			case KeyCode::Key_V:
+				ply.get_basis().set_angle( -Vector3f( Pi * factor / 2.f, 0.f, 0.f ) + v );
+				rot_switch = 4;
+				break;
+			case KeyCode::Key_B:
+				ply.get_basis().set_angle( Vector3f( 0.f, 0.f, Pi * factor / 2.f ) + v );
+				rot_switch = 5;
+				break;
+			case KeyCode::Key_N:
+				ply.get_basis().set_angle( -Vector3f( 0.f, 0.f, Pi * factor / 2.f ) + v );
+				rot_switch = 6;
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	else if (type == InputEventType::MouseScrollWheel)
+	{
+		scroll( window, event.mouse_scroll.x, event.mouse_scroll.y );
 	}
 
 }
@@ -172,7 +182,7 @@ void key_callback( ig::Window &window, ig::Key key, ig::KeyAction action, ig::Ke
 static ig::Font *font;
 static ig::Text2D *text;
 void draw_fromto_comp( Canvas &c, Renderer &rend ) {
-	
+
 	//c.set_texture( 0 );
 	//c.transform2d().rotate( c.get_window().get_shader_time() );
 
@@ -187,7 +197,7 @@ void draw_fromto_comp( Canvas &c, Renderer &rend ) {
 void draw2d_callback( ig::Renderer &rend ) {
 	Canvas &c = rend.get_canvas();
 
-	
+
 
 	static Vector2f last_m{};
 	static bool first_call = true;
@@ -259,19 +269,19 @@ void draw2d_callback( ig::Renderer &rend ) {
 
 	c.rect( { 32.f, 32.f }, { 128.f, 128.f }, ColorfTable::White );
 
-	c.circle( 64.f, rend.get_window().size() - Vector2f(64.f, 64.f), ColorfTable::Bisque, 16);
+	c.circle( 64.f, rend.get_window().size() - Vector2f( 64.f, 64.f ), ColorfTable::Bisque, 16 );
 	rend.bind_texture( 0 );
-	c.circle( 32.f, rend.get_window().size() - Vector2f(64.f, 64.f), ColorfTable::Indianred, 64);
+	c.circle( 32.f, rend.get_window().size() - Vector2f( 64.f, 64.f ), ColorfTable::Indianred, 64 );
 
 	if (text->is_dirty())
 		text->rebuild();
-	c.text(*text);
+	c.text( *text );
 	//c.rect( { 0.f, 32.f }, { 128.f, 128.f + 32.f }, ColorfTable::White );
 
 	{
 		constexpr uint16_t Indices[ 6 ] = { 0, 1, 2, 2, 3, 0 };
 		constexpr Vertex2 Vertices[ 4 ] = {
-			{ Vector2f(64.f, 64.f), Colorf(1.f, 0.f, 1.f), Vector2f() },
+			{ Vector2f( 64.f, 64.f ), Colorf( 1.f, 0.f, 1.f ), Vector2f() },
 			{ Vector2f( 164.f, 64.f ), Colorf( 1.f, 0.f, 0.f ), Vector2f() },
 			{ Vector2f( 200.f, 200.f ), Colorf( 0.f, 1.f, 1.f ), Vector2f() },
 			{ Vector2f( 64.f, 256.f ), Colorf( 1.f, 1.f, 0.f ), Vector2f() },
@@ -279,7 +289,7 @@ void draw2d_callback( ig::Renderer &rend ) {
 
 		const ig::Index16Buffer index_buffer = { 6, ig::VBufferUsage::StaticRead, Indices };
 		ig::Vertex2Buffer vertex_buffer = { ig::PrimitiveType::Triangle, 4, ig::BufferUsage::Static };
-		vertex_buffer.update(Vertices);
+		vertex_buffer.update( Vertices );
 
 		c.draw( vertex_buffer, index_buffer );
 
@@ -365,8 +375,7 @@ int main() {
 		std::cout << "made sample textures\n";
 
 		i.set_callback( callback );
-		i.set_key_callback( key_callback );
-		i.set_mouse_scroll_callback( scroll );
+		i.set_input_callback( input_callback );
 		std::cout << "set window callbacks\n";
 
 		ig::Renderer renderer{ i, draw2d_callback };
