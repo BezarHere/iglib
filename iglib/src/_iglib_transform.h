@@ -109,11 +109,11 @@ namespace ig
 				m_elements.v[ 2 ] = this->operator*(-m_elements.v[ 2 ]);
 		}
 
-		inline Transform2D &&inverse() const
+		inline Transform2D inverse() const
 		{
 			Transform2D temp{ *this };
 			temp.invert();
-			return std::move(temp);
+			return temp;
 		}
 
 		inline constexpr Vector2f operator*(const Vector2f &other) const
