@@ -6,7 +6,7 @@
 
 namespace ig
 {
-	
+
 
 
 	enum class WindowCallbackReason
@@ -235,12 +235,12 @@ namespace ig
 		friend class Renderer;
 	public:
 		Window() noexcept;
-		Window(Vector2i size) noexcept;
-		Window(Vector2i size, std::string title) noexcept;
+		Window( Vector2i size ) noexcept;
+		Window( Vector2i size, std::string title ) noexcept;
 		~Window() noexcept;
 
-		Window(Window &&move) noexcept;
-		Window &operator=(Window &&other) noexcept;
+		Window( Window &&move ) noexcept;
+		Window &operator=( Window &&other ) noexcept;
 
 		bool is_valid() const;
 
@@ -256,13 +256,13 @@ namespace ig
 		Vector2i get_position() const;
 		const Rect2i &get_rect() const;
 
-		void set_size(Vector2i size);
-		void set_position(Vector2i size);
+		void set_size( Vector2i size );
+		void set_position( Vector2i size );
 
-		void set_resizable(bool value);
+		void set_resizable( bool value );
 		bool is_resizable() const;
 
-		void set_decorated(bool value);
+		void set_decorated( bool value );
 		bool is_decorated() const;
 
 		// refreshes the windows position/size values, not the window's content
@@ -270,16 +270,16 @@ namespace ig
 		void refresh_rect();
 
 		const std::string &get_title() const;
-		void set_title(const std::string &title);
+		void set_title( const std::string &title );
 
 		WindowCallback_t get_callback() const;
-		void set_callback(WindowCallback_t callback);
+		void set_callback( WindowCallback_t callback );
 
 		bool is_deferred_to_close() const noexcept;
 		bool is_focused() const noexcept;
 
 		InputCallback_t get_input_callback() const;
-		void set_input_callback( InputCallback_t callback);
+		void set_input_callback( InputCallback_t callback );
 
 		TimeMs_t get_creation_time() const noexcept;
 		float get_shader_time() const noexcept;
@@ -290,25 +290,28 @@ namespace ig
 		// won't always return the value at m_visible_state
 		WindowVisibiltyState get_visibility_state() const;
 
-
 		void poll();
-		
 
 		void ping() const noexcept;
 
-		Image to_image(const Rect2i rect) const;
+		Image to_image( const Rect2i rect ) const;
 		Image to_image() const;
 
 		// will remove the window and render this object as invalid
 		void close() noexcept;
 
+		// true if the window shouldn't close, otherwise false
+		inline operator bool() const noexcept(Window::should_close) {
+			return !this->should_close();
+		}
+
 	private:
-		Window(void *const handle, const std::string &title, bool hidden) noexcept;
+		Window( void *const handle, const std::string &title, bool hidden ) noexcept;
 
 		class WindowCallbackEngine;
 
-		Window &operator=(const Window &other) = delete;
-		Window(const Window &copy) = delete;
+		Window &operator=( const Window &other ) = delete;
+		Window( const Window &copy ) = delete;
 
 	private:
 		void *m_hdl;
