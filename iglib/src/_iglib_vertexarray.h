@@ -60,7 +60,7 @@ namespace ig
 			if (m_dirty)
 				m_dirty = false;
 
-			m_buffer.update( m_vertices.data() + from, to - from, from );
+			m_buffer.update( m_vertices.data() + from, to - from, static_cast<uint32_t>(from) );
 		}
 
 		inline void push_back( const vertex_type &vertex ) {
