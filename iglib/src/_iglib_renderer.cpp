@@ -440,12 +440,12 @@ namespace ig
 		glDisable( int( feature ) );
 	}
 
-	void Renderer::set_depth_test_comparison( DepthTestComparsion comparison ) {
+	void Renderer::set_depth_test_comparison( DepthTestComparison comparison ) {
 		glDepthFunc( static_cast<GLenum>(comparison) );
 	}
 
-	DepthTestComparsion Renderer::get_depth_test_comparison() {
-		DepthTestComparsion dtc = DepthTestComparsion::LessThen;
+	DepthTestComparison Renderer::get_depth_test_comparison() {
+		DepthTestComparison dtc = DepthTestComparison::LessThen;
 		glGetIntegerv( GL_DEPTH_FUNC, reinterpret_cast<GLint *>(&dtc) );
 		return dtc;
 	}
