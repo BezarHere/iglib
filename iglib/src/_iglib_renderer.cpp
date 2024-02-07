@@ -424,27 +424,31 @@ namespace ig
 
 	}
 
-	void Renderer::set_cullwinding( CullWinding winding ) {
-		glFrontFace( int( winding ) );
+	void Renderer::set_cullwinding( const CullWinding winding ) {
+		glFrontFace( static_cast<int>( winding ) );
 	}
 
-	void Renderer::set_cullface( CullFace face ) {
-		glCullFace( int( face ) );
+	void Renderer::set_cullface( const CullFace face ) {
+		glCullFace( static_cast<int>( face ) );
 	}
 
-	void Renderer::enable_feature( Feature feature ) {
-		glEnable( int( feature ) );
+	void Renderer::enable_feature( const Feature feature ) {
+		glEnable( static_cast<int>( feature ) );
 	}
 
-	void Renderer::disable_feature( Feature feature ) {
-		glDisable( int( feature ) );
+	void Renderer::disable_feature( const Feature feature ) {
+		glDisable( static_cast<int>( feature ) );
+	}
+
+	bool Renderer::is_feature_enabled( const Feature feature ) const {
+		return glIsEnabled( static_cast<int>(feature) );
 	}
 
 	void Renderer::set_depth_test_comparison( DepthTestComparison comparison ) {
 		glDepthFunc( static_cast<GLenum>(comparison) );
 	}
 
-	DepthTestComparison Renderer::get_depth_test_comparison() {
+	DepthTestComparison Renderer::get_depth_test_comparison() const {
 		DepthTestComparison dtc = DepthTestComparison::LessThen;
 		glGetIntegerv( GL_DEPTH_FUNC, reinterpret_cast<GLint *>(&dtc) );
 		return dtc;
