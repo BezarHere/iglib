@@ -59,12 +59,19 @@ namespace ig
 			return vector_type(x + w, y + h);
 		}
 
-		inline void expand(value_type margin)
+		inline void expand(value_type margin) noexcept
 		{
 			x -= margin;
 			y -= margin;
 			w += margin;
 			h += margin;
+		}
+
+		inline this_type expanded(value_type margin) const noexcept(this_type::expand)
+		{
+			this_type copy = *this;
+			copy.expand( margin );
+			return copy;
 		}
 
 		inline constexpr this_type intersection(const this_type &other) const
@@ -86,15 +93,34 @@ namespace ig
 				x <= other.x + other.w && y <= other.y + other.h && x + w >= other.x && y + h >= other.y;
 		}
 
-		inline constexpr bool contains(BaseVector2Template<value_type> point) const
-		{
+		inline constexpr bool contains( vector_type point ) const {
 			return x < point.x && y < point.y && x + w > point.x && y + h > point.y;
 		}
 
 		template <typename _U>
-		inline constexpr bool contains(BaseVector2Template<_U> point) const
+		inline constexpr bool contains( BaseVector2Template<_U> point ) const {
+			return contains( vector_type( point ) );
+		}
+
+		/// @brief translates and resizes the rect to incase `other`
+		inline void incase( const this_type &other )
 		{
-			return contains(BaseVector2Template<value_type>(point));
+			if (x > other.x)
+				x = other.x;
+			if (y > other.y)
+				y = other.y;
+
+			if (x + w < other.x + other.w)
+				w = other.x + other.w - x;
+			if (y + h < other.y + other.h)
+				h = other.y + other.h - y;
+		}
+
+		/// @brief translates and resizes the rect to incase `other`
+		inline this_type incased( const this_type &other ) const noexcept(this_type::incase) {
+			this_type copy = *this;
+			copy.incase(other);
+			return copy;
 		}
 
 		value_type x, y, w, h;
