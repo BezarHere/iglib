@@ -440,8 +440,14 @@ namespace ig
 		glDisable( int( feature ) );
 	}
 
-	void Renderer::set_depthtest_comparsion( DepthTestComparsion comparison ) {
+	void Renderer::set_depth_test_comparison( DepthTestComparsion comparison ) {
 		glDepthFunc( static_cast<GLenum>(comparison) );
+	}
+
+	DepthTestComparsion Renderer::get_depth_test_comparison() {
+		DepthTestComparsion dtc = DepthTestComparsion::LessThen;
+		glGetIntegerv( GL_DEPTH_FUNC, reinterpret_cast<GLint *>(&dtc) );
+		return dtc;
 	}
 
 	ShaderId_t Renderer::get_shader_id() const noexcept {

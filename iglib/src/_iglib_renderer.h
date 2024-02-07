@@ -105,7 +105,8 @@ namespace ig
 		void enable_feature( Feature feature );
 		void disable_feature( Feature feature );
 
-		void set_depthtest_comparsion( DepthTestComparsion comparison );
+		void set_depth_test_comparison( DepthTestComparsion comparison );
+		DepthTestComparsion get_depth_test_comparison();
 
 		ShaderId_t get_shader_id() const noexcept;
 
