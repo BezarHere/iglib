@@ -91,14 +91,14 @@ namespace ig
 		FORCEINLINE static void regenerate( Renderer::RenderBuffersState &buffer_state, Vector2i size, const RenderEnvironment &env ) {
 			cleanup( buffer_state );
 			buffer_state.color_buffer_size = size;
-			
+
 			glGenFramebuffers( 1, &buffer_state.framebuffer_object );
 
 			WARN( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE ); // <- BUGBUG
 
 			REPORT_V( buffer_state.framebuffer_object == NULL, cleanup( buffer_state ) );
 
-			glGenTextures( (GLsizei)buffer_state.color_buffers.size(), buffer_state.color_buffers.data());
+			glGenTextures( (GLsizei)buffer_state.color_buffers.size(), buffer_state.color_buffers.data() );
 
 			for (size_t i = 0; i < buffer_state.color_buffers.size(); i++)
 			{
@@ -106,11 +106,11 @@ namespace ig
 				{
 					glDeleteTextures( (GLsizei)buffer_state.color_buffers.size(), buffer_state.color_buffers.data() );
 					glDeleteFramebuffers( 1, &buffer_state.framebuffer_object );
-					REPORT_V( buffer_state.color_buffers[ i ] == NULL, cleanup(buffer_state)); // <- what value is 'i'
+					REPORT_V( buffer_state.color_buffers[ i ] == NULL, cleanup( buffer_state ) ); // <- what value is 'i'
 				}
 
-				glBindTexture( GL_TEXTURE_2D, buffer_state.color_buffers[i] );
-				switch (ScreenTextureBuffers(i))
+				glBindTexture( GL_TEXTURE_2D, buffer_state.color_buffers[ i ] );
+				switch (ScreenTextureBuffers( i ))
 				{
 				case STF_Color:
 					{
@@ -141,7 +141,7 @@ namespace ig
 				default:
 					break;
 				}
-				
+
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 				glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -153,7 +153,7 @@ namespace ig
 			if (buffer_state.renderbuffer_object == NULL)
 			{
 				glDeleteFramebuffers( 1, &buffer_state.framebuffer_object );
-				glDeleteTextures( (GLsizei)buffer_state.color_buffers.size(), buffer_state.color_buffers.data());
+				glDeleteTextures( (GLsizei)buffer_state.color_buffers.size(), buffer_state.color_buffers.data() );
 				REPORT_V( buffer_state.renderbuffer_object == NULL, cleanup( buffer_state ) );
 			}
 
@@ -268,7 +268,7 @@ namespace ig
 			m_callback( *this );
 		else
 			bite::warn( "Renderer has no render callback" );
-		
+
 
 		glBindRenderbuffer( GL_RENDERBUFFER, NULL );
 		glBindFramebuffer( GL_FRAMEBUFFER, NULL );
@@ -291,7 +291,7 @@ namespace ig
 
 			set_draw_type( DrawType::Drawing2D );
 			bind_shader( g_ScreenShader );
-			bind_texture( m_buffers_state.color_buffers[ STF_Color ], TextureSlot::Slot0);
+			bind_texture( m_buffers_state.color_buffers[ STF_Color ], TextureSlot::Slot0 );
 			bind_texture( m_buffers_state.color_buffers[ STF_Overbright ], TextureSlot::Slot1 );
 			m_active_canvas.draw( g_ScreenQuadBuffer );
 
@@ -301,7 +301,7 @@ namespace ig
 		glBindVertexArray( NULL );
 		glDeleteVertexArrays( 1, &vao );
 
-		bind_texture(0);
+		bind_texture( 0 );
 		pop_draw_pipline();
 		glfwSwapBuffers( (GLFWwindow *)m_window.m_hdl );
 
@@ -438,6 +438,10 @@ namespace ig
 
 	void Renderer::disable_feature( Feature feature ) {
 		glDisable( int( feature ) );
+	}
+
+	void Renderer::set_depthtest_comparsion( DepthTestComparsion comparison ) {
+		glDepthFunc( static_cast<GLenum>(comparison) );
 	}
 
 	ShaderId_t Renderer::get_shader_id() const noexcept {

@@ -45,6 +45,21 @@ namespace ig
 		Culling = 0xb44
 	};
 
+	// VALUES COPIED FROM GLEW.H
+	enum class DepthTestComparsion
+	{
+		// drawing never passes the depth test
+		Never = 0x200,
+		LessThen = 0x201,
+		EqualTo = 0x202,
+		LessThenEqual = 0x203,
+		GreaterThen = 0x204,
+		NotEqual = 0x205,
+		GreaterThenEqual = 0x206,
+		// drawing always passes the depth test
+		Always = 0x207,
+	};
+
 	struct RenderEnvironment
 	{
 		bool enabled_postprocessing = true;
@@ -89,6 +104,8 @@ namespace ig
 
 		void enable_feature( Feature feature );
 		void disable_feature( Feature feature );
+
+		void set_depthtest_comparsion( DepthTestComparsion comparison );
 
 		ShaderId_t get_shader_id() const noexcept;
 
