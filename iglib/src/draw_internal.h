@@ -20,7 +20,7 @@ constexpr FORCEINLINE int to_glprimitve(const PrimitiveType type)
     return GL_TRIANGLES;
   case ig::PrimitiveType::Line:
     return GL_LINES;
-  case ig::PrimitiveType::LineStript:
+  case ig::PrimitiveType::LineStrip:
     return GL_LINE_STRIP;
   case ig::PrimitiveType::TriangleStrip:
   case ig::PrimitiveType::QuadStrip:

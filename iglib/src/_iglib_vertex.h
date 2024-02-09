@@ -11,7 +11,7 @@ namespace ig
 		Quad, // <- DEPRECATED
 		Triangle,
 		Line,
-		LineStript,
+		LineStrip,
 		TriangleStrip,
 		TriangleFan,
 		QuadStrip // <- DEPRECATED
