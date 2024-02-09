@@ -20,7 +20,7 @@ namespace ig
 	class IGlib
 	{
 	public:
-		static constexpr Version version = { 1, 7, 0 };
+		static constexpr Version version = { 1, 7, 1 };
 		IGlib() = delete;
 
 		/// @brief sets the opengl version, versions range from 3.0 to 3.3 and 4.0 to 4.6
