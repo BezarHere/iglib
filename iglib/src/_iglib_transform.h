@@ -11,68 +11,77 @@ namespace ig
 	class Transform2D
 	{
 	public:
+		typedef float_t value_type;
+		using vector_type = BaseVector2Template<value_type>;
+
 		union transform_element3x2
 		{
-			Vector2f v[ 3 ]{ Vector2f( 1.0f, 0.0f ), Vector2f( 0.0f, 1.0f ), Vector2f( 0.0f, 0.0f ) };
-			float_t f[ 6 ];
+			value_type f[ 6 ];
+			vector_type v[ 3 ]{ vector_type( 1.0f, 0.0f ), vector_type( 0.0f, 1.0f ), vector_type( 0.0f, 0.0f ) };
 			struct
 			{
-				Vector2f xdir;
-				Vector2f ydir;
-				Vector2f origin;
+				vector_type xdir;
+				vector_type ydir;
+				vector_type origin;
 			};
 		};
-		static_assert(sizeof( transform_element3x2 ) == sizeof( float_t ) * 6, "Invalid transform elements size");
+		static_assert(sizeof( transform_element3x2 ) == sizeof( value_type ) * 6, "Invalid transform elements size");
 
 
 
 		inline constexpr Transform2D() {
 		}
 
-		inline constexpr Transform2D( Vector2f xdir, Vector2f ydir, Vector2f origin = Vector2f() )
-			: m_elements{ xdir, ydir, origin } {
+		inline constexpr Transform2D( vector_type xdir, vector_type ydir, vector_type origin = vector_type() )
+			: m_elements{ xdir.x, xdir.y, ydir.x, ydir.y, origin.x, origin.y } {
+		}
+
+		inline constexpr Transform2D( value_type xx, value_type xy,
+																	value_type yx, value_type yy,
+																	value_type ox, value_type oy )
+			: m_elements{ xx, xy, yx, yy, ox, oy } {
 		}
 
 		inline constexpr Transform2D( const Transform2D &copy )
 			: m_elements{ copy.m_elements } {
 		}
 
-		inline static Transform2D from_coords( const Vector2f &position, const float rotation, const Vector2f &scale ) {
-			const Vector2f v = Vector2f{ std::cos( rotation ), std::sin( rotation ) };
-			return Transform2D( v * scale.x, Vector2f( -v.y, v.x ) * scale.y, position );
+		inline static Transform2D from_coords( const vector_type &position, const value_type rotation, const vector_type &scale ) {
+			const vector_type v = vector_type{ std::cos( rotation ), std::sin( rotation ) };
+			return Transform2D( v * scale.x, vector_type( -v.y, v.x ) * scale.y, position );
 		}
 
-		inline float_t basis_determinant() const {
+		inline value_type basis_determinant() const {
 			return m_elements.xdir.x * m_elements.ydir.y - m_elements.xdir.y * m_elements.ydir.x;
 		}
 
-		inline float_t get_rotation() const {
+		inline value_type get_rotation() const {
 			return m_elements.xdir.angle();
 		}
 
-		inline Vector2f get_position() const noexcept {
+		inline vector_type get_position() const noexcept {
 			return m_elements.origin;
 		}
 
-		inline Vector2f get_scale() const noexcept {
+		inline vector_type get_scale() const noexcept {
 			return { m_elements.xdir.length(), basis_determinant() > 0 ? m_elements.ydir.length() : -m_elements.ydir.length() };
 		}
 
-		inline void set_position( Vector2f pos ) {
+		inline void set_position( vector_type pos ) {
 			m_elements.origin = pos;
 		}
 
-		inline void translate( Vector2f offset ) {
+		inline void translate( vector_type offset ) {
 			m_elements.origin += offset;
 		}
 
-		inline void set_scale( Vector2f scale ) {
+		inline void set_scale( vector_type scale ) {
 			m_elements.xdir = m_elements.xdir.normalized() * scale.x;
 			m_elements.ydir = m_elements.ydir.normalized() * scale.y;
 		}
 
-		inline void set_rotation( float_t radians ) {
-			const Vector2f scale = get_scale();
+		inline void set_rotation( value_type radians ) {
+			const vector_type scale = get_scale();
 			const float cosv = std::cos( radians );
 			const float  sinv = std::sin( radians );
 			m_elements.f[ 0 ] = cosv;
@@ -82,32 +91,30 @@ namespace ig
 			set_scale( scale );
 		}
 
-		inline void rotate( float_t radians ) {
+		inline void rotate( value_type radians ) {
 			set_rotation( radians + get_rotation() );
 		}
 
-		inline void invert() {
-			const float_t idet = 1.0f / basis_determinant();
-
-			swapref( m_elements.v[ 0 ].x, m_elements.v[ 1 ].y );
-			m_elements.v[ 0 ] *= Vector2f( idet, -idet );
-			m_elements.v[ 1 ] *= Vector2f( -idet, idet );
-
-			m_elements.v[ 2 ] = this->operator*( -m_elements.v[ 2 ] );
-		}
-
 		inline Transform2D inverse() const {
-			Transform2D temp{ *this };
-			temp.invert();
-			return temp;
+			const value_type inverse_determinant = 1.0f / basis_determinant();
+
+			return {
+				m_elements.v[ 1 ].y * inverse_determinant, -m_elements.v[ 0 ].y * inverse_determinant,
+				-m_elements.v[ 1 ].x * inverse_determinant, m_elements.v[ 0 ].x * inverse_determinant,
+				-m_elements.origin.x, -m_elements.origin.y
+			};
 		}
 
-		inline constexpr Vector2f operator*( const Vector2f &other ) const {
+		inline void invert() {
+			*this = inverse();
+		}
+
+		inline constexpr vector_type operator*( const vector_type &other ) const {
 			// did take 'show your steps or i will not grade it' very literally
 			//return (m_elements.xdir * other.x) + (m_elements.ydir * other.y) + m_elements.origin;
-			//return Vector2f(m_elements.xdir.x * other.x, m_elements.xdir.y * other.x) + Vector2f(m_elements.ydir.x * other.y, m_elements.ydir.y * other.y) + m_elements.origin;
-			//return Vector2f((m_elements.xdir.x * other.x) + (m_elements.ydir.x * other.y), (m_elements.xdir.y * other.y) + (m_elements.ydir.y * other.y)) + m_elements.origin;
-			return Vector2f( (m_elements.xdir.x * other.x) + (m_elements.ydir.x * other.y) + m_elements.origin.x, (m_elements.xdir.y * other.x) + (m_elements.ydir.y * other.y) + m_elements.origin.y );
+			//return vector_type(m_elements.xdir.x * other.x, m_elements.xdir.y * other.x) + vector_type(m_elements.ydir.x * other.y, m_elements.ydir.y * other.y) + m_elements.origin;
+			//return vector_type((m_elements.xdir.x * other.x) + (m_elements.ydir.x * other.y), (m_elements.xdir.y * other.y) + (m_elements.ydir.y * other.y)) + m_elements.origin;
+			return vector_type( (m_elements.xdir.x * other.x) + (m_elements.ydir.x * other.y) + m_elements.origin.x, (m_elements.xdir.y * other.x) + (m_elements.ydir.y * other.y) + m_elements.origin.y );
 		}
 
 		// returns a transform that when it's applied to a point returns the same as applying the two original transforms
