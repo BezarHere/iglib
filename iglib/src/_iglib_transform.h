@@ -101,7 +101,7 @@ namespace ig
 			return {
 				m_elements.v[ 1 ].y * inverse_determinant, -m_elements.v[ 0 ].y * inverse_determinant,
 				-m_elements.v[ 1 ].x * inverse_determinant, m_elements.v[ 0 ].x * inverse_determinant,
-				-m_elements.origin.x, -m_elements.origin.y
+				-m_elements.origin.x * inverse_determinant, -m_elements.origin.y * inverse_determinant
 			};
 		}
 
