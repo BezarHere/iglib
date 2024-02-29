@@ -15,7 +15,7 @@
 #if _HAS_CXX17
 #define IF_CONSTEXPR if constexpr
 #else
-#define IF_CONSTEXPR
+#define IF_CONSTEXPR if
 #endif
 
 namespace ig
