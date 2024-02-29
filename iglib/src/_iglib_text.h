@@ -30,6 +30,47 @@ namespace ig
 		using vertex_type = typename _VERTBUF::vertex_type;
 		static constexpr bool Is3D = std::is_same_v<vertex_type, Vertex3>;
 		static constexpr size_t VerticesPerGlyph = 6; // 2 triangles
+		static constexpr size_t IndexedVerticesPerGlyph = 4; // 1 quad
+
+		template <bool _INDEXED>
+		struct GenericMeshBuilder
+		{
+		public:
+			static constexpr bool Indexed = _INDEXED;
+
+			inline GenericMeshBuilder( vertex_type *vertices, size_t p_count ) : m_vertices{ vertices }, count{ p_count } {
+			}
+
+			inline void operator()( size_t index, float pos_x, float pos_y, const Vector2f glyph_size, const Font::UVBox &uv_box ) {
+				m_vertices[ index + 0 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos_x + glyph_size.x, pos_y + glyph_size.y );
+				m_vertices[ index + 0 ].uv = uv_box.origin + uv_box.left + uv_box.bottom;
+				m_vertices[ index + 0 ].clr = ColorfTable::White;
+
+				m_vertices[ index + 1 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos_x, pos_y + glyph_size.y );
+				m_vertices[ index + 1 ].uv = uv_box.origin + uv_box.left;
+				m_vertices[ index + 1 ].clr = ColorfTable::White;
+
+				m_vertices[ index + 2 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos_x, pos_y );
+				m_vertices[ index + 2 ].uv = uv_box.origin;
+				m_vertices[ index + 2 ].clr = ColorfTable::White;
+
+				m_vertices[ index + 3 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos_x + glyph_size.x, pos_y );
+				m_vertices[ index + 3 ].uv = uv_box.origin + uv_box.bottom;
+				m_vertices[ index + 3 ].clr = ColorfTable::White;
+
+				IF_CONSTEXPR (!Indexed)
+				{
+					m_vertices[ index + 4 ] = m_vertices[ index + 0 ];
+					m_vertices[ index + 5 ] = m_vertices[ index + 2 ];
+				}
+			}
+
+			const size_t count;
+		private:
+			vertex_type *m_vertices;
+		};
+		using MeshBuilder = GenericMeshBuilder<false>;
+		using IndexedMeshBuilder = GenericMeshBuilder<true>;
 
 		inline BaseTextTemplate() {
 			m_buffer.set_primitive( PrimitiveType::Triangle );
@@ -44,6 +85,9 @@ namespace ig
 			: m_str{ str }, m_font{ font } {
 			m_buffer.set_primitive( PrimitiveType::Triangle );
 		}
+
+		template<typename _BUILDER>
+		inline static size_t build( _BUILDER &builder, const string_type &string, const Font &font, Vector2f scale, float tab_size );
 
 		/// @brief builds a text mesh
 		/// @param vertices the vertex array to be built to, unsuccessful build will not modify/update this
@@ -167,16 +211,19 @@ namespace ig
 	using u16Text3D = BaseTextTemplate<Vertex3Buffer, std::u16string>;
 
 	template<typename _VERTBUF, typename _STR>
-	inline size_t BaseTextTemplate<_VERTBUF, _STR>::build( vertex_type *vertices, const size_t count,
+	template<typename _BUILDER>
+	inline size_t BaseTextTemplate<_VERTBUF, _STR>::build( _BUILDER &builder,
 																												 const string_type &string, const Font &font,
 																												 Vector2f scale, float tab_size ) {
+		constexpr size_t vertices_per_glyph = _BUILDER::Indexed ? IndexedVerticesPerGlyph : VerticesPerGlyph;
 		if (!font.valid())
 			return 0;
 
 		const size_t str_sz = string.size();
 		Vector2f pos = { 0.f, 0.f };
 		float line_height = 0.0f;
-		size_t notdraw_count = 0;
+		size_t whitespace_count = 0;
+
 
 		// TODO: 3D and things
 		for (size_t i = 0; i < str_sz; i++)
@@ -189,56 +236,47 @@ namespace ig
 				pos.x = 0.f;
 				pos.y += line_height + font.get_line_spacing();
 				line_height = 0.0f;
-				notdraw_count++;
+				whitespace_count++;
 				continue;
 			}
 			else if (string[ i ] == '\t')
 			{
 				pos.x += (tab_size * font.get_space_width()) * scale.x;
-				notdraw_count++;
+				whitespace_count++;
 				continue;
 			}
 			else if (string[ i ] == ' ')
 			{
 				pos.x += font.get_space_width() * scale.x;
-				notdraw_count++;
+				whitespace_count++;
 				continue;
 			}
 
-			const size_t j = (i - notdraw_count) * VerticesPerGlyph;
+			const size_t j = (i - whitespace_count) * vertices_per_glyph;
 
-			if (count < j + VerticesPerGlyph)
+			if (builder.count < j + vertices_per_glyph)
 				return 0;
 
 			const Font::Glyph &gly = font.get_glyphs()[ gly_index != Font::NPos ? gly_index : 0 ];
 			const Vector2f hs = Vector2f( gly.size ) * scale;
 			const Vector2f offsets_scaled = Vector2f( gly.offset ) * scale;
 
-			vertices[ j + 0 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + hs.x + offsets_scaled.x, pos.y + hs.y + offsets_scaled.y );
-			vertices[ j + 0 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.left + gly.atlas_uvbox.bottom;
-			vertices[ j + 0 ].clr = ColorfTable::White;
-
-			vertices[ j + 1 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + offsets_scaled.x, pos.y + hs.y + offsets_scaled.y );
-			vertices[ j + 1 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.left;
-			vertices[ j + 1 ].clr = ColorfTable::White;
-
-			vertices[ j + 2 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + offsets_scaled.x, pos.y + offsets_scaled.y );
-			vertices[ j + 2 ].uv = gly.atlas_uvbox.origin;
-			vertices[ j + 2 ].clr = ColorfTable::White;
-
-			vertices[ j + 3 ].pos = DummyVectorSetterZ0<Is3D>::Set( pos.x + hs.x + offsets_scaled.x, pos.y + offsets_scaled.y );
-			vertices[ j + 3 ].uv = gly.atlas_uvbox.origin + gly.atlas_uvbox.bottom;
-			vertices[ j + 3 ].clr = ColorfTable::White;
-
-			vertices[ j + 4 ] = vertices[ j + 0 ];
-			vertices[ j + 5 ] = vertices[ j + 2 ];
+			builder( j, pos.x + offsets_scaled.x, pos.y + offsets_scaled.y, hs, gly.atlas_uvbox );
 
 			pos.x += hs.x + float( font.get_char_spacing() * scale.x ) + gly.advance;
 			if (hs.y > line_height)
 				line_height = hs.y;
 		}
 
-		return (string.size() - notdraw_count) * VerticesPerGlyph;
+		return (string.size() - whitespace_count) * vertices_per_glyph;
+	}
+
+	template<typename _VERTBUF, typename _STR>
+	inline size_t BaseTextTemplate<_VERTBUF, _STR>::build( vertex_type *vertices, const size_t count,
+																												 const string_type &string, const Font &font,
+																												 Vector2f scale, float tab_size ) {
+		MeshBuilder builder{ vertices, count };
+		return build<MeshBuilder>( builder, string, font, scale, tab_size );
 	}
 
 }
