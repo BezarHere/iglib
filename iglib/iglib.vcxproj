@@ -192,6 +192,7 @@
       <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -233,7 +234,7 @@
     <ClInclude Include="src\_iglib_vbuffer.h" />
     <ClInclude Include="src\_iglib_vector.h" />
     <ClInclude Include="src\_iglib_vertexarray.h" />
-    <ClInclude Include="src\_iglib_meshdesc.h" />
+    <ClInclude Include="src\_iglib_vpd.h" />
     <ClInclude Include="src\_iglib_wavefront_obj.h" />
     <ClInclude Include="src\_iglib_window.h" />
     <ClInclude Include="src\_iglib_matrix.h" />
@@ -256,6 +257,7 @@
     <ClCompile Include="src\_iglib_canvas.cpp" />
     <ClCompile Include="src\_iglib_framebuffer.cpp" />
     <ClCompile Include="src\_iglib_image.cpp" />
+    <ClCompile Include="src\_iglib_vpd.cpp" />
     <ClCompile Include="src\_iglib_renderbuffer.cpp" />
     <ClCompile Include="src\_iglib_renderer.cpp" />
     <ClCompile Include="src\_iglib_shader.cpp" />
