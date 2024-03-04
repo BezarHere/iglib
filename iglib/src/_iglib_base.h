@@ -41,8 +41,7 @@ namespace ig
 	};
 
 	template <typename _T, typename _E>
-	__forceinline void swapref(_T &a, _E &b)
-	{
+	__forceinline void swapref( _T &a, _E &b ) {
 		const _T &c = a;
 		a = b;
 		b = c;
@@ -53,23 +52,19 @@ namespace ig
 	struct basic_heap_view
 	{
 
-		inline _T *begin()
-		{
+		inline _T *begin() {
 			return ptr;
 		}
 
-		inline _T *end()
-		{
+		inline _T *end() {
 			return ptr + sz;
 		}
 
-		inline const _T *begin() const
-		{
+		inline const _T *begin() const {
 			return ptr;
 		}
 
-		inline const _T *end() const
-		{
+		inline const _T *end() const {
 			return ptr + sz;
 		}
 
@@ -85,45 +80,38 @@ namespace ig
 	{
 
 		basic_heap_span()
-			: ptr{ nullptr }, sz{ 0 }
-		{
+			: ptr{ nullptr }, sz{ 0 } {
 		}
 
-		basic_heap_span(size_t size)
-			: ptr{ new _T[ size ]{} }, sz{ size }
-		{
+		basic_heap_span( size_t size )
+			: ptr{ new _T[ size ]{} }, sz{ size } {
 		}
 
-		basic_heap_span(_T *pp, size_t size)
-			: ptr{ pp }, sz{ size }
-		{
+		basic_heap_span( _T *pp, size_t size )
+			: ptr{ pp }, sz{ size } {
 		}
 
 
-		inline _T *begin()
-		{
+		inline _T *begin() {
 			return ptr;
 		}
 
-		inline _T *end()
-		{
+		inline _T *end() {
 			return ptr + sz;
 		}
 
-		inline const _T *begin() const
-		{
+		inline const _T *begin() const {
 			return ptr.get();
 		}
 
-		inline const _T *end() const
-		{
+		inline const _T *end() const {
 			return ptr.get() + sz;
 		}
 
 		std::shared_ptr<_T[]> ptr;
 		size_t sz;
 	};
-	
+
 	using BufferSpan = basic_heap_span<byte>;
 	using StrSpan = basic_heap_span<char>;
 

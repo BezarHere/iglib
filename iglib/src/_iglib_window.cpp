@@ -58,10 +58,10 @@ static GLFWwindow *create_glfw_window( int width, int height, const std::string 
 	{
 		glfwMakeContextCurrent( hdl );
 		init_glew();
-#ifdef _DEBUG
+//#ifdef _DEBUG
 		glEnable( GL_DEBUG_OUTPUT );
 		glDebugMessageCallback( debug_callback, nullptr );
-#endif // _DEBUG
+//#endif // _DEBUG
 
 	}
 

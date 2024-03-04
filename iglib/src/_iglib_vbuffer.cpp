@@ -36,13 +36,7 @@ namespace vbuffer_indirection
 	template <int GLType>
 	static std::stack<VBufferName_t, std::vector<VBufferName_t>> &get_vbuffer_names_stack() {
 		using stack_type = std::stack<VBufferName_t, std::vector<VBufferName_t>>;
-		static stack_type s = std::invoke(
-			[]() {
-				stack_type::container_type container = {};
-				container.reserve( 128 );
-				return stack_type( container );
-			}
-		);
+		static stack_type s{};
 		return s;
 	}
 
@@ -211,7 +205,7 @@ namespace ig
 
 	template<typename _T, int _GL_TYPE>
 	void VBuffer<_T, _GL_TYPE>::update( const element_type *data, size_t start, size_t end ) {
-		if constexpr (std::is_void_v<_T>)
+		if constexpr (Generic)
 		{
 			update_bytes( data, start, end );
 		}

@@ -6,7 +6,15 @@ namespace ig
 {
 	typedef unsigned int TextureId;
 
-	// an 2D array of pixel saved in the VRAM
+
+	enum class TextureSlot
+	{
+		Slot0, Slot1, Slot2, Slot3,
+		Slot4, Slot5, Slot6, Slot7,
+		_MAX
+	};
+
+	// an 2D array of pixel saved in the VRAM (currently only GL_TEXTURE_2D is supported)
 	class Texture
 	{
 		friend class Canvas;
@@ -28,8 +36,13 @@ namespace ig
 		bool is_valid() const noexcept;
 
 		void bind() const noexcept;
-		void unbind() const noexcept;
 		bool is_bound() const noexcept;
+
+		static TextureId get_bound();
+		static void clear_bound();
+		static void activate_slot( TextureSlot slot );
+		static TextureSlot get_active_slot();
+
 
 		Vector2i size() const noexcept;
 		ColorFormat get_channels() const noexcept;

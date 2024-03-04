@@ -5,6 +5,8 @@
 #include "intrinsics.h"
 #include "draw_internal.h"
 
+using VPD = VertexPipelineDescriptor;
+
 // all of the unsigned int's bits turned on except the last one
 constexpr unsigned int UnsignedIntNonTrailingBitMask = (1u << (sizeof( unsigned int ) * 8 - 1)) - 1;
 constexpr unsigned int UnsignedIntLastBit = 1u << ((sizeof( unsigned int ) * 8) - 1);
@@ -93,6 +95,10 @@ constexpr size_t DefaultQuadsIndicesCount = 6 * 10; // 10 quads
 static Index8Buffer g_DefaultQuadsIndexBuffer;
 static Index8Buffer g_DefaultQuadStripIndexBuffer;
 
+
+static stackptr<VertexPipelineDescriptor> g_VPD2D = nullptr;
+static stackptr<VertexPipelineDescriptor> g_VPD3D = nullptr;
+
 static const Canvas *g_CurrentCanvas;
 
 
@@ -147,6 +153,42 @@ FORCEINLINE void try_generate_opengl_globals() {
 		g_Quad2DVertices[ 3 ].uv = { 1.f, 0.f };
 	}
 
+	{
+		g_VPD2D.allocate();
+		g_VPD2D->set_offset( 0 );
+		g_VPD2D->set_stride( sizeof( Vertex2 ) );
+		VPDAttributeInterface interface_2d = g_VPD2D->create_interface();
+
+		interface_2d.attributes.push_back(
+			{ VPDAttributeType::Float, VPDAttributeSize::Vec2 }
+		);
+		interface_2d.attributes.push_back(
+			{ VPDAttributeType::Float, VPDAttributeSize::Color }
+		);
+		interface_2d.attributes.push_back(
+			{ VPDAttributeType::Float, VPDAttributeSize::Vec2 }
+		);
+	}
+
+	{
+		g_VPD3D.allocate();
+		g_VPD3D->set_offset( 0 );
+		g_VPD3D->set_stride( sizeof( Vertex3 ) );
+		VPDAttributeInterface interface_3d = g_VPD3D->create_interface();
+
+		interface_3d.attributes.push_back(
+			{ VPDAttributeType::Float, VPDAttributeSize::Vec3 }
+		);
+		interface_3d.attributes.push_back(
+			{ VPDAttributeType::Float, VPDAttributeSize::Color }
+		);
+		interface_3d.attributes.push_back(
+			{ VPDAttributeType::Float, VPDAttributeSize::Vec2 }
+		);
+		interface_3d.attributes.push_back(
+			{ VPDAttributeType::Float, VPDAttributeSize::Vec3 }
+		);
+	}
 }
 
 namespace ig
@@ -154,16 +196,15 @@ namespace ig
 
 
 
-	Canvas::Canvas(Renderer *renderer)
-		: m_renderer{ renderer }, m_transform2d{}, m_transform3d{}
-	{
+	Canvas::Canvas( Renderer *renderer )
+		: m_renderer{ renderer }, m_transform2d{}, m_transform3d{} {
 		try_generate_opengl_globals();
 		update_camera();
 	}
 
 	void Canvas::operator=( Canvas &&move ) noexcept {
 		m_renderer = move.m_renderer;
-		
+
 		m_transform2d = move.m_transform2d;
 		m_transform3d = move.m_transform3d;
 
@@ -171,10 +212,10 @@ namespace ig
 		update_camera();
 	}
 
-	Canvas::Canvas() 
-		: m_renderer{ nullptr }, m_transform2d{}, m_transform3d{}
-	{
+	Canvas::Canvas()
+		: m_renderer{ nullptr }, m_transform2d{}, m_transform3d{} {
 		try_generate_opengl_globals();
+
 	}
 
 	Canvas::Canvas( Canvas &&move ) noexcept
@@ -351,9 +392,9 @@ namespace ig
 		if (count > 32)
 		{
 			Vertex2Buffer b{ draw_type, count };
-			
+
 			b.update( vertices );
-			
+
 			draw( b );
 		}
 		else
@@ -382,120 +423,92 @@ namespace ig
 	}
 
 	void Canvas::draw( const Vertex2Buffer &buf, int start, int count ) {
-		buf._bind_array_buffer();
+		g_VPD2D->bind();
 
-		glEnableVertexAttribArray( 0 );
-		glEnableVertexAttribArray( 1 );
-		glEnableVertexAttribArray( 2 );
+		buf.bind();
 
-		glVertexAttribPointer( 0, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, pos ) );
-		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, clr ) );
-		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, uv ) );
+		g_VPD2D->setup();
+
 
 		glDrawArrays( to_glprimitve( buf.get_primitive() ), start, count >= 0 ? count : (static_cast<int>(buf.size()) - start) );
 
-		glDisableVertexAttribArray( 0 );
-		glDisableVertexAttribArray( 1 );
-		glDisableVertexAttribArray( 2 );
 
-		if (!buf._unbind_array_buffer())
-			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
+		VPD::clear_setup();
+
+		Vertex2Buffer::clear_bound();
+
+		VPD::clear_bound();
 	}
 
 	void Canvas::draw( const Vertex2Buffer &buf, const Index8Buffer &indices ) {
-		buf._bind_array_buffer();
+		g_VPD2D->bind();
+
+		buf.bind();
 		indices.bind();
 
-		glEnableVertexAttribArray( 0 );
-		glEnableVertexAttribArray( 1 );
-		glEnableVertexAttribArray( 2 );
-
-		glVertexAttribPointer( 0, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, pos ) );
-		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, clr ) );
-		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, uv ) );
+		g_VPD2D->setup();
 
 		glDrawElements( to_glprimitve( buf.get_primitive() ), (int)indices.size(), GL_UNSIGNED_BYTE, nullptr );
 
-		glDisableVertexAttribArray( 0 );
-		glDisableVertexAttribArray( 1 );
-		glDisableVertexAttribArray( 2 );
+		VPD::clear_setup();
 
 
 		indices.unbind();
-		if (!buf._unbind_array_buffer())
-			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
+		Vertex2Buffer::clear_bound();
+
+		VPD::clear_bound();
 	}
 
 	void Canvas::draw( const Vertex2Buffer &buf, const Index16Buffer &indices ) {
-		buf._bind_array_buffer();
+		g_VPD2D->bind();
+
+		buf.bind();
 		indices.bind();
 
-		glEnableVertexAttribArray( 0 );
-		glEnableVertexAttribArray( 1 );
-		glEnableVertexAttribArray( 2 );
-
-		glVertexAttribPointer( 0, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, pos ) );
-		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, clr ) );
-		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, uv ) );
+		g_VPD2D->setup();
 
 		glDrawElements( to_glprimitve( buf.get_primitive() ), (int)indices.size(), GL_UNSIGNED_SHORT, nullptr );
 
-		glDisableVertexAttribArray( 0 );
-		glDisableVertexAttribArray( 1 );
-		glDisableVertexAttribArray( 2 );
+		VPD::clear_setup();
 
 
 		indices.unbind();
-		if (!buf._unbind_array_buffer())
-			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
+		Vertex2Buffer::clear_bound();
+		VPD::clear_bound();
 	}
 
 	void Canvas::draw( const Vertex2Buffer &buf, const Index32Buffer &indices ) {
-		buf._bind_array_buffer();
+		g_VPD2D->bind();
+
+		buf.bind();
 		indices.bind();
 
-		glEnableVertexAttribArray( 0 );
-		glEnableVertexAttribArray( 1 );
-		glEnableVertexAttribArray( 2 );
-
-		glVertexAttribPointer( 0, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, pos ) );
-		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, clr ) );
-		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex2Buffer::vertex_type ), (const void *)offsetof( Vertex2Buffer::vertex_type, uv ) );
+		g_VPD2D->setup();
 
 		glDrawElements( to_glprimitve( buf.get_primitive() ), (int)indices.size(), GL_UNSIGNED_INT, nullptr );
 
-		glDisableVertexAttribArray( 0 );
-		glDisableVertexAttribArray( 1 );
-		glDisableVertexAttribArray( 2 );
-
+		VPD::clear_setup();
 
 		indices.unbind();
-		if (!buf._unbind_array_buffer())
-			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
+		Vertex2Buffer::clear_bound();
+
+		VPD::clear_bound();
 	}
 
 	void Canvas::draw( const Vertex3Buffer &buf, int start, int count ) {
-		buf._bind_array_buffer();
+		g_VPD3D->bind();
 
-		glEnableVertexAttribArray( 0 );
-		glEnableVertexAttribArray( 1 );
-		glEnableVertexAttribArray( 2 );
-		glEnableVertexAttribArray( 3 );
+		buf.bind();
 
-		glVertexAttribPointer( 0, 3, GL_FLOAT, 0, sizeof( Vertex3Buffer::vertex_type ), (const void *)offsetof( Vertex3Buffer::vertex_type, pos ) );
-		glVertexAttribPointer( 1, 4, GL_FLOAT, 0, sizeof( Vertex3Buffer::vertex_type ), (const void *)offsetof( Vertex3Buffer::vertex_type, clr ) );
-		glVertexAttribPointer( 2, 2, GL_FLOAT, 0, sizeof( Vertex3Buffer::vertex_type ), (const void *)offsetof( Vertex3Buffer::vertex_type, uv ) );
-		glVertexAttribPointer( 3, 3, GL_FLOAT, 0, sizeof( Vertex3Buffer::vertex_type ), (const void *)offsetof( Vertex3Buffer::vertex_type, normal ) );
+		g_VPD3D->setup();
 
 		glDrawArrays( to_glprimitve( buf.get_primitive() ), start, count < 0 ? ((int)buf.size() - start) : count );
 
-		glDisableVertexAttribArray( 0 );
-		glDisableVertexAttribArray( 1 );
-		glDisableVertexAttribArray( 2 );
-		glDisableVertexAttribArray( 3 );
+		VPD::clear_setup();
 
-		if (!buf._unbind_array_buffer())
-			raise( "draw failed: unbind failed at vertex buffer because of possible race condition, unbinding the vertex 2d buffer mid process" );
+		Vertex3Buffer::clear_bound();
+
+		VPD::clear_bound();
 	}
 
 	Renderer *Canvas::get_renderer() {

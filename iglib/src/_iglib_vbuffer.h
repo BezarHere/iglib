@@ -100,8 +100,7 @@ namespace ig
 		VBufferName_t m_name;
 	};
 
-	//using Vertex2Buffer = VBuffer<Vertex2, 0x8892>;
-	//using Vertex3Buffer = VBuffer<Vertex3, 0x8892>;
+	using RawVertexBuffer = VBuffer<Vertex3, 0x8892>;
 	using Index8Buffer = VBuffer<uint8_t, 0x8893>;
 	using Index16Buffer = VBuffer<uint16_t, 0x8893>;
 	using Index32Buffer = VBuffer<uint32_t, 0x8893>;

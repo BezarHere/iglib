@@ -83,12 +83,10 @@ namespace ig
 		/// OpenGL function
 		inline VertexBufferName_t get_name() const noexcept;
 
-		/// Internal OpenGL function
-		void _bind_array_buffer() const;
+		void bind() const;
 
-		/// Internal OpenGL function
-		bool _unbind_array_buffer() const;
-
+		static void clear_bound();
+		static VertexBufferName_t get_bound();
 
 
 	private:
@@ -106,6 +104,7 @@ namespace ig
 		return m_name;
 	}
 
+	
 	using Vertex2Buffer = BaseVertexBuffer<Vertex2>;
 	using Vertex3Buffer = BaseVertexBuffer<Vertex3>;
 

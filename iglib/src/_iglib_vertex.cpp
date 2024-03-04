@@ -17,7 +17,7 @@ FORCEINLINE VertexBufferName_t create_buffer() {
 	return i;
 }
 
-FORCEINLINE void free_buffer( VertexBufferName_t &id ) {
+FORCEINLINE static void free_buffer( VertexBufferName_t &id ) {
 	glDeleteBuffers( 1, &id );
 	id = 0;
 }
@@ -88,10 +88,10 @@ namespace ig
 	BaseVertexBuffer<_VRT> &BaseVertexBuffer<_VRT>::operator=( const BaseVertexBuffer &copy ) {
 		if (copy.m_name == m_name)
 			return *this;
-		
+
 		if (m_name)
 		{
-			free_buffer(m_name);
+			free_buffer( m_name );
 		}
 
 		m_name = duplicate_buffer( copy.m_name, to_gldrawusage( copy.m_usage ) );
@@ -149,13 +149,12 @@ namespace ig
 
 		m_size = size;
 		m_name = create_buffer();
-		_bind_array_buffer();
+		bind();
 
 
 		glBufferData( GL_ARRAY_BUFFER, size * sizeof( vertex_type ), vertices, to_gldrawusage( m_usage ) );
 
-		if (!_unbind_array_buffer())
-			raise( format( "POSSIBLE RACE COND: at 'create': last bound vertex buffer 2d (id {}) was unbounded mid process", m_name ) );
+		clear_bound();
 	}
 
 	template<typename _VRT>
@@ -163,12 +162,11 @@ namespace ig
 		if (offset + vertices_count > m_size)
 			raise( "overflowing a vertex buffer 2d" );
 
-		_bind_array_buffer();
+		bind();
 
 		glBufferSubData( GL_ARRAY_BUFFER, offset * sizeof( vertex_type ), vertices_count * sizeof( vertex_type ), vertices );
 
-		if (!_unbind_array_buffer())
-			raise( format( "POSSIBLE RACE COND: at 'update': last bound vertex buffer 2d (id {}) was unbounded mid process", m_name ) );
+		clear_bound();
 	}
 
 	template<typename _VRT>
@@ -176,18 +174,21 @@ namespace ig
 		return update( vertices, size(), 0 );
 	}
 
-	template <typename _VRT>
-	void BaseVertexBuffer<_VRT>::_bind_array_buffer() const {
+	template<typename _VRT>
+	void BaseVertexBuffer<_VRT>::bind() const {
 		glBindBuffer( GL_ARRAY_BUFFER, m_name );
 	}
 
-	template <typename _VRT>
-	bool BaseVertexBuffer<_VRT>::_unbind_array_buffer() const {
-		//int current_ab;
-		//glGetIntegerv(GL_ARRAY_BUFFER, &current_ab);
-		//if (current_ab == m_name)
+	template<typename _VRT>
+	void BaseVertexBuffer<_VRT>::clear_bound() {
 		glBindBuffer( GL_ARRAY_BUFFER, NULL );
-		return true;
+	}
+
+	template<typename _VRT>
+	VertexBufferName_t BaseVertexBuffer<_VRT>::get_bound() {
+		GLint val = 0;
+		glGetIntegerv( GL_ARRAY_BUFFER_BINDING, &val );
+		return val;
 	}
 
 }

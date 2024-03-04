@@ -1,20 +1,13 @@
 #pragma once
 #include "_iglib_base.h"
 #include "_iglib_color.h"
-#include "_iglib_vector.h"
-#include "_iglib_window.h"
 #include "_iglib_framebuffer.h"
 #include "_iglib_renderbuffer.h"
+#include "_iglib_vector.h"
+#include "_iglib_window.h"
 
 namespace ig
 {
-	enum class TextureSlot
-	{
-		Slot0, Slot1, Slot2, Slot3,
-		Slot4, Slot5, Slot6, Slot7,
-		_MAX
-	};
-
 	enum class DrawType
 	{
 		Drawing2D,
@@ -58,6 +51,13 @@ namespace ig
 		GreaterThenEqual = 0x206,
 		// drawing always passes the depth test
 		Always = 0x207,
+	};
+
+	enum class VertexIndexType
+	{
+		Byte = 0x1401,
+		Short = 0x1403,
+		Int = 0x1405,
 	};
 
 	struct RenderEnvironment
@@ -141,6 +141,20 @@ namespace ig
 		void set_shader_uniform( int location, int count, const Vector3f *value );
 		void set_shader_uniform( int location, int count, const Vector4i *value );
 		void set_shader_uniform( int location, int count, const Vector4f *value );
+
+		/// @brief executes a draw call using the bound objects (X.bind()/unbind())
+		/// @param primitive the primitive to be constructed
+		/// @param begin the index of the first vertex
+		/// @param count the vertex count (end = begin + count)
+		static void render( PrimitiveType primitive, int begin, int count );
+
+
+		/// @brief executes an indexed draw call using the bound objects (X.bind()/unbind()), clever indexed draw calls can be more performant
+		/// @param primitive the primitive to be constructed
+		/// @param begin the index of the first vertex
+		/// @param vertex_index_type the vertex index type...
+		/// @param index_offset the offset of the first index to be used
+		static void render( PrimitiveType primitive, int count, VertexIndexType vertex_index_type, unsigned index_offset );
 
 	private:
 		Renderer( const Renderer & ) = delete;

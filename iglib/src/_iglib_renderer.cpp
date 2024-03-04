@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "_iglib_renderer.h"
+#include "draw_internal.h"
 #include "internal.h"
 
 enum ScreenTextureBuffers
@@ -400,8 +401,10 @@ namespace ig
 		const int atc = m_state.active_textures_count;
 		for (int i = 0; i < atc; i++)
 		{
-			glActiveTexture( GL_TEXTURE0 + i );
+			Texture::activate_slot( static_cast<TextureSlot>(i) );
 			const auto hdl = m_state.textures[ i ] ? m_state.textures[ i ] : g_PlankTexture->get_handle();
+
+			// find something better
 			glBindTexture( GL_TEXTURE_2D, hdl );
 		}
 
@@ -425,19 +428,19 @@ namespace ig
 	}
 
 	void Renderer::set_cullwinding( const CullWinding winding ) {
-		glFrontFace( static_cast<int>( winding ) );
+		glFrontFace( static_cast<int>(winding) );
 	}
 
 	void Renderer::set_cullface( const CullFace face ) {
-		glCullFace( static_cast<int>( face ) );
+		glCullFace( static_cast<int>(face) );
 	}
 
 	void Renderer::enable_feature( const Feature feature ) {
-		glEnable( static_cast<int>( feature ) );
+		glEnable( static_cast<int>(feature) );
 	}
 
 	void Renderer::disable_feature( const Feature feature ) {
-		glDisable( static_cast<int>( feature ) );
+		glDisable( static_cast<int>(feature) );
 	}
 
 	bool Renderer::is_feature_enabled( const Feature feature ) const {
@@ -559,6 +562,19 @@ namespace ig
 
 	void Renderer::set_shader_uniform( int location, int count, const Vector4f *value ) {
 		glUniform4fv( location, count, (const GLfloat *)value );
+	}
+
+	void Renderer::render( const PrimitiveType primitive, const int begin, const int count ) {
+		glDrawArrays( to_glprimitve( primitive ), begin, count );
+	}
+
+	void Renderer::render( PrimitiveType primitive, int count, VertexIndexType vertex_index_type, unsigned index_offset ) {
+		glDrawElements(
+			to_glprimitve( primitive ),
+			count,
+			static_cast<GLenum>(vertex_index_type),
+			(const void *)((size_t)index_offset)
+		);
 	}
 
 }

@@ -4,7 +4,7 @@
 #include "draw_internal.h"
 #include "internal.h"
 
-inline const std::string &FT_Error_Get_String( FT_Error error )
+inline static const std::string &FT_Error_Get_String( FT_Error error )
 {
 	static const std::array<std::string, 187> FTErrorMessages =
 	{
@@ -239,8 +239,7 @@ struct CodepointIndex
 	size_t index;
 };
 
-// TODO: Test
-inline Image pack_font_atlas(const Image &source, const Vector2i raw_count, const Vector2i glyph_size, const Vector2i spacing)
+inline static Image pack_font_atlas(const Image &source, const Vector2i raw_count, const Vector2i glyph_size, const Vector2i spacing)
 {
 	// already packed
 	if (!spacing.x && !spacing.y)
@@ -320,7 +319,7 @@ struct GlyphBitmap
 	Vector2i bearing;
 };
 
-FORCEINLINE Vector2i squared_pow2( Vector2i size )
+FORCEINLINE static Vector2i squared_pow2( Vector2i size )
 {
 	const auto p2 = closest_pow2( size.area() ) >> 1;
 
@@ -417,7 +416,7 @@ namespace ig
 			img.clear( Colorb( 255, 0, 0 ) );
 			const size_t bitmaps_count = gbitmaps.size();
 
-			// TODO: replace tile packing with the more compact mozaic packing
+			// TODO: replace tile packing with the more compact mosaic packing
 			Vector2i src_orig{};
 			int line_height = 0;
 
@@ -507,15 +506,15 @@ namespace ig
 		/// @brief FOR BITMAPS
 		/// @param glyph_size the size of each glyph bounding box
 		/// @param spacing the padding/spacing between glyph's bounding box
-		/// @param def indexing of codingpoints
+		/// @param def indexing of coding points
 		FORCEINLINE FontInternal(const Image &source, const Vector2i glyph_size, const Vector2i spacing, const BitmapFontDef &def )
 			: faces_atlas{}
 		{
 			if (glyph_size.x >= 256)
-				bite::raise("Overflow: glyph_size.x was " + std::to_string(glyph_size.x) + " wich is greater/equal to 256");
+				bite::raise("Overflow: glyph_size.x was " + std::to_string(glyph_size.x) + " which is greater/equal to 256");
 
 			if (glyph_size.y >= 512)
-				bite::raise("Overflow: glyph_size.y was " + std::to_string(glyph_size.y) + " wich is greater/equal to 512");
+				bite::raise("Overflow: glyph_size.y was " + std::to_string(glyph_size.y) + " which is greater/equal to 512");
 
 			const Vector2i raw_count = std::invoke([gsize = source.size(), glyph_size, spacing]()
 				{
