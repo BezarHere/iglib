@@ -5,6 +5,8 @@ namespace ig
 {
 	typedef unsigned int VPDName_t;
 
+	constexpr int NormalizedVPDAttributeTypeBit = 0x10000;
+
 	enum class VPDAttributeType
 	{
 		Byte = 0x1400,
@@ -13,6 +15,14 @@ namespace ig
 		UnsignedShort,
 		Int,
 		UnsignedInt,
+
+		NormalizedByte = Byte | NormalizedVPDAttributeTypeBit,
+		NormalizedUnsignedByte = UnsignedByte | NormalizedVPDAttributeTypeBit,
+		NormalizedShort = Short | NormalizedVPDAttributeTypeBit,
+		NormalizedUnsignedShort = UnsignedShort | NormalizedVPDAttributeTypeBit,
+		NormalizedInt = Int | NormalizedVPDAttributeTypeBit,
+		NormalizedUnsignedInt = UnsignedInt | NormalizedVPDAttributeTypeBit,
+
 		HalfFloat = 0x140B,
 		Float = 0x1406,
 		Double = 0x140A

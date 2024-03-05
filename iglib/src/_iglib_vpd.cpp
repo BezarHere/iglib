@@ -115,12 +115,12 @@ namespace ig
 		size_t offset = m_offset;
 		for (size_t i = 0; i < count; i++)
 		{
-			glEnableVertexAttribArray( i );
+			glEnableVertexAttribArray( static_cast<GLuint>(i) );
 			glVertexAttribPointer(
-				i,
+				static_cast<GLuint>(i),
 				static_cast<GLint>(m_attrs[ i ].size),
-				static_cast<GLenum>(m_attrs[ i ].type),
-				FALSE,
+				static_cast<GLenum>(m_attrs[ i ].type) & (NormalizedVPDAttributeTypeBit - 1),
+				static_cast<GLboolean>(static_cast<GLenum>(m_attrs[ i ].type) & NormalizedVPDAttributeTypeBit),
 				m_stride,
 				reinterpret_cast<const void *>(offset)
 			);
@@ -141,7 +141,7 @@ namespace ig
 	void VertexPipelineDescriptor::clear_setup() {
 		for (size_t i = 0; i < VPDSetupRegister::get_enabled_attrs(); i++)
 		{
-			glDisableVertexAttribArray( i );
+			glDisableVertexAttribArray( static_cast<GLuint>(i) );
 		}
 	}
 
