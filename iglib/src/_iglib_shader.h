@@ -32,7 +32,6 @@ namespace ig
 		static ShaderInstance_t get_default(ShaderUsage usage = ShaderUsage::Usage3D);
 		static ShaderInstance_t compile(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage = ShaderUsage::Usage3D);
 
-		// will create a raw shader, it's hard to be complaint with the current implementation so try to not use it
 		static ShaderInstance_t compile_raw(const std::string &vertex_src, const std::string &fragment_src, ShaderUsage usage = ShaderUsage::Usage3D);
 		
 
