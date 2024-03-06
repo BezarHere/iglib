@@ -96,6 +96,8 @@ namespace ig
 		static void clear_bound();
 		static void clear_setup();
 
+		/// @param stride a stride of zero will be defaulted to the vertex size.
+		///	              it's allways better to set the stride either zero or greater/equal to the vertex size 
 		void set_stride( uint32_t stride );
 		void set_offset( uint32_t offset );
 

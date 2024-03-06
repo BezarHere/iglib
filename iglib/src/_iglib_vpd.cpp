@@ -7,7 +7,7 @@ static inline VPDName_t create_mesh_desc() {
 	return name;
 }
 
-static inline constexpr size_t sizeof_type( const VPDAttributeType type ) {
+static inline constexpr size_t sizeof_attribute_type( const VPDAttributeType type ) {
 	switch (type)
 	{
 	case VPDAttributeType::Byte:
@@ -106,13 +106,16 @@ namespace ig
 	}
 
 	void VertexPipelineDescriptor::bind() const {
-		//glBindVertexArray( m_name );
+		glBindVertexArray( m_name );
 	}
 
 	void VertexPipelineDescriptor::setup() const {
 		const size_t count = std::min( m_attrs.size(), MaxVertexAttributes );
 		VPDSetupRegister::set_enabled_attrs( count );
+
 		size_t offset = m_offset;
+		const size_t stride = m_stride ? m_stride : get_vertex_size();
+
 		for (size_t i = 0; i < count; i++)
 		{
 			glEnableVertexAttribArray( static_cast<GLuint>(i) );
@@ -121,10 +124,10 @@ namespace ig
 				static_cast<GLint>(m_attrs[ i ].size),
 				static_cast<GLenum>(m_attrs[ i ].type) & (NormalizedVPDAttributeTypeBit - 1),
 				static_cast<GLboolean>(static_cast<GLenum>(m_attrs[ i ].type) & NormalizedVPDAttributeTypeBit),
-				m_stride,
+				stride,
 				reinterpret_cast<const void *>(offset)
 			);
-			offset += static_cast<size_t>(m_attrs[ i ].size) * sizeof_type( m_attrs[ i ].type );
+			offset += static_cast<size_t>(m_attrs[ i ].size) * sizeof_attribute_type( m_attrs[ i ].type );
 		}
 	}
 
@@ -135,7 +138,7 @@ namespace ig
 	}
 
 	void VertexPipelineDescriptor::clear_bound() {
-		//glBindVertexArray( 0 );
+		glBindVertexArray( 0 );
 	}
 
 	void VertexPipelineDescriptor::clear_setup() {
@@ -161,7 +164,7 @@ namespace ig
 		size_t attrs_size = 0;
 		for (const auto &attr : m_attrs)
 		{
-			attrs_size += static_cast<size_t>(attr.size);
+			attrs_size += static_cast<size_t>(attr.size) * sizeof_attribute_type( attr.type );
 		}
 		return attrs_size;
 	}
