@@ -218,9 +218,9 @@
     <ClInclude Include="src\internal.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\_iglib_camera.h" />
+    <ClInclude Include="src\_iglib_diag.h" />
     <ClInclude Include="src\_iglib_font.h" />
     <ClInclude Include="src\_iglib_canvas.h" />
-    <ClInclude Include="src\_iglib_application_config.h" />
     <ClInclude Include="src\_iglib_base.h" />
     <ClInclude Include="src\_iglib_errors.h" />
     <ClInclude Include="src\_iglib_framebuffer.h" />
@@ -253,6 +253,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\_iglib_diag.cpp" />
     <ClCompile Include="src\_iglib_font.cpp" />
     <ClCompile Include="src\_iglib_canvas.cpp" />
     <ClCompile Include="src\_iglib_framebuffer.cpp" />
