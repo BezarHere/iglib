@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "_iglib_vbuffer.h"
 
+template RawVertexBuffer;
 template class VBuffer<Vertex2, GL_ARRAY_BUFFER>;
 template class VBuffer<Vertex3, GL_ARRAY_BUFFER>;
 
@@ -91,12 +92,12 @@ FORCEINLINE VBufferName_t duplicate_buffer( const VBufferName_t copy, const VBuf
 	}
 #endif // _DEBUG
 
-	constexpr auto SafeSize = [](const size_t buffer_size) {
+	constexpr auto SafeSize = []( const size_t buffer_size ) {
 		(void)buffer_size;
 		if constexpr (std::is_void_v<element_type>) return size_t( 1 ); else return buffer_size / sizeof( element_type );
 		};
 
-	const size_t buffer_obj_size = SafeSize(bsize);
+	const size_t buffer_obj_size = SafeSize( bsize );
 
 	uint8_t *buffer = new uint8_t[ bsize ];
 	glGetBufferSubData( GLType, 0, bsize, buffer );
@@ -123,7 +124,7 @@ namespace ig
 	VBuffer<_T, _GL_TYPE>::~VBuffer() {
 		if (m_name)
 		{
-			clear();
+			free();
 		}
 	}
 
@@ -144,7 +145,7 @@ namespace ig
 
 		if (m_name)
 		{
-			clear();
+			free();
 		}
 
 		m_name = duplicate_buffer<_T, _GL_TYPE>( copy.m_name, copy.usage() );
@@ -155,7 +156,7 @@ namespace ig
 	VBuffer<_T, _GL_TYPE> &VBuffer<_T, _GL_TYPE>::operator=( this_type &&move ) noexcept {
 		if (m_name)
 		{
-			clear();
+			free();
 		}
 
 		m_name = move.m_name;
@@ -166,7 +167,9 @@ namespace ig
 	template<typename _T, int _GL_TYPE>
 	void VBuffer<_T, _GL_TYPE>::create( size_t size, VBufferUsage usage, const element_type *data ) {
 		if (m_name)
-			clear();
+		{
+			free();
+		}
 
 		m_name = generate_vbuffer<_T, _GL_TYPE>( size, usage, data );
 	}
@@ -174,11 +177,12 @@ namespace ig
 	template<typename _T, int _GL_TYPE>
 	VBufferUsage VBuffer<_T, _GL_TYPE>::usage() const {
 		VBufferUsage usage;
-		_push_bound_name();
+		push_bound_name();
+		bind();
 
 		glGetBufferParameteriv( GLType, GL_BUFFER_USAGE, reinterpret_cast<GLint *>(&usage) );
 
-		_pop_bound_name();
+		pop_bound_name();
 		return usage;
 	}
 
@@ -196,10 +200,13 @@ namespace ig
 
 	template<typename _T, int _GL_TYPE>
 	size_t VBuffer<_T, _GL_TYPE>::size_bytes() const {
-		_push_bound_name();
+		push_bound_name();
+
+		bind();
 		size_t bsize = 0;
 		glGetBufferParameteriv( GLType, GL_BUFFER_SIZE, reinterpret_cast<int *>(&bsize) );
-		_pop_bound_name();
+
+		pop_bound_name();
 		return bsize;
 	}
 
@@ -222,17 +229,19 @@ namespace ig
 		// no data );
 		if (!buffer_size)
 		{
-#ifdef _DEBUG
-			//! maybe an error broadcast is needed here?
-#endif // _DEBUG
+			std::cerr << "VBUFFER: buffer " << this << " can't be updated, it's empty.\n";
 			return;
 		}
 
 		if (start_byte >= buffer_size)
 		{
-#ifdef _DEBUG
-			//! maybe an error broadcast is needed here?
-#endif // _DEBUG
+			std::cerr << "VBUFFER: buffer "
+				<< this
+				<< " can't be updated starting from byte "
+				<< start_byte
+				<< ", reason is the buffer is only "
+				<< buffer_size
+				<< " bytes long\n";
 			return;
 		}
 
@@ -244,9 +253,13 @@ namespace ig
 
 		if (end_byte >= buffer_size)
 		{
-#ifdef _DEBUG
-			//! maybe an error broadcast is needed here?
-#endif // _DEBUG
+			std::cerr << "VBUFFER: buffer "
+				<< this
+				<< " can't be updated to byte "
+				<< end_byte
+				<< ", reason is the buffer is only "
+				<< buffer_size
+				<< " bytes long\n";
 			return;
 		}
 
@@ -258,45 +271,43 @@ namespace ig
 	}
 
 	template<typename _T, int _GL_TYPE>
-	void VBuffer<_T, _GL_TYPE>::clear() {
-		glDeleteBuffers( 1, &m_name );
-	}
-
-	template<typename _T, int _GL_TYPE>
 	void VBuffer<_T, _GL_TYPE>::bind() const {
 		glBindBuffer( GLType, m_name );
 	}
 
 	template<typename _T, int _GL_TYPE>
-	bool VBuffer<_T, _GL_TYPE>::unbind() const {
-		if (get_bound_buffer_name() != m_name)
-			return false;
-		glBindBuffer( GLType, 0 );
-		return true;
-	}
-
-	template<typename _T, int _GL_TYPE>
 	bool VBuffer<_T, _GL_TYPE>::is_bound() const {
-		return get_bound_buffer_name() == m_name;
+		return get_bound() == m_name;
 	}
 
 	template<typename _T, int _GL_TYPE>
-	VBufferName_t VBuffer<_T, _GL_TYPE>::get_bound_buffer_name() {
+	VBufferName_t VBuffer<_T, _GL_TYPE>::get_bound() {
 		GLint name = NULL;
-		glGetIntegerv( vbuffer_indirection::get_binding_name<GLType>(), &name);
+		glGetIntegerv( vbuffer_indirection::get_binding_name<GLType>(), &name );
 		return static_cast<VBufferName_t>(name);
 	}
 
 	template<typename _T, int _GL_TYPE>
-	void VBuffer<_T, _GL_TYPE>::_push_bound_name() const {
-		vbuffer_indirection::get_vbuffer_names_stack<GLType>().push(get_bound_buffer_name());
-		bind();
+	void VBuffer<_T, _GL_TYPE>::clear_bound() {
+		glBindBuffer( GLType, 0 );
 	}
 
 	template<typename _T, int _GL_TYPE>
-	void VBuffer<_T, _GL_TYPE>::_pop_bound_name() const {
-		glBindBuffer(GLType, vbuffer_indirection::get_vbuffer_names_stack<GLType>().top());
+	void VBuffer<_T, _GL_TYPE>::push_bound_name() {
+		vbuffer_indirection::get_vbuffer_names_stack<GLType>().push( get_bound() );
+		clear_bound();
+	}
+
+	template<typename _T, int _GL_TYPE>
+	void VBuffer<_T, _GL_TYPE>::pop_bound_name() {
+		glBindBuffer( GLType, vbuffer_indirection::get_vbuffer_names_stack<GLType>().top() );
 		vbuffer_indirection::get_vbuffer_names_stack<GLType>().pop();
+	}
+
+	template<typename _T, int _GL_TYPE>
+	void VBuffer<_T, _GL_TYPE>::free() {
+		glDeleteBuffers( 1, &m_name );
+		m_name = 0;
 	}
 
 }
