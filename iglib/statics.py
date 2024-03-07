@@ -34,10 +34,12 @@ def to_csv(p: list[list[str]], sep = ','):
   
 
 def main():
-  current_dir = Path(__file__).parent
+  current_dir = Path(__file__).parent.joinpath("src")
   scan : list[os.DirEntry[str]] = list(os.scandir(current_dir))
   data = {}
   
+  print(current_dir)
+
   for i in scan:
     if i.is_dir():
       for j in os.scandir(i.path):
@@ -56,7 +58,7 @@ def main():
       round(averge_line_length(data[i], False), 2),
       round(averge_line_length(data[i], True), 2)
     ])
-  with open(current_dir.joinpath("statics.csv"), 'w') as f:
+  with open(Path(__file__).parent.joinpath("statics.csv"), 'w') as f:
     f.write(to_csv(csv_list))
   
 
