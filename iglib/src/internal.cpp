@@ -10,9 +10,7 @@ typedef void(*Action_t)(void);
 static std::stack<WindowHandle_t> glfw_current_window_pipline_stack;
 static std::vector<MonitorHandle_t> glfw_monitors{};
 static std::vector<Action_t> openglinit_callbacks{};
-static struct {
-	int major, minor; bool compat;
-} g_glversion = { 4, 1, false };
+static GLVersion g_glversion = { 4, 1, false };
 
 void static_init();
 
@@ -87,7 +85,7 @@ void glfw_init_window_hints() {
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, g_glversion.major );
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, g_glversion.minor );
 	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
 }
 
 // runs before 'main'
@@ -197,8 +195,12 @@ int register_openglinit_callback( void(*callback)(void) ) {
 bool set_glfw_context_version( int major, int minor, bool compat ) {
 	if (!is_glversion_valid( major, minor ))
 		return false;
-	g_glversion = { major, minor, compat };
+	g_glversion = { (uint16_t)major, (uint16_t)minor, compat };
 	return true;
+}
+
+GLVersion get_glfw_context_version() {
+	return g_glversion;
 }
 
 
