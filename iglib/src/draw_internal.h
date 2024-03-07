@@ -159,11 +159,3 @@ FORCEINLINE void flip_h(unsigned char *data, const size_t ww, const size_t hh, c
 		}
 	}
 }
-
-FORCEINLINE void use_shader(const Shader &shader)
-{
-	if (!shader.is_valid() || shader._is_current())
-		return;
-	glUseProgram(shader.get_id());
-}
-
