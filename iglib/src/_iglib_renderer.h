@@ -95,7 +95,7 @@ namespace ig
 		// what will the canvas expect to draw in later calls? and what default shader will it resort to?
 		void set_draw_type( const DrawType type );
 
-		void bind_shader( const ShaderInstance_t &shader );
+		void bind_shader( const Shader *shader );
 		void bind_default_shader( ShaderUsage usage );
 		void unbind_shader();
 
@@ -109,7 +109,7 @@ namespace ig
 		void set_depth_test_comparison( DepthTestComparison comparison );
 		DepthTestComparison get_depth_test_comparison() const;
 
-		ShaderId_t get_shader_id() const noexcept;
+		ShaderName get_shader_name() const noexcept;
 
 		void bind_texture( const TextureId tex, const TextureSlot slot = TextureSlot::Slot0 );
 		TextureId get_texture( const TextureSlot slot = TextureSlot::Slot0 ) const noexcept;
@@ -191,7 +191,7 @@ namespace ig
 		{
 			bool m_dirty = false;
 
-			std::shared_ptr<const Shader> bound_shader;
+			const Shader *bound_shader;
 			DrawType draw_type = DrawType::Drawing2D;
 			ShaderUsage shading_usage = ShaderUsage::Usage2D;
 

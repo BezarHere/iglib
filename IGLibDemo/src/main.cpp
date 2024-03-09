@@ -276,7 +276,7 @@ void draw2d_callback( ig::Renderer &rend ) {
 	if (text->is_dirty())
 		text->rebuild();
 	c.text( *text );
-	//c.rect( { 0.f, 32.f }, { 128.f, 128.f + 32.f }, ColorfTable::White );
+	c.rect( { 0.f, 32.f }, { 128.f, 128.f + 32.f }, ColorfTable::White );
 
 	{
 		constexpr uint16_t Indices[ 6 ] = { 0, 1, 2, 2, 3, 0 };
@@ -291,7 +291,7 @@ void draw2d_callback( ig::Renderer &rend ) {
 		ig::Vertex2Buffer vertex_buffer = { ig::PrimitiveType::Triangle, 4, ig::BufferUsage::Static };
 		vertex_buffer.update( Vertices );
 
-		c.draw( vertex_buffer, index_buffer );
+		//c.draw( vertex_buffer, index_buffer );
 
 	}
 
@@ -310,6 +310,7 @@ void draw2d_callback( ig::Renderer &rend ) {
 
 	//c.bind_shader(ss);
 	//c.line(c.get_window().get_size() / 2, m, {255, 0, 0, 255});
+	const auto state = ig::diag::OpenglStateFields::create();
 
 	last_m = m;
 }
@@ -349,9 +350,9 @@ int main() {
 		ig::Window i = ig::Window( { 512, 512 }, "Window !!!" );
 		std::cout << "created the window\n";
 
-		//font = new Font( "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\font.ttf", 64, []( codepoint_t cp ){ return cp < 128; } );
+		font = new Font( "F:\\Assets\\visual studio\\IGLib\\IGLibDemo\\font.ttf", 14, []( codepoint_t cp ) { return cp < 128; } );
 		//delete font;
-		font = new Font( Font::get_default() );
+		//font = new Font( Font::get_default() );
 
 		std::cout << "created the font\n";
 
@@ -384,7 +385,7 @@ int main() {
 		//ebv.enabled_postprocessing = false;
 		//renderer.set_environment( ebv );
 
-		//renderer.set_environment( ig::RenderEnvironment{ false } );
+		renderer.set_environment( ig::RenderEnvironment{ false } );
 
 		std::cout << ig::get_opengl_version() << '\n';
 		std::cout << "main loop running\n";

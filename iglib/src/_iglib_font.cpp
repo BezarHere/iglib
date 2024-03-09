@@ -4,8 +4,7 @@
 #include "draw_internal.h"
 #include "internal.h"
 
-inline static const std::string &FT_Error_Get_String( FT_Error error )
-{
+inline static const std::string &FT_Error_Get_String( FT_Error error ) {
 	static const std::array<std::string, 187> FTErrorMessages =
 	{
 		"No error",
@@ -198,7 +197,7 @@ inline static const std::string &FT_Error_Get_String( FT_Error error )
 	};
 
 	if (error >= FTErrorMessages.size())
-		return "ERROR_CODE_NOTFOUND_" + std::to_string(error);
+		return "ERROR_CODE_NOTFOUND_" + std::to_string( error );
 	return FTErrorMessages[ error ];
 }
 
@@ -230,8 +229,7 @@ static FT_Library freetype_lib;
 struct CodepointIndex
 {
 	FORCEINLINE CodepointIndex( codepoint_t cp, size_t i )
-		: codepoint{ cp }, index{ i }
-	{
+		: codepoint{ cp }, index{ i } {
 
 	}
 
@@ -239,25 +237,24 @@ struct CodepointIndex
 	size_t index;
 };
 
-inline static Image pack_font_atlas(const Image &source, const Vector2i raw_count, const Vector2i glyph_size, const Vector2i spacing)
-{
+inline static Image pack_font_atlas( const Image &source, const Vector2i raw_count, const Vector2i glyph_size, const Vector2i spacing ) {
 	// already packed
 	if (!spacing.x && !spacing.y)
 	{
 		if (source.format() == ColorFormat::LA)
 			return source;
 		Image s{ source };
-		s.convert(ColorFormat::LA);
+		s.convert( ColorFormat::LA );
 		return s;
 	}
 
 	if (source.format() != ColorFormat::LA)
 	{
 		Image s{ source };
-		s.convert(ColorFormat::LA);
+		s.convert( ColorFormat::LA );
 #pragma warning(push)
 #pragma warning(disable: 4714)
-		return pack_font_atlas(s, raw_count, glyph_size, spacing);
+		return pack_font_atlas( s, raw_count, glyph_size, spacing );
 #pragma warning(pop)
 	}
 
@@ -270,29 +267,27 @@ inline static Image pack_font_atlas(const Image &source, const Vector2i raw_coun
 		{
 			const Vector2i glyphs_cell{ (glyph_size.x + spacing.x) * x, yglyph };
 			strip.blit(
-								source,
-								{
-									(glyph_size.x + spacing.x) * x,
-									yglyph,
-									glyph_size.x,
-									glyph_size.y
-								},
+				source,
+				{
+					(glyph_size.x + spacing.x) * x,
+					yglyph,
+					glyph_size.x,
+					glyph_size.y
+				},
 								{
 									x * glyph_size.x,
 									y * glyph_size.y
-								});
+								} );
 		}
 	}
 	return strip;
 }
 
-FORCEINLINE static int __cdecl codepoint_index_qsort_comp( void const *a, void const *b )
-{
+FORCEINLINE static int __cdecl codepoint_index_qsort_comp( void const *a, void const *b ) {
 	return ((CodepointIndex *)a)->codepoint > ((CodepointIndex *)b)->codepoint;
 }
 
-FORCEINLINE static void init_freetype()
-{
+FORCEINLINE static void init_freetype() {
 	{
 		static bool _called = false;
 		if (_called) return;
@@ -301,8 +296,7 @@ FORCEINLINE static void init_freetype()
 	FT_CHECKED_CALL( FT_Init_FreeType( &freetype_lib ) );
 }
 
-FORCEINLINE static FT_Face load_freetype_face(const std::string &path, FT_UInt width, FT_Long face_index = 0)
-{
+FORCEINLINE static FT_Face load_freetype_face( const std::string &path, FT_UInt width, FT_Long face_index = 0 ) {
 	FT_Face face;
 	FT_CHECKED_CALL_V( FT_New_Face( freetype_lib, path.c_str(), face_index, &face ), nullptr );
 	FT_CHECKED_CALL_V( FT_Set_Pixel_Sizes( face, width, 0 ), nullptr );
@@ -319,8 +313,7 @@ struct GlyphBitmap
 	Vector2i bearing;
 };
 
-FORCEINLINE static Vector2i squared_pow2( Vector2i size )
-{
+FORCEINLINE static Vector2i squared_pow2( Vector2i size ) {
 	const auto p2 = closest_pow2( size.area() ) >> 1;
 
 	// odd
@@ -331,9 +324,8 @@ FORCEINLINE static Vector2i squared_pow2( Vector2i size )
 	return { 1 << p2, 1 << p2 };
 }
 
-FORCEINLINE static GlyphBitmap gen_glyph_bitmap_image( const FT_GlyphSlot glyph, const FT_ULong code )
-{
-	const size_t n = size_t(glyph->bitmap.width) * glyph->bitmap.rows;
+FORCEINLINE static GlyphBitmap gen_glyph_bitmap_image( const FT_GlyphSlot glyph, const FT_ULong code ) {
+	const size_t n = size_t( glyph->bitmap.width ) * glyph->bitmap.rows;
 	uint8_t *buffer = (uint8_t *)memcpy( new uint8_t[ glyph->bitmap.width * glyph->bitmap.rows ], glyph->bitmap.buffer, n );
 
 	return {
@@ -353,11 +345,12 @@ namespace ig
 	{
 		// TODO: SDFs!
 		// TODO: OPTIMIZE!!
-		FORCEINLINE FontInternal( const std::string &source, FT_UInt width, ValidGlyphsPredicate_t glyphs_predicate )
-		{
+		FORCEINLINE FontInternal( const std::string &source, FT_UInt width, ValidGlyphsPredicate_t glyphs_predicate ) {
 			struct AlwaysTrue
 			{
-				static bool func( codepoint_t ) { return true; }
+				static bool func( codepoint_t ) {
+					return true;
+				}
 			};
 
 			init_freetype();
@@ -374,9 +367,9 @@ namespace ig
 				glyphs_predicate = AlwaysTrue::func;
 			}
 
-			for ( FT_ULong gchar = FT_Get_First_Char( face, &gindex );
+			for (FT_ULong gchar = FT_Get_First_Char( face, &gindex );
 						(gchar = FT_Get_Next_Char( face, gchar, &gindex )) != 0;
-						gindex )
+						gindex)
 			{
 				if (!glyphs_predicate( codepoint_t( gchar ) ))
 					continue;
@@ -397,7 +390,7 @@ namespace ig
 				collective_size.x += gbitmap.size.x;
 				collective_size.y = std::max( collective_size.y, gbitmap.size.y );
 
-				gbitmaps.push_back( std::move(gbitmap) );
+				gbitmaps.push_back( std::move( gbitmap ) );
 			}
 
 			/// !BUGBUG [maybe too small if glyphs have janky sizes]
@@ -436,13 +429,13 @@ namespace ig
 				if (atlas_size.y - src_orig.y < gb.size.y)
 				{
 					const int atlas_size_new_height = atlas_size.y + gb.size.y * 2;
-					const float atlas_size_new_heightf = float(atlas_size_new_height);
+					const float atlas_size_new_heightf = float( atlas_size_new_height );
 
 					// update old glyph's atlas coords
 					for (auto &c : glyphs)
 					{
 						c.atlas_uvbox.origin.y = (c.atlas_uvbox.origin.y * atlas_size.y) / atlas_size_new_heightf;
-						c.atlas_uvbox.left.y   = (c.atlas_uvbox.left.y   * atlas_size.y) / atlas_size_new_heightf;
+						c.atlas_uvbox.left.y = (c.atlas_uvbox.left.y * atlas_size.y) / atlas_size_new_heightf;
 						c.atlas_uvbox.bottom.y = (c.atlas_uvbox.bottom.y * atlas_size.y) / atlas_size_new_heightf;
 					}
 
@@ -462,7 +455,7 @@ namespace ig
 						const int buf_i = ((y + src_orig.y) * atlas_size.x + (x + src_orig.x)) * 2;
 #ifdef _PARANOID
 						ASSERT( buf_i + 1 < img.get_buffer_size() );
-						ASSERT( (y *gb.width.x + x) < gb.len );
+						ASSERT( (y * gb.width.x + x) < gb.len );
 #endif // _PARANOID
 
 
@@ -479,17 +472,17 @@ namespace ig
 
 				m_codepoint_indexes.emplace_back( (codepoint_t)gb.code, glyphs.size() );
 				glyphs.push_back( { (codepoint_t)gb.code,
-														Vector2f( float(gb.bearing.x), -gb.bearing.y + float( gb.size.y < int( width ) ? (int( width ) - gb.size.y) : 0.f ) ), // offset
+														Vector2f( float( gb.bearing.x ), -gb.bearing.y + float( gb.size.y < int( width ) ? (int( width ) - gb.size.y) : 0.f ) ), // offset
 														gb.size,
 														uvbox,
-														float((gb.advance).x >> 6) - gb.size.x } );
+														float( (gb.advance).x >> 6 ) - gb.size.x } );
 
 
 				src_orig.x += gb.size.x;
 				if (line_height < gb.size.y)
 					line_height = gb.size.y;
 			}
-			
+
 
 			FT_Done_Face( face );
 
@@ -507,26 +500,25 @@ namespace ig
 		/// @param glyph_size the size of each glyph bounding box
 		/// @param spacing the padding/spacing between glyph's bounding box
 		/// @param def indexing of coding points
-		FORCEINLINE FontInternal(const Image &source, const Vector2i glyph_size, const Vector2i spacing, const BitmapFontDef &def )
-			: faces_atlas{}
-		{
+		FORCEINLINE FontInternal( const Image &source, const Vector2i glyph_size, const Vector2i spacing, const BitmapFontDef &def )
+			: faces_atlas{} {
 			if (glyph_size.x >= 256)
-				bite::raise("Overflow: glyph_size.x was " + std::to_string(glyph_size.x) + " which is greater/equal to 256");
+				bite::raise( "Overflow: glyph_size.x was " + std::to_string( glyph_size.x ) + " which is greater/equal to 256" );
 
 			if (glyph_size.y >= 512)
-				bite::raise("Overflow: glyph_size.y was " + std::to_string(glyph_size.y) + " which is greater/equal to 512");
+				bite::raise( "Overflow: glyph_size.y was " + std::to_string( glyph_size.y ) + " which is greater/equal to 512" );
 
-			const Vector2i raw_count = std::invoke([gsize = source.size(), glyph_size, spacing]()
-				{
-					const Vector2i spaces = (gsize * spacing / glyph_size) - spacing;
-					return (gsize - spaces) / glyph_size;
-				});
+			const Vector2i raw_count = std::invoke( [ gsize = source.size(), glyph_size, spacing ]()
+																							{
+																								const Vector2i spaces = (gsize * spacing / glyph_size) - spacing;
+																								return (gsize - spaces) / glyph_size;
+																							} );
 
 			const int raw_count_area = raw_count.area();
-			REPORT(raw_count_area == 0);
-			REPORT(raw_count.x * glyph_size.x >= MaxTextureWidth);
-			REPORT(raw_count.y * glyph_size.y >= MaxTextureHeight);
-			
+			REPORT( raw_count_area == 0 );
+			REPORT( raw_count.x * glyph_size.x >= MaxTextureWidth );
+			REPORT( raw_count.y * glyph_size.y >= MaxTextureHeight );
+
 			int current_codepoint_index = 0;
 			int codepoint_value = def.start_codepoint;
 			const Vector2f atlas_coord_factor = Vector2f( 1.f, 1.f ) / Vector2f( raw_count );
@@ -539,7 +531,7 @@ else codepoint_value++;; \
 glyphs.push_back({ codepoint_value - 1, Vector2i(), glyph_size, { Vector2f( atlas_coord_factor.x * x, atlas_coord_factor.y * y ), Vector2f(atlas_coord_factor.x, 0.f), Vector2f(0.f, atlas_coord_factor.y) } }); \
 m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 }
-			
+
 			if (def.transposed)
 			{
 				for (int y = 0u; y < raw_count.y; y++)
@@ -562,7 +554,7 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 			}
 
 			std::qsort( m_codepoint_indexes.data(), m_codepoint_indexes.size(), sizeof( m_codepoint_indexes[ 0 ] ), codepoint_index_qsort_comp );
-			
+
 			const Image packed = pack_font_atlas( source, raw_count, glyph_size, spacing );
 			glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
 			faces_atlas = Texture( packed );
@@ -570,8 +562,7 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 		}
 
 		// binary search [BUGBUG IF m_codepoint_indexes.size() < 4]
-		size_t get_glyph_index( const codepoint_t cp ) const noexcept
-		{
+		size_t get_glyph_index( const codepoint_t cp ) const noexcept {
 			const size_t sz = m_codepoint_indexes.size();
 			REPORT_V( sz < 4, NPos );
 			size_t i = sz / 2;
@@ -613,7 +604,7 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 		inline static void init();
 
 		inline static std::shared_ptr<Font::FontInternal> get_defualt_font();
-		inline static ShaderInstance_t &get_font_shader();
+		inline static std::shared_ptr<Shader> get_font_shader();
 
 	private:
 		static std::shared_ptr<Font::FontInternal> s_default_bitmap_font;
@@ -623,24 +614,20 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 	std::shared_ptr<Shader> FontMachine::s_font_shader = { nullptr };
 
 	Font::Font( const std::string &filepath, FT_UInt width, ValidGlyphsPredicate_t glyphs_predicate )
-		: m_type{ FontType::TrueType }, m_space_width{ width }, m_internal{ new FontInternal( filepath, width, glyphs_predicate ) }
-	{
+		: m_type{ FontType::TrueType }, m_space_width{ width }, m_internal{ new FontInternal( filepath, width, glyphs_predicate ) } {
 	}
 
 	Font::Font( const Image &glyphs, Vector2i glyph_size, Vector2i spacing, BitmapFontDef def )
 		: m_type{ FontType::Bitmap }, m_space_width{ uint32_t( glyph_size.x ) }, m_internal{
-		new FontInternal(glyphs, glyph_size, spacing, def )
-	}
-	{
+		new FontInternal( glyphs, glyph_size, spacing, def )
+		} {
 	}
 
 	ig::Font::Font()
-		: m_type{ FontType::Bitmap }, m_space_width{ 8u }, m_internal{ nullptr }
-	{
+		: m_type{ FontType::Bitmap }, m_space_width{ 8u }, m_internal{ nullptr } {
 	}
 
-	Font Font::get_default()
-	{
+	Font Font::get_default() {
 		Font f;
 		f.m_type = FontType::Bitmap;
 		f.m_space_width = 8;
@@ -648,67 +635,55 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 		return f;
 	}
 
-	TextureId Font::get_atlas() const
-	{
+	TextureId Font::get_atlas() const {
 		return m_internal->faces_atlas.get_handle();
 	}
 
-	Font::Glyph *Font::get_glyphs()
-	{
+	Font::Glyph *Font::get_glyphs() {
 		return m_internal->glyphs.data();
 	}
 
-	const Font::Glyph *Font::get_glyphs() const
-	{
+	const Font::Glyph *Font::get_glyphs() const {
 		return m_internal->glyphs.data();
 	}
 
-	const size_t Font::get_glyphs_count() const
-	{
+	const size_t Font::get_glyphs_count() const {
 		return m_internal->glyphs.size();
 	}
 
-	const size_t Font::get_glyph_index( const codepoint_t codepoint ) const
-	{
-		return m_internal->get_glyph_index(codepoint);
+	const size_t Font::get_glyph_index( const codepoint_t codepoint ) const {
+		return m_internal->get_glyph_index( codepoint );
 	}
 
-	void Font::set_char_spacing( int value )
-	{
+	void Font::set_char_spacing( int value ) {
 		m_char_spacing = value;
 	}
 
-	void Font::set_line_spacing( int value )
-	{
+	void Font::set_line_spacing( int value ) {
 		m_line_spacing = value;
 	}
 
-	void Font::set_space_width( uint32_t width )
-	{
+	void Font::set_space_width( uint32_t width ) {
 		m_space_width = width;
 	}
 
-	int Font::get_line_spacing() const
-	{
+	int Font::get_line_spacing() const {
 		return m_line_spacing;
 	}
 
-	int Font::get_char_spacing() const
-	{
+	int Font::get_char_spacing() const {
 		return m_char_spacing;
 	}
 
-	uint32_t Font::get_space_width() const
-	{
+	uint32_t Font::get_space_width() const {
 		return m_space_width;
 	}
 
-	bool Font::valid() const
-	{
+	bool Font::valid() const {
 		return m_internal && !m_internal->glyphs.empty();
 	}
 
-	ShaderInstance_t Font::get_shader() {
+	std::shared_ptr<Shader> Font::get_shader() {
 		return FontMachine::get_font_shader();
 	}
 
@@ -716,7 +691,7 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 		REPORT( !is_glew_running() );
 
 		STATIC_SINGLE_CALL;
-		
+
 	}
 
 	inline std::shared_ptr<Font::FontInternal> FontMachine::get_defualt_font() {
@@ -729,10 +704,10 @@ m_codepoint_indexes.emplace_back( codepoint_value - 1, glyphs.size() - 1 ); \
 		return s_default_bitmap_font;
 	}
 
-	inline ShaderInstance_t &FontMachine::get_font_shader() {
+	inline std::shared_ptr<Shader> FontMachine::get_font_shader() {
 		if (!s_font_shader)
 		{
-			s_font_shader.reset( new Shader(nullptr, "void main() { Color = texture(uTex0, UV).rrrg * FragColor; }", ShaderUsage::Usage2D) );
+			s_font_shader.reset( new Shader( nullptr, "void main() { Color = texture(uTex0, UV).rrrg * FragColor; }", ShaderUsage::Usage2D ) );
 		}
 		return s_font_shader;
 	}

@@ -90,7 +90,7 @@ namespace ig
 		/// @brief font rastering may or may not use SDFs
 		/// @brief which this shader can handle
 		/// @return The font shader or null if no font has been successfully created
-		static ShaderInstance_t get_shader();
+		static std::shared_ptr<Shader> get_shader();
 
 		struct FontInternal;
 	private:

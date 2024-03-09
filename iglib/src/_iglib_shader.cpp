@@ -94,43 +94,6 @@ FORCEINLINE static std::string generate_shader_code( const ShaderTemplate &temp 
 	return ss.str();
 }
 
-static GLuint compile_shaders( const std::string &shader, GLenum type ) {
-
-	const char *shaderCode = shader.c_str();
-	GLuint shaderId = glCreateShader( type );
-
-	if (shaderId == 0)
-	{ // Error: Cannot create shader object
-		std::cout << "Error creating shaders";
-		return 0;
-	}
-
-	// Attach source code to this object
-	glShaderSource( shaderId, 1, &shaderCode, NULL );
-	glCompileShader( shaderId ); // compile the shader object
-
-	GLint compileStatus;
-
-	// check for compilation status
-	glGetShaderiv( shaderId, GL_COMPILE_STATUS, &compileStatus );
-
-	if (!compileStatus)
-	{ // If compilation was not successful
-		int length;
-		glGetShaderiv( shaderId, GL_INFO_LOG_LENGTH, &length );
-		char *cMessage = new char[ length ];
-
-		// Get additional information
-		glGetShaderInfoLog( shaderId, length, &length, cMessage );
-		std::cout << "Cannot Compile Shader: " << cMessage;
-		delete[] cMessage;
-		glDeleteShader( shaderId );
-		return 0;
-	}
-
-	return shaderId;
-}
-
 FORCEINLINE static GLuint gen_shader( const char *psrc, const GLuint type, const ShaderUsage usage ) {
 	GLuint id = glCreateShader( type );
 

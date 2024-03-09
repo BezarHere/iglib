@@ -453,7 +453,7 @@ namespace ig
 		VPD::clear_setup();
 
 
-		indices.unbind();
+		Index8Buffer::clear_bound();
 		Vertex2Buffer::clear_bound();
 
 		VPD::clear_bound();
@@ -472,7 +472,7 @@ namespace ig
 		VPD::clear_setup();
 
 
-		indices.unbind();
+		Index16Buffer::clear_bound();
 		Vertex2Buffer::clear_bound();
 		VPD::clear_bound();
 	}
@@ -489,7 +489,7 @@ namespace ig
 
 		VPD::clear_setup();
 
-		indices.unbind();
+		Index32Buffer::clear_bound();
 		Vertex2Buffer::clear_bound();
 
 		VPD::clear_bound();

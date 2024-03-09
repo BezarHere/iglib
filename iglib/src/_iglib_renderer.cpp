@@ -18,8 +18,8 @@ static Vertex2 g_ScreenQuadVertcies[ 4 ]
 };
 
 static Vertex2Buffer g_ScreenQuadBuffer{};
-static ShaderInstance_t g_ScreenShader{};
-static ShaderInstance_t g_DefaultShaders[ (int)ShaderUsage::_Max ]{};
+static std::shared_ptr<Shader> g_ScreenShader{};
+static std::shared_ptr<Shader> g_DefaultShaders[ (int)ShaderUsage::_Max ]{};
 static std::shared_ptr<const Texture> g_PlankTexture;
 static const Renderer *g_BoundRenderer = nullptr;
 static struct RendererOpenglPersistenceState
@@ -35,10 +35,10 @@ static FORCEINLINE void init_globals() {
 	static bool s__has_ran = false;
 	if (s__has_ran)return; s__has_ran = true;
 
-	static const std::string PostProcessing_Vert =
+	constexpr char PostProcessing_Vert[] =
 		"void main() { gl_Position = vec4(to_native_space(pos), 0.0, 1.0); UV = texcoord; }";
 
-	static const std::string PostProcessing_Frag =
+	constexpr char PostProcessing_Frag[] =
 		"void main() {"
 		" if(UV.x < 0.5){ Color = vec4(pow(texture(uTex0, UV).rgb, vec3(1.34)), 1.0); } else { Color = vec4(pow(texture(uTex1, UV).rgb, vec3(1.34)), 1.0); }"
 		//"Color = vec4(UV, 1.0, 1.0);"
@@ -291,7 +291,7 @@ namespace ig
 			g_ScreenQuadBuffer.update( g_ScreenQuadVertcies );
 
 			set_draw_type( DrawType::Drawing2D );
-			bind_shader( g_ScreenShader );
+			bind_shader( g_ScreenShader.get() );
 			bind_texture( m_buffers_state.color_buffers[ STF_Color ], TextureSlot::Slot0 );
 			bind_texture( m_buffers_state.color_buffers[ STF_Overbright ], TextureSlot::Slot1 );
 			m_active_canvas.draw( g_ScreenQuadBuffer );
@@ -369,28 +369,25 @@ namespace ig
 		}
 	}
 
-	void Renderer::bind_shader( const ShaderInstance_t &shader ) {
-		if (m_state.bound_shader.get() == shader.get())
-			return;
-
-		if (!shader)
+	void Renderer::bind_shader( const Shader *shader ) {
+		if (shader == nullptr)
 		{
 			bite::warn( "trying to bind a NULL shader to canvas!" );
 			return;
 		}
 
-		glUseProgram( shader->get_id() );
+		shader->bind();
 		m_state.bound_shader = shader;
 		try_update_shader_state();
 	}
 
 	void Renderer::bind_default_shader( ShaderUsage usage ) {
-		bind_shader( g_DefaultShaders[ (int)usage ] );
+		bind_shader( g_DefaultShaders[ (int)usage ].get() );
 	}
 
 	void Renderer::unbind_shader() {
-		glUseProgram( g_DefaultShaders[ (int)m_state.shading_usage ]->get_id() );
-		m_state.bound_shader = g_DefaultShaders[ (int)m_state.shading_usage ];
+		g_DefaultShaders[ (int)m_state.shading_usage ]->bind();
+		m_state.bound_shader = g_DefaultShaders[ (int)m_state.shading_usage ].get();
 		try_update_shader_state();
 	}
 
@@ -408,21 +405,21 @@ namespace ig
 			glBindTexture( GL_TEXTURE_2D, hdl );
 		}
 
-		glUniform2f( glGetUniformLocation( m_state.bound_shader->get_id(), "_screensize" ), (float)m_window.width(), (float)m_window.height() );
+		glUniform2f( glGetUniformLocation( m_state.bound_shader->get_name(), "_screensize" ), (float)m_window.width(), (float)m_window.height() );
 
 		if (m_state.bound_shader->get_usage() == ShaderUsage::Usage2D)
 		{
-			glUniformMatrix2fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_trans" ), 1, GL_FALSE, m_active_canvas.m_transform2d.get_data().f );
-			glUniform2f( glGetUniformLocation( m_state.bound_shader->get_id(), "_offset" ), m_active_canvas.m_transform2d.get_data().origin.x, m_active_canvas.m_transform2d.get_data().origin.y );
+			glUniformMatrix2fv( glGetUniformLocation( m_state.bound_shader->get_name(), "_trans" ), 1, GL_FALSE, m_active_canvas.m_transform2d.get_data().f );
+			glUniform2f( glGetUniformLocation( m_state.bound_shader->get_name(), "_offset" ), m_active_canvas.m_transform2d.get_data().origin.x, m_active_canvas.m_transform2d.get_data().origin.y );
 		}
 		else if (m_state.bound_shader->get_usage() == ShaderUsage::Usage3D)
 		{
 			const auto &trans3d = m_active_canvas.transform3d().get_data();
-			glUniform3f( glGetUniformLocation( m_state.bound_shader->get_id(), "_offset" ), trans3d.origin.x, trans3d.origin.y, trans3d.origin.z );
-			glUniformMatrix3fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_trans" ), 1, GL_TRUE, trans3d.f );
-			glUniformMatrix4fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_proj" ), 1, GL_TRUE, m_active_canvas.m_cam_cache.m_elements.data() );
-			glUniformMatrix3fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_view_transform" ), 1, GL_TRUE, m_active_canvas.m_camera.transform.get_data().f );
-			glUniform3fv( glGetUniformLocation( m_state.bound_shader->get_id(), "_view_position" ), 1, m_active_canvas.m_camera.transform.get_data().f + 9 );
+			glUniform3f( glGetUniformLocation( m_state.bound_shader->get_name(), "_offset" ), trans3d.origin.x, trans3d.origin.y, trans3d.origin.z );
+			glUniformMatrix3fv( glGetUniformLocation( m_state.bound_shader->get_name(), "_trans" ), 1, GL_TRUE, trans3d.f );
+			glUniformMatrix4fv( glGetUniformLocation( m_state.bound_shader->get_name(), "_proj" ), 1, GL_TRUE, m_active_canvas.m_cam_cache.m_elements.data() );
+			glUniformMatrix3fv( glGetUniformLocation( m_state.bound_shader->get_name(), "_view_transform" ), 1, GL_TRUE, m_active_canvas.m_camera.transform.get_data().f );
+			glUniform3fv( glGetUniformLocation( m_state.bound_shader->get_name(), "_view_position" ), 1, m_active_canvas.m_camera.transform.get_data().f + 9 );
 		}
 
 	}
@@ -457,8 +454,8 @@ namespace ig
 		return dtc;
 	}
 
-	ShaderId_t Renderer::get_shader_id() const noexcept {
-		return m_state.bound_shader->get_id();
+	ShaderName Renderer::get_shader_name() const noexcept {
+		return m_state.bound_shader->get_name();
 	}
 
 	void Renderer::bind_texture( const TextureId tex, const TextureSlot slot ) {
