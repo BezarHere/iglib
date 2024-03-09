@@ -124,7 +124,7 @@ namespace ig
 				static_cast<GLint>(m_attrs[ i ].size),
 				static_cast<GLenum>(m_attrs[ i ].type) & (NormalizedVPDAttributeTypeBit - 1),
 				static_cast<GLboolean>(static_cast<GLenum>(m_attrs[ i ].type) & NormalizedVPDAttributeTypeBit),
-				stride,
+				static_cast<GLsizei>(stride),
 				reinterpret_cast<const void *>(offset)
 			);
 			offset += static_cast<size_t>(m_attrs[ i ].size) * sizeof_attribute_type( m_attrs[ i ].type );
