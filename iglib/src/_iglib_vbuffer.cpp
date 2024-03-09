@@ -251,7 +251,7 @@ namespace ig
 			end_byte = buffer_size - end_byte;
 		}
 
-		if (end_byte >= buffer_size)
+		if (end_byte > buffer_size)
 		{
 			std::cerr << "VBUFFER: buffer "
 				<< this
